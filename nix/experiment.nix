@@ -7,7 +7,7 @@ let
   useBBR = false;
 in
 {
-  name = "test";
+  name = "experiment";
 
   nodes = let
     commonOptions = {
