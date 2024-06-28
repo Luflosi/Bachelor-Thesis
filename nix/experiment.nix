@@ -4,6 +4,7 @@
 { lib, ... }:
 let
   testTimeSec = 60;
+  useBBR = false;
 in
 {
   name = "test";
@@ -25,6 +26,8 @@ in
         environment.systemPackages = with pkgs;[
           iperf3
         ];
+
+        boot.kernel.sysctl."net.ipv4.tcp_congestion_control" = lib.mkIf useBBR "bbr";
 
         networking.useNetworkd = true;
         networking.interfaces.lan.useDHCP = true;
@@ -115,6 +118,8 @@ in
       {
         services.iperf3.enable = true;
         services.iperf3.openFirewall = true;
+
+        boot.kernel.sysctl."net.ipv4.tcp_congestion_control" = lib.mkIf useBBR "bbr";
 
         networking.interfaces.wan.ipv6 = {
           addresses = lib.singleton {
