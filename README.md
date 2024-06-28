@@ -2,6 +2,7 @@
 [SPDX-License-Identifier: GPL-3.0-only]::
 
 # Bachelor Thesis
+## Comparing the Network Throughput of Censorship Circumvention Protocols under Constrained Resources
 
 > [!IMPORTANT]
 > This project is only in its infancy at the time of writing.
