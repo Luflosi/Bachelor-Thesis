@@ -26,6 +26,7 @@ in
           iperf3
         ];
 
+        networking.useNetworkd = true;
         networking.interfaces.lan.useDHCP = true;
 
         virtualisation.interfaces.lan.vlan = 1;
@@ -35,8 +36,8 @@ in
     router = { lib, pkgs, ... }: lib.mkMerge [
       commonOptions
       {
+        networking.useNetworkd = true;
         networking.firewall.enable = false;
-        systemd.network.enable = true;
         systemd.network.networks."40-lan" = {
           name = "lan";
           networkConfig = {
@@ -111,6 +112,7 @@ in
     logger = { lib, pkgs, ... }: lib.mkMerge [
       commonOptions
       {
+        systemd.network.enable = false;
         networking.firewall.enable = false;
         environment.systemPackages = with pkgs; [
           lsof
