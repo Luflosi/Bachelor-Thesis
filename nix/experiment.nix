@@ -41,12 +41,19 @@ in
         systemd.network.networks."40-lan" = {
           name = "lan";
           networkConfig = {
-            Address = "192.168.0.2/24";
+            Address = [
+              "192.168.0.2/24"
+              "fd36:9509:c39c::1/64"
+            ];
             DHCPServer = true;
+            IPv6SendRA = true;
           };
           dhcpServerConfig = {
             PoolOffset = 100;
             PoolSize = 20;
+          };
+          ipv6Prefixes = lib.singleton {
+            Prefix = "fd36:9509:c39c::/64";
           };
           # This does not yet provide all the options we need
           # See https://www.freedesktop.org/software/systemd/man/latest/systemd.network.html#%5BNetworkEmulator%5D%20Section%20Options
@@ -79,6 +86,16 @@ in
             '';
         };
 
+        networking.interfaces.wan.ipv6.addresses = lib.singleton {
+          address = "fd9d:c839:3e89::2";
+          prefixLength = 64;
+        };
+
+        boot.kernel.sysctl = {
+          "net.ipv6.conf.all.forwarding" = "1";
+          "net.ipv6.conf.default.forwarding" = "1";
+        };
+
         virtualisation.interfaces = {
           lan.vlan = 1;
           wan = {
@@ -98,6 +115,18 @@ in
       {
         services.iperf3.enable = true;
         services.iperf3.openFirewall = true;
+
+        networking.interfaces.wan.ipv6 = {
+          addresses = lib.singleton {
+            address = "fd9d:c839:3e89::3";
+            prefixLength = 64;
+          };
+          routes = lib.singleton {
+            address = "fd36:9509:c39c::";
+            prefixLength = 64;
+            via = "fd9d:c839:3e89::2";
+          };
+        };
 
         virtualisation.interfaces.wan = {
           vlan = 2;
@@ -171,6 +200,7 @@ in
     # Wait for tcpdump to start recording
     client.succeed("sleep 1")
 
+    client.succeed("ping -c 1 fd9d:c839:3e89::3 >&2")
     client.succeed("ping -c 1 server >&2")
     # TODO: test in the other direction as well
     client.succeed("iperf -c server --time ${toString testTimeSec} >&2")
