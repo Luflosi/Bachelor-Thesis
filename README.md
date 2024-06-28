@@ -11,7 +11,7 @@
 To try out the most basic experiment:
 - You need Linux to be able to build the VMs
 - [Install Nix](https://zero-to-nix.com/start/install)
-- Execute `nix build`
+- Execute `nix build github:Luflosi/Bachelor-Thesis` (no need to clone this repo)
 - Look at the files in `./result`
 
 
