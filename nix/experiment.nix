@@ -67,27 +67,6 @@ in
             DuplicateRate = "0.1%";
           };*/
         };
-        systemd.services.NetworkEmulator = {
-          description = "Set the Network Emulator options for interface lan via the tc command";
-            wantedBy = [ "network-setup.service" "network.target" ];
-            before = [ "network-setup.service" ];
-            bindsTo = [ "sys-subsystem-net-devices-lan.device" ];
-            after = [ "network-pre.target" "sys-subsystem-net-devices-lan.device" ];
-            serviceConfig.Type = "oneshot";
-            serviceConfig.RemainAfterExit = true;
-            stopIfChanged = false;
-            path = [ pkgs.iproute2 ];
-            # https://stackoverflow.com/questions/614795/simulate-delayed-and-dropped-packets-on-linux
-            # https://man7.org/linux/man-pages/man8/tc-netem.8.html
-            script = ''
-              tc qdisc add dev lan root netem \
-              delay 200ms 100ms distribution normal \
-              loss 0.5% 25% \
-              corrupt 0.1% 10% \
-              duplicate 0.2% 10% \
-              reorder 0.1%
-            '';
-        };
 
         networking.interfaces.wan.ipv6.addresses = lib.singleton {
           address = "fd9d:c839:3e89::2";
@@ -197,6 +176,16 @@ in
     server.succeed("ip a >&2")
     logger.succeed("ip a >&2")
 
+    # https://stackoverflow.com/questions/614795/simulate-delayed-and-dropped-packets-on-linux
+    # https://man7.org/linux/man-pages/man8/tc-netem.8.html
+    router.succeed(
+      'tc qdisc add dev lan root netem'
+      ' delay 200ms 100ms distribution normal'
+      ' loss 0.5% 25%'
+      ' corrupt 0.1% 10%'
+      ' duplicate 0.2% 10%'
+      ' reorder 0.1%'
+    )
     router.succeed("tc qdisc show dev lan >&2")
 
     logger.succeed("tcpdump -n -B 10240 -i lan -w /ram/lan.pcap 2>/ram/stderr-lan >/dev/null & echo $! >/ram/pid-lan")
