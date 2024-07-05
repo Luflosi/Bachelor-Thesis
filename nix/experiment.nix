@@ -13,7 +13,7 @@ in
     commonOptions = {
       virtualisation.graphics = false;
       virtualisation.memorySize = lib.mkDefault 512;
-      virtualisation.restrictNetwork = true;
+      virtualisation.qemu.networkingOptions = lib.mkForce []; # Get rid of the default eth0 interface
       virtualisation.diskSize = lib.mkDefault 256;
       networking.nftables.enable = true;
       networking.useDHCP = false;
