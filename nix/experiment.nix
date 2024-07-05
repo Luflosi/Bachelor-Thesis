@@ -5,6 +5,10 @@
 let
   testTimeSec = 60;
   useBBR = false;
+  iperfArgs = [
+    "--time ${toString testTimeSec}"
+  ];
+  iperfArgsStr = lib.concatStringsSep " " iperfArgs;
 in
 {
   name = "experiment";
@@ -197,7 +201,7 @@ in
     client.succeed("ping -c 1 fd9d:c839:3e89::3 >&2")
     client.succeed("ping -c 1 server >&2")
     # TODO: test in the other direction as well
-    client.succeed("iperf -c server --time ${toString testTimeSec} >&2")
+    client.succeed("iperf -c server ${iperfArgsStr} >&2")
     client.succeed("ping -c 1 server >&2")
 
     # TODO: find a better way to wait for wireshark to be done capturing
