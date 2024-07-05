@@ -71,6 +71,7 @@ in
             DuplicateRate = "0.1%";
           };*/
         };
+        systemd.network.networks."40-wan".networkConfig.IPv6AcceptRA = false;
 
         networking.interfaces.wan.ipv6.addresses = lib.singleton {
           address = "fd9d:c839:3e89::2";
