@@ -29,7 +29,7 @@ in
     client = { lib, pkgs, ... }: lib.mkMerge [
       commonOptions
       {
-        environment.systemPackages = with pkgs;[
+        environment.systemPackages = with pkgs; [
           iperf3
         ];
 
