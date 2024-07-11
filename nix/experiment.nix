@@ -85,6 +85,7 @@ in
         };
 
         boot.kernel.sysctl = {
+          "net.ipv4.conf.all.forwarding" = "1";
           "net.ipv6.conf.all.forwarding" = "1";
           "net.ipv6.conf.default.forwarding" = "1";
         };
@@ -93,10 +94,6 @@ in
           lan.vlan = 1;
           wan.vlan = 2;
         };
-        networking.nat.enable = true;
-        networking.firewall.filterForward = true;
-        networking.nat.internalIPs = [ "192.168.0.0/24" ];
-        networking.nat.externalInterface = "wan";
       }
     ];
 
