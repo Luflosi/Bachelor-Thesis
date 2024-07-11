@@ -75,6 +75,10 @@ in
         };
         systemd.network.networks."40-wan".networkConfig.IPv6AcceptRA = false;
 
+        networking.interfaces.wan.ipv4.addresses = lib.singleton {
+          address = "192.168.2.2";
+          prefixLength = 24;
+        };
         networking.interfaces.wan.ipv6.addresses = lib.singleton {
           address = "fd9d:c839:3e89::2";
           prefixLength = 64;
@@ -87,10 +91,7 @@ in
 
         virtualisation.interfaces = {
           lan.vlan = 1;
-          wan = {
-            vlan = 2;
-            assignIP = true;
-          };
+          wan.vlan = 2;
         };
         networking.nat.enable = true;
         networking.firewall.filterForward = true;
@@ -107,6 +108,18 @@ in
 
         boot.kernel.sysctl."net.ipv4.tcp_congestion_control" = lib.mkIf useBBR "bbr";
 
+        networking.interfaces.wan.ipv4 = {
+          addresses = lib.singleton {
+            address = "192.168.2.3";
+            prefixLength = 24;
+          };
+          routes = lib.singleton {
+            address = "192.168.0.0";
+            prefixLength = 24;
+            via = "192.168.2.2";
+          };
+        };
+
         networking.interfaces.wan.ipv6 = {
           addresses = lib.singleton {
             address = "fd9d:c839:3e89::3";
@@ -119,10 +132,7 @@ in
           };
         };
 
-        virtualisation.interfaces.wan = {
-          vlan = 2;
-          assignIP = true;
-        };
+        virtualisation.interfaces.wan.vlan = 2;
       }
     ];
 
@@ -205,10 +215,10 @@ in
     client.succeed("sleep 1")
 
     client.wait_until_succeeds("ping -c 1 fd9d:c839:3e89::3 >&2", timeout=${pingTimeoutStr})
-    client.wait_until_succeeds("ping -c 1 server >&2", timeout=${pingTimeoutStr})
+    client.wait_until_succeeds("ping -c 1 192.168.2.3 >&2", timeout=${pingTimeoutStr})
     # TODO: test in the other direction as well
-    client.succeed("iperf -c server ${iperfArgsStr} >&2")
-    client.wait_until_succeeds("ping -c 1 server >&2", timeout=${pingTimeoutStr})
+    client.succeed("iperf -c 192.168.2.3 ${iperfArgsStr} >&2")
+    client.wait_until_succeeds("ping -c 1 192.168.2.3 >&2", timeout=${pingTimeoutStr})
 
     # TODO: find a better way to wait for wireshark to be done capturing
     client.succeed("sleep 1")
