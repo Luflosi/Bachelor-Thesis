@@ -192,9 +192,14 @@ in
     client.wait_until_succeeds("ip a | grep 'fd36:9509:c39c:0:'")
 
     client.succeed("ip a >&2")
+    client.succeed("(ip route && ip -6 route) >&2")
     router.succeed("ip a >&2")
+    router.succeed("(ip route && ip -6 route) >&2")
     server.succeed("ip a >&2")
+    server.succeed("(ip route && ip -6 route) >&2")
     logger.succeed("ip a >&2")
+    logger.succeed("(ip route && ip -6 route) >&2")
+
 
     # https://stackoverflow.com/questions/614795/simulate-delayed-and-dropped-packets-on-linux
     # https://man7.org/linux/man-pages/man8/tc-netem.8.html
