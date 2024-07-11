@@ -8,7 +8,15 @@ let
   pingTimeout = 30;
   pingTimeoutStr = toString pingTimeout;
   iperfArgs = [
-    "--time ${toString testTimeSec}"
+    "--time" (toString testTimeSec)
+    "--udp"
+    "--parallel" "1"
+    "--length" "1300"
+    "--bitrate" "100M"
+    "--fq-rate" "100M"
+    "--dont-fragment"
+    "--udp-counters-64bit"
+    "-R"
   ];
   iperfArgsStr = lib.concatStringsSep " " iperfArgs;
 in
@@ -97,11 +105,12 @@ in
       }
     ];
 
-    server = { lib, ... }: lib.mkMerge [
+    server = { config, lib, ... }: lib.mkMerge [
       commonOptions
       {
         services.iperf3.enable = true;
         services.iperf3.openFirewall = true;
+        networking.firewall.allowedUDPPorts = lib.singleton config.services.iperf3.port;
 
         boot.kernel.sysctl."net.ipv4.tcp_congestion_control" = lib.mkIf useBBR "bbr";
 
