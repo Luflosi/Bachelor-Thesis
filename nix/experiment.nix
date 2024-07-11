@@ -29,6 +29,7 @@ in
       virtualisation.memorySize = lib.mkDefault 512;
       virtualisation.qemu.networkingOptions = lib.mkForce []; # Get rid of the default eth0 interface
       virtualisation.diskSize = lib.mkDefault 256;
+      networking.firewall.enable = false;
       networking.nftables.enable = true;
       networking.useDHCP = false;
       systemd.services.systemd-networkd.environment.SYSTEMD_LOG_LEVEL = "debug";
@@ -54,7 +55,6 @@ in
       commonOptions
       {
         networking.useNetworkd = true;
-        networking.firewall.enable = false;
         systemd.network.networks."40-lan" = {
           name = "lan";
           networkConfig = {
@@ -109,8 +109,6 @@ in
       commonOptions
       {
         services.iperf3.enable = true;
-        services.iperf3.openFirewall = true;
-        networking.firewall.allowedUDPPorts = lib.singleton config.services.iperf3.port;
 
         boot.kernel.sysctl."net.ipv4.tcp_congestion_control" = lib.mkIf useBBR "bbr";
 
@@ -149,7 +147,6 @@ in
       commonOptions
       {
         systemd.network.enable = false;
-        networking.firewall.enable = false;
         environment.systemPackages = with pkgs; [
           lsof
           tcpdump
