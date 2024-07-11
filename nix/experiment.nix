@@ -178,6 +178,9 @@ in
     logger.wait_for_unit("network-online.target")
     server.wait_for_unit("iperf3.service")
 
+    client.wait_until_succeeds("ip a | grep '192.168.0'")
+    client.wait_until_succeeds("ip a | grep 'fd36:9509:c39c:0:'")
+
     client.succeed("ip a >&2")
     router.succeed("ip a >&2")
     server.succeed("ip a >&2")
