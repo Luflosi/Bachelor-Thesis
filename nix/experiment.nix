@@ -213,8 +213,13 @@ in
       ' corrupt 0.1% 10%'
       ' duplicate 0.2% 10%'
       ' reorder 0.1%'
+      #' rate 1mbit'
     )
+    #router.succeed("tc qdisc add dev lan root tbf rate 1mbit burst 8192 latency 100ms >&2")
+    #router.succeed("tc qdisc add dev wan root tbf rate 1mbit burst 8192 latency 100ms >&2")
+    #router.succeed("tc qdisc replace dev lan root tbf rate 1mbit burst 8192 latency 100ms >&2")
     router.succeed("tc qdisc show dev lan >&2")
+    router.succeed("tc qdisc show dev wan >&2")
 
     logger.succeed("tcpdump -n -B 10240 -i lan -w /ram/lan.pcap 2>/ram/stderr-lan >/dev/null & echo $! >/ram/pid-lan")
     logger.succeed("tcpdump -n -B 10240 -i wan -w /ram/wan.pcap 2>/ram/stderr-wan >/dev/null & echo $! >/ram/pid-wan")
