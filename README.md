@@ -21,6 +21,9 @@ To try out the most basic experiment:
 - Adapt the configuration to run on real hardware
 - Write a script to analyze the packet captures
 - Add a LATEX template and start writing
+- Try out [qperf](https://github.com/rbruenig/qperf)
+- Test performance in both directions
+- Try out https://github.com/esnet/iperf/pull/1402
 
 
 ## License
