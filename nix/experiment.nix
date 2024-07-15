@@ -247,7 +247,6 @@ in
     # TODO: find a better way to wait for the file to be done writing
     logger.succeed("sleep 1")
 
-    logger.succeed("df -h >&2")
     usage_str = logger.succeed("df --output=pcent /ram | sed -e /^Use%/d").strip()
     usage = int(usage_str[:-1])
     assert usage < 90, f"The disk is too full ({usage_str}), please increase the size"
