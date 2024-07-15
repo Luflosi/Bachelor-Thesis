@@ -4,7 +4,6 @@
 { lib, ... }:
 let
   testTimeSec = 60;
-  useBBR = false;
   pingTimeout = 30;
   pingTimeoutStr = toString pingTimeout;
   iperfArgs = [
@@ -41,8 +40,6 @@ in
         environment.systemPackages = with pkgs; [
           iperf3
         ];
-
-        boot.kernel.sysctl."net.ipv4.tcp_congestion_control" = lib.mkIf useBBR "bbr";
 
         networking.useNetworkd = true;
         networking.interfaces.lan.useDHCP = true;
@@ -109,8 +106,6 @@ in
       commonOptions
       {
         services.iperf3.enable = true;
-
-        boot.kernel.sysctl."net.ipv4.tcp_congestion_control" = lib.mkIf useBBR "bbr";
 
         networking.interfaces.wan.ipv4 = {
           addresses = lib.singleton {
