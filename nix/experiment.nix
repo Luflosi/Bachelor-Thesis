@@ -22,157 +22,37 @@ in
 {
   name = "experiment";
 
-  nodes = let
-    commonOptions = {
-      virtualisation.graphics = false;
-      virtualisation.memorySize = lib.mkDefault 512;
-      virtualisation.qemu.networkingOptions = lib.mkForce []; # Get rid of the default eth0 interface
-      virtualisation.diskSize = lib.mkDefault 256;
-      networking.firewall.enable = false;
-      networking.nftables.enable = true;
-      networking.useDHCP = false;
-      systemd.services.systemd-networkd.environment.SYSTEMD_LOG_LEVEL = "debug";
+  nodes = {
+    client =  { ... }: {
+      imports = [
+        ./profiles/virtual.nix
+        ./hosts/client.nix
+      ];
     };
-  in {
-    client = { lib, pkgs, ... }: lib.mkMerge [
-      commonOptions
-      {
-        environment.systemPackages = with pkgs; [
-          iperf3
-        ];
 
-        networking.useNetworkd = true;
-        networking.interfaces.lan.useDHCP = true;
+    router =  { ... }: {
+      imports = [
+        ./profiles/virtual.nix
+        ./hosts/router.nix
+      ];
+    };
 
-        virtualisation.interfaces.lan.vlan = 1;
-      }
-    ];
-
-    router = { lib, pkgs, ... }: lib.mkMerge [
-      commonOptions
-      {
-        networking.useNetworkd = true;
-        systemd.network.networks."40-lan" = {
-          name = "lan";
-          networkConfig = {
-            Address = [
-              "192.168.0.2/24"
-              "fd36:9509:c39c::1/64"
-            ];
-            DHCPServer = true;
-            IPv6SendRA = true;
-          };
-          dhcpServerConfig = {
-            PoolOffset = 100;
-            PoolSize = 20;
-          };
-          ipv6Prefixes = lib.singleton {
-            Prefix = "fd36:9509:c39c::/64";
-          };
-          # This does not yet provide all the options we need
-          # See https://www.freedesktop.org/software/systemd/man/latest/systemd.network.html#%5BNetworkEmulator%5D%20Section%20Options
-          /*networkEmulatorConfig = {
-            DelaySec = 0.2;
-            DelayJitterSec = 0.1;
-            LossRate = "0.1%";
-            DuplicateRate = "0.1%";
-          };*/
-        };
-        systemd.network.networks."40-wan".networkConfig.IPv6AcceptRA = false;
-
-        networking.interfaces.wan.ipv4.addresses = lib.singleton {
-          address = "192.168.2.2";
-          prefixLength = 24;
-        };
-        networking.interfaces.wan.ipv6.addresses = lib.singleton {
-          address = "fd9d:c839:3e89::2";
-          prefixLength = 64;
-        };
-
-        boot.kernel.sysctl = {
-          "net.ipv4.conf.all.forwarding" = "1";
-          "net.ipv6.conf.all.forwarding" = "1";
-          "net.ipv6.conf.default.forwarding" = "1";
-        };
-
-        virtualisation.interfaces = {
-          lan.vlan = 1;
-          wan.vlan = 2;
-        };
-      }
-    ];
-
-    server = { config, lib, ... }: lib.mkMerge [
-      commonOptions
-      {
-        services.iperf3.enable = true;
-
-        networking.interfaces.wan.ipv4 = {
-          addresses = lib.singleton {
-            address = "192.168.2.3";
-            prefixLength = 24;
-          };
-          routes = lib.singleton {
-            address = "192.168.0.0";
-            prefixLength = 24;
-            via = "192.168.2.2";
-          };
-        };
-
-        networking.interfaces.wan.ipv6 = {
-          addresses = lib.singleton {
-            address = "fd9d:c839:3e89::3";
-            prefixLength = 64;
-          };
-          routes = lib.singleton {
-            address = "fd36:9509:c39c::";
-            prefixLength = 64;
-            via = "fd9d:c839:3e89::2";
-          };
-        };
-
-        virtualisation.interfaces.wan.vlan = 2;
-      }
-    ];
+    server =  { ... }: {
+      imports = [
+        ./profiles/virtual.nix
+        ./hosts/server.nix
+      ];
+    };
 
     # The virtual switch of the test setup acts like a hub.
     # This makes it easy to capture the packets in a separate VM.
     # See https://github.com/NixOS/nixpkgs/blob/69bee9866a4e2708b3153fdb61c1425e7857d6b8/nixos/lib/test-driver/test_driver/vlan.py#L43
-    logger = { lib, pkgs, ... }: lib.mkMerge [
-      commonOptions
-      {
-        systemd.network.enable = false;
-        environment.systemPackages = with pkgs; [
-          lsof
-          tcpdump
-        ];
-
-        # No IPv6 link-local addresses
-        boot.kernel.sysctl = {
-          "net.ipv6.conf.lan.autoconf" = 0;
-          "net.ipv6.conf.lan.accept_ra" = 0;
-          "net.ipv6.conf.lan.addr_gen_mode" = 1;
-          "net.ipv6.conf.wan.autoconf" = 0;
-          "net.ipv6.conf.wan.accept_ra" = 0;
-          "net.ipv6.conf.wan.addr_gen_mode" = 1;
-        };
-
-        virtualisation.interfaces = {
-          lan.vlan = 1;
-          wan.vlan = 2;
-        };
-        # Set interface state to "up"
-        networking.interfaces.lan.ipv4.addresses = [];
-        networking.interfaces.wan.ipv4.addresses = [];
-
-        virtualisation.cores = 3; # Give this VM more CPU cores so it can keep up with the incoming data
-        virtualisation.memorySize = 1024 * 2 + 512;
-        virtualisation.fileSystems."/ram" = {
-          fsType = "tmpfs";
-          options = [ "size=2G" ];
-        };
-      }
-    ];
+    logger =  { ... }: {
+      imports = [
+        ./profiles/virtual.nix
+        ./hosts/logger.nix
+      ];
+    };
   };
 
   testScript = ''

@@ -17,7 +17,6 @@ To try out the most basic experiment:
 
 ## TODO:
 - Test various combinations of network interference and transport protocols
-- Split the configuration of the VMs into separate files
 - Adapt the configuration to run on real hardware
 - Write a script to analyze the packet captures
 - Add a LATEX template and start writing
