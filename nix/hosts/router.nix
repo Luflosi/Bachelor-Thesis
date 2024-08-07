@@ -6,34 +6,14 @@
     ./common.nix
   ];
 
-  systemd.network.networks."40-lan" = {
-    name = "lan";
-    networkConfig = {
-      Address = [
-        "192.168.0.2/24"
-        "fd36:9509:c39c::1/64"
-      ];
-      DHCPServer = true;
-      IPv6SendRA = true;
-    };
-    dhcpServerConfig = {
-      PoolOffset = 100;
-      PoolSize = 20;
-    };
-    ipv6Prefixes = lib.singleton {
-      Prefix = "fd36:9509:c39c::/64";
-    };
-    # This does not yet provide all the options we need
-    # See https://www.freedesktop.org/software/systemd/man/latest/systemd.network.html#%5BNetworkEmulator%5D%20Section%20Options
-    /*networkEmulatorConfig = {
-      DelaySec = 0.2;
-      DelayJitterSec = 0.1;
-      LossRate = "0.1%";
-      DuplicateRate = "0.1%";
-    };*/
+  networking.interfaces.lan.ipv4.addresses = lib.singleton {
+    address = "192.168.0.2";
+    prefixLength = 24;
   };
-  systemd.network.networks."40-wan".networkConfig.IPv6AcceptRA = false;
-
+  networking.interfaces.lan.ipv6.addresses = lib.singleton {
+    address = "fd36:9509:c39c::2";
+    prefixLength = 64;
+  };
   networking.interfaces.wan.ipv4.addresses = lib.singleton {
     address = "192.168.2.2";
     prefixLength = 24;

@@ -8,9 +8,6 @@
 
   services.iperf3.enable = true;
 
-  systemd.network.networks."40-lan".networkConfig.IPv6AcceptRA = false;
-  systemd.network.networks."40-wan".networkConfig.IPv6AcceptRA = false;
-
   networking.interfaces.wan.ipv4 = {
     addresses = lib.singleton {
       address = "192.168.2.3";

@@ -6,8 +6,6 @@
     ./common.nix
   ];
 
-  systemd.network.networks."40-lan".networkConfig.IPv6AcceptRA = false;
-  systemd.network.networks."40-wan".networkConfig.IPv6AcceptRA = false;
   systemd.network.networks."40-lan".networkConfig.LinkLocalAddressing = "no";
   systemd.network.networks."40-wan".networkConfig.LinkLocalAddressing = "no";
 
