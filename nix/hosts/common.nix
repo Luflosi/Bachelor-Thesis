@@ -5,5 +5,6 @@
   networking.firewall.enable = false;
   networking.nftables.enable = true;
   networking.useDHCP = false;
+  networking.useNetworkd = true;
   systemd.services.systemd-networkd.environment.SYSTEMD_LOG_LEVEL = "debug";
 }

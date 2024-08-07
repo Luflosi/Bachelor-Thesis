@@ -63,7 +63,6 @@ in
     server.wait_for_unit("network.target")
     logger.wait_for_unit("network.target")
     client.wait_for_unit("network-online.target")
-    logger.wait_for_unit("network-online.target")
     server.wait_for_unit("iperf3.service")
 
     client.wait_until_succeeds("ip a | grep '192.168.0'")

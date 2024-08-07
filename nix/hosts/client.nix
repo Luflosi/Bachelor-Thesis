@@ -10,7 +10,6 @@
     iperf3
   ];
 
-  networking.useNetworkd = true;
   networking.interfaces.lan.useDHCP = true;
 
   virtualisation.interfaces.lan.vlan = 1;

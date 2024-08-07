@@ -6,7 +6,6 @@
     ./common.nix
   ];
 
-  networking.useNetworkd = true;
   systemd.network.networks."40-lan" = {
     name = "lan";
     networkConfig = {
