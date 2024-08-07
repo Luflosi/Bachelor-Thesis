@@ -26,7 +26,6 @@
 - Adapt the configuration to run on real hardware
 - Try out [qperf](https://github.com/rbruenig/qperf)
 - Test performance in both directions
-- Try out https://github.com/esnet/iperf/pull/1402
 
 
 ## License

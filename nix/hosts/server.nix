@@ -1,12 +1,15 @@
 # SPDX-FileCopyrightText: 2024 Lukas Zirpel <thesis+lukas@zirpel.de>
 # SPDX-License-Identifier: GPL-3.0-only
 
-{ lib, ... }: {
+{ lib, pkgs, ... }: {
   imports = [
     ./common.nix
   ];
 
-  services.iperf3.enable = true;
+  services.iperf3 = {
+    enable = true;
+    package = pkgs.my.iperf3;
+  };
 
   networking.interfaces.wan.ipv4 = {
     addresses = lib.singleton {

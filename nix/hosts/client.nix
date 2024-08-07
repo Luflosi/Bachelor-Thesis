@@ -7,7 +7,7 @@
   ];
 
   environment.systemPackages = with pkgs; [
-    iperf3
+    my.iperf3
   ];
 
   networking.interfaces.lan.ipv4 = {

@@ -43,7 +43,10 @@
     ];
   in {
     packages = forAllSystems (system: let
-      pkgs = import inputs.nixpkgs { inherit system; };
+      pkgs = import inputs.nixpkgs {
+        inherit system;
+        overlays = import ./nix/overlays;
+      };
       experiment = pkgs.testers.runNixOSTest (import ./nix/experiment.nix);
     in {
       inherit experiment;

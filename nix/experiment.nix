@@ -12,6 +12,7 @@ let
   iperfArgs = [
     "--time" (toString testTimeSec)
     "--udp"
+    "--udp-retry" "100"
     "--parallel" "1"
     "--length" (toString udpPayloadSize)
     "--bitrate" "100M"
