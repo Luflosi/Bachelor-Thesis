@@ -1,0 +1,13 @@
+# SPDX-FileCopyrightText: 2024 Lukas Zirpel <thesis+lukas@zirpel.de>
+# SPDX-License-Identifier: CC0-1.0
+
+version = 1
+SPDX-PackageName = "Bachelor-Thesis"
+SPDX-PackageSupplier = "Lukas Zirpel <thesis+lukas@zirpel.de>"
+SPDX-PackageDownloadLocation = "https://github.com/Luflosi/Bachelor-Thesis"
+
+[[annotations]]
+path = "**.lock"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2024 Lukas Zirpel <thesis+lukas@zirpel.de>"
+SPDX-License-Identifier = "CC0-1.0"

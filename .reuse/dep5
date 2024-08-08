@@ -1,8 +1,0 @@
-Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: Bachelor-Thesis
-Upstream-Contact: Lukas Zirpel <thesis+lukas@zirpel.de>
-Source: https://github.com/Luflosi/Bachelor-Thesis
-
-Files: *.lock
-Copyright: 2024 Lukas Zirpel <thesis+lukas@zirpel.de>
-License: CC0-1.0
