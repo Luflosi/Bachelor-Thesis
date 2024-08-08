@@ -30,7 +30,7 @@
         nativeBuildInputs = with pkgs; [ reuse ];
       } ''
         cd "$src"
-        reuse lint
+        reuse lint --lines
         touch "$out"
       '';
     }));
