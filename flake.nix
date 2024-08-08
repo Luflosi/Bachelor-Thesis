@@ -14,11 +14,45 @@
       "aarch64-linux"
       "x86_64-linux"
     ] (system: function system);
+
+    get-latex-packages = pkgs: with pkgs; [
+      (texlive.combine {
+        inherit (texlive)
+          scheme-medium
+          titlesec
+          wrapfig
+          lstaddons
+          lkproof
+          needspace
+          ntheorem
+          tocbibind
+          mfirstuc
+          eulervm
+          todonotes
+          glossaries
+          xfor
+          datatool
+          ;
+      })
+    ];
+
+    get-latex-dev-packages = pkgs: with pkgs; [
+      texlab
+      zathura
+      wmctrl
+    ];
   in {
     packages = forAllSystems (system: let
       pkgs = import inputs.nixpkgs { inherit system; };
     in {
       experiment = pkgs.testers.runNixOSTest (import ./nix/experiment.nix);
+      report = import ./report/build-document.nix {
+        inherit pkgs;
+        texlive = get-latex-packages pkgs;
+        shellEscape = true;
+        minted = true;
+        SOURCE_DATE_EPOCH = toString self.lastModified;
+      };
       default = self.outputs.packages.${system}.experiment;
     });
 
@@ -41,6 +75,8 @@
       default = pkgs.mkShellNoCC {
         packages = [
           pkgs.reuse
+          (get-latex-packages pkgs)
+          (get-latex-dev-packages pkgs)
         ];
       };
     }));
