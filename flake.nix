@@ -34,5 +34,15 @@
         touch "$out"
       '';
     }));
+
+    devShells = (forAllSystems (system: let
+      pkgs = import inputs.nixpkgs { inherit system; };
+    in {
+      default = pkgs.mkShellNoCC {
+        packages = [
+          pkgs.reuse
+        ];
+      };
+    }));
   };
 }
