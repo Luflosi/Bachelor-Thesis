@@ -8,9 +8,12 @@
 > This project is only in its infancy at the time of writing.
 
 
-To try out the most basic experiment:
+## Dependencies:
 - You need Linux to be able to build the VMs
 - [Install Nix](https://zero-to-nix.com/start/install)
+
+
+## To try out the most basic experiment:
 - Execute `nix build github:Luflosi/Bachelor-Thesis` (no need to clone this repo)
 - Look at the files in `./result`
 
