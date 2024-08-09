@@ -4,3 +4,4 @@
 /result
 /.nixos-test-history
 /.direnv/
+*.json

@@ -17,6 +17,10 @@
 - Execute `nix build github:Luflosi/Bachelor-Thesis` (no need to clone this repo)
 - Look at the files in `./result`
 
+## To run the most basic experiment and then compute some statistics:
+- Execute `nix build github:Luflosi/Bachelor-Thesis#analysis` (no need to clone this repo)
+- Look at the files in `./result`
+
 ## Build the report PDF:
 - Execute `nix build github:Luflosi/Bachelor-Thesis#report` (no need to clone this repo)
 - Look at the PDF in `./result`
@@ -25,7 +29,6 @@
 ## TODO:
 - Test various combinations of network interference and transport protocols
 - Adapt the configuration to run on real hardware
-- Write a script to analyze the packet captures
 - Try out [qperf](https://github.com/rbruenig/qperf)
 - Test performance in both directions
 - Try out https://github.com/esnet/iperf/pull/1402

@@ -44,8 +44,10 @@
   in {
     packages = forAllSystems (system: let
       pkgs = import inputs.nixpkgs { inherit system; };
-    in {
       experiment = pkgs.testers.runNixOSTest (import ./nix/experiment.nix);
+    in {
+      inherit experiment;
+      analysis = pkgs.callPackage ./analysis/pipeline { packets = experiment; };
       report = import ./report/build-document.nix {
         inherit pkgs;
         texlive = get-latex-packages pkgs;
@@ -75,6 +77,8 @@
       default = pkgs.mkShellNoCC {
         packages = [
           pkgs.reuse
+          pkgs.tshark
+          pkgs.python3
           (get-latex-packages pkgs)
           (get-latex-dev-packages pkgs)
         ];
