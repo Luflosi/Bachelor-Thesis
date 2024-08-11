@@ -6,11 +6,14 @@ let
   testTimeSec = 60;
   pingTimeout = 30;
   pingTimeoutStr = toString pingTimeout;
+  ethernetPayloadSize = 1500;
+  ipv4PayloadSize = ethernetPayloadSize - 20;
+  udpPayloadSize = ipv4PayloadSize - 8;
   iperfArgs = [
     "--time" (toString testTimeSec)
     "--udp"
     "--parallel" "1"
-    "--length" "1300"
+    "--length" (toString udpPayloadSize)
     "--bitrate" "100M"
     "--fq-rate" "100M"
     "--dont-fragment"
