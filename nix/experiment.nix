@@ -84,7 +84,6 @@ in
       'tc qdisc add dev lan root netem'
       ' delay 200ms 100ms distribution normal'
       ' loss 0.5% 25%'
-      ' corrupt 0.1% 10%'
       ' duplicate 0.2% 10%'
       ' reorder 0.1%'
     )
