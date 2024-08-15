@@ -89,6 +89,7 @@ in
     )
     router.succeed("tc qdisc show dev lan >&2")
 
+    logger.succeed("tcpdump --list-time-stamp-types >&2") # See https://nanxiao.github.io/tcpdump-little-book/posts/set-timestamp-type-and-precision-during-capture.html
     logger.succeed("tcpdump -n -B 10240 -i lan -w /ram/lan.pcap 2>/ram/stderr-lan >/dev/null & echo $! >/ram/pid-lan")
     logger.succeed("tcpdump -n -B 10240 -i wan -w /ram/wan.pcap 2>/ram/stderr-wan >/dev/null & echo $! >/ram/pid-wan")
 
