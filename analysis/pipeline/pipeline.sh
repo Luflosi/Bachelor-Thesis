@@ -10,4 +10,4 @@ PID_LAN=$!
 ../parse/tshark.sh < ../../result/wan.pcap | ../parse/parse.py > wan.json &
 PID_WAN=$!
 wait "$PID_LAN" "$PID_WAN"
-../statistics/statistics.py lan.json wan.json
+../statistics/statistics.py lan.json wan.json > statistics.json

@@ -10,4 +10,5 @@ tshark \
  -e frame.number \
  -e frame.time_epoch \
  -e iperf3.sequence \
+ -e udp.length \
  -r -

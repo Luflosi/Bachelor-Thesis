@@ -17,9 +17,11 @@ def parse_time_epoch(time_epoch_str):
     return time_epoch_ns
 
 
-def get_only_item(values):
+def get_only_item(data, key, convert):
+    values = data[key]
     assert len(values) == 1
-    return values[0]
+    value = values[0]
+    return convert(value)
 
 
 packets = []
@@ -33,11 +35,12 @@ for line in sys.stdin:
         continue
     assert list(data.keys()) == ['timestamp', 'layers']
     data = data['layers']
-    assert list(data.keys()) == ['frame_number', 'frame_time_epoch', 'iperf3_sequence']
+    assert list(data.keys()) == ['frame_number', 'frame_time_epoch', 'iperf3_sequence', 'udp_length']
     packet = {
-        'frame_number': int(get_only_item(data['frame_number'])),
-        'frame_time_epoch': parse_time_epoch(get_only_item(data['frame_time_epoch'])),
-        'iperf3_sequence': int(get_only_item(data['iperf3_sequence'])),
+        'frame_number': get_only_item(data, 'frame_number', int),
+        'frame_time_epoch': get_only_item(data, 'frame_time_epoch', parse_time_epoch),
+        'iperf3_sequence': get_only_item(data, 'iperf3_sequence', int),
+        'udp_length': get_only_item(data, 'udp_length', int)
     }
     packets.append(packet)
 
