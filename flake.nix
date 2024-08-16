@@ -55,7 +55,7 @@
         minted = true;
         SOURCE_DATE_EPOCH = toString self.lastModified;
       };
-      default = self.outputs.packages.${system}.experiment;
+      default = self.outputs.packages.${system}.analysis;
     });
 
     checks = lib.recursiveUpdate self.outputs.packages (forAllSystems (system: let
@@ -78,7 +78,7 @@
         packages = [
           pkgs.reuse
           pkgs.tshark
-          pkgs.python3
+          (pkgs.python3.withPackages (python-pkgs: (import ./analysis/graph/python-deps.nix python-pkgs)))
           (get-latex-packages pkgs)
           (get-latex-dev-packages pkgs)
         ];

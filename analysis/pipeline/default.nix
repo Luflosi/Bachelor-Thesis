@@ -10,4 +10,5 @@ let
   lan = parse "lan";
   wan = parse "wan";
   statistics = callPackage ../statistics { inherit lan wan; };
-in statistics
+  graph = callPackage ../graph { inherit statistics; };
+in graph

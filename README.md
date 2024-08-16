@@ -12,14 +12,9 @@
 - You need Linux to be able to build the VMs
 - [Install Nix](https://zero-to-nix.com/start/install)
 
-
-## To try out the most basic experiment:
+## To run the most basic experiment and then render some graphs:
 - Execute `nix build github:Luflosi/Bachelor-Thesis` (no need to clone this repo)
-- Look at the files in `./result`
-
-## To run the most basic experiment and then compute some statistics:
-- Execute `nix build github:Luflosi/Bachelor-Thesis#analysis` (no need to clone this repo)
-- Look at the files in `./result`
+- Look at the graphs in `./result`
 
 ## Build the report PDF:
 - Execute `nix build github:Luflosi/Bachelor-Thesis#report` (no need to clone this repo)

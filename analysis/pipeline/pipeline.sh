@@ -11,3 +11,4 @@ PID_LAN=$!
 PID_WAN=$!
 wait "$PID_LAN" "$PID_WAN"
 ../statistics/statistics.py lan.json wan.json > statistics.json
+../graph/graph.py statistics.json
