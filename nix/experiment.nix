@@ -7,14 +7,17 @@ let
   pingTimeout = 30;
   pingTimeoutStr = toString pingTimeout;
   ethernetPayloadSize = 1500;
-  ipv4PayloadSize = ethernetPayloadSize - 20;
-  udpPayloadSize = ipv4PayloadSize - 8;
+  ipv6PayloadSize = ethernetPayloadSize - 40;
+  udpPayloadSize = ipv6PayloadSize - 8;
+  wireguardPayloadSize = udpPayloadSize - 32;
+  ipv4PayloadSize' = wireguardPayloadSize - 20;
+  udpPayloadSize' = ipv4PayloadSize' - 8;
   iperfArgs = [
     "--time" (toString testTimeSec)
     "--udp"
     "--udp-retry" "100"
     "--parallel" "1"
-    "--length" (toString udpPayloadSize)
+    "--length" (toString udpPayloadSize')
     "--bitrate" "100M"
     "--fq-rate" "100M"
     "--dont-fragment"
@@ -99,12 +102,18 @@ in
 
     client.wait_until_succeeds("ping -c 1 fd9d:c839:3e89::3 >&2", timeout=${pingTimeoutStr})
     client.wait_until_succeeds("ping -c 1 192.168.2.3 >&2", timeout=${pingTimeoutStr})
+    client.wait_until_succeeds("ping -c 1 fded:51e9:828f::3 >&2", timeout=${pingTimeoutStr})
+    client.wait_until_succeeds("ping -c 1 192.168.20.3 >&2", timeout=${pingTimeoutStr})
     # TODO: test in the other direction as well
-    client.succeed("iperf -c 192.168.2.3 ${iperfArgsStr} >&2")
+    client.succeed("iperf -c 192.168.20.3 ${iperfArgsStr} >&2")
+    client.wait_until_succeeds("ping -c 1 192.168.20.3 >&2", timeout=${pingTimeoutStr})
     client.wait_until_succeeds("ping -c 1 192.168.2.3 >&2", timeout=${pingTimeoutStr})
 
     # TODO: find a better way to wait for wireshark to be done capturing
     client.succeed("sleep 1")
+
+    client.succeed("wg show >&2")
+    server.succeed("wg show >&2")
 
     logger.succeed('kill -s INT "$(</ram/pid-lan)"')
     logger.succeed('kill -s INT "$(</ram/pid-wan)"')
