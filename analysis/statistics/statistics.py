@@ -53,19 +53,19 @@ for packet in lan_packets:
 
 def validate_wan_packets(wan_packets):
     frames = []
-    iperf3_sequence_to_frame_map = {}
+    iperf3_sequence_to_frame_set = set()
     previous_frame_number = None
     previous_frame_time_epoch = None
     for packet in wan_packets:
         frame_number = packet['frame_number']
         frame_time_epoch = packet['frame_time_epoch']
         iperf3_sequence = packet['iperf3_sequence']
-        assert iperf3_sequence not in iperf3_sequence_to_frame_map, f'iperf3_sequence number {iperf3_sequence} is already in map'
+        assert iperf3_sequence not in iperf3_sequence_to_frame_set, f'iperf3_sequence number {iperf3_sequence} is already in set'
         assert previous_frame_number == None or frame_number > previous_frame_number, f'frame_number ({frame_number}) is not greater than the previous one ({previous_frame_number})'
         assert previous_frame_time_epoch == None or frame_time_epoch > previous_frame_time_epoch, f'frame_time_epoch ({frame_time_epoch}) is not greater than the previous one ({previous_frame_time_epoch})'
         previous_frame_number = frame_number
         previous_frame_time_epoch = frame_time_epoch
-        iperf3_sequence_to_frame_map[iperf3_sequence] = (frame_number, frame_time_epoch, udp_length)
+        iperf3_sequence_to_frame_set.add(iperf3_sequence)
         frame = (iperf3_sequence, frame_number, frame_time_epoch, udp_length)
         frames.append(frame)
     return frames
@@ -136,7 +136,7 @@ for time, wan_bucket in wan_buckets.items():
     statistics = {
         'time': time,
         'counts': {
-            'packets': packet_count, # Packets which were sent but not received, not counting duplicates
+            'packets': packet_count, # Packets which were sent and then received at least once, not counting duplicates (If two copies arrive, count only one)
             'dropped': dropped_packets, # Packets which were sent but not received
             'duplicate': duplicate_packets, # Packets which were received more than once
         },

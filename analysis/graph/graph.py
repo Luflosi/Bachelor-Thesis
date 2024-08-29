@@ -24,9 +24,9 @@ if len(sys.argv) == 3:
 
 
 duration = data['duration']
-units_duration = data['units']['duration']
-units_latency = data['units']['latency']
-units_throughput = data['units']['throughput']
+duration_unit = data['units']['duration']
+latency_unit = data['units']['latency']
+throughput_unit = data['units']['throughput']
 
 first_time = data['time_series'][0]['time']
 labels = []
