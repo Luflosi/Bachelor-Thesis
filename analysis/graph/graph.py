@@ -77,10 +77,16 @@ plt.show()
 fig, ax = plt.subplots(figsize=figsize)
 ax.set_xlabel(f'Time ({duration_unit})')
 y = np.vstack([counts_packets_over_time, counts_dropped_over_time])
-ax.set_ylabel('Arrived/Dropped/Duplicated')
+ax.set_ylabel('Arrived/Dropped')
 ax.stackplot(relative_times, y)
-ax.plot(relative_times, counts_duplicate_over_time, color='red')
 ax.set_ylim(bottom=0)
+ax2 = ax.twinx() # Instantiate a second Axes that shares the same x-axis
+ax2.yaxis.grid(False)
+ax2_color = 'red'
+ax2.set_ylabel('Duplicated', color=ax2_color)
+ax2.plot(relative_times, counts_duplicate_over_time, color=ax2_color)
+ax2.tick_params(axis='y', labelcolor=ax2_color)
+ax2.set_ylim(bottom=0)
 
 if out != None:
     plt.savefig(fname=os.path.join(out, 'packet_counts.png'), transparent=False)
