@@ -53,6 +53,8 @@ plt.rcParams.update({'figure.autolayout': True})
 
 
 fig, ax = plt.subplots(figsize=figsize)
+ax.set_xlabel(f'Time ({duration_unit})')
+ax.set_ylabel(f'Latency ({latency_unit})')
 #plt.setp(ax.get_xticklabels(), rotation=30, horizontalalignment='right')
 # ax.violinplot(latencies_over_time, positions=relative_times,
 #               showextrema = True, showmedians = True, widths=1)
@@ -73,7 +75,9 @@ plt.show()
 
 
 fig, ax = plt.subplots(figsize=figsize)
+ax.set_xlabel(f'Time ({duration_unit})')
 y = np.vstack([counts_packets_over_time, counts_dropped_over_time])
+ax.set_ylabel('Arrived/Dropped/Duplicated')
 ax.stackplot(relative_times, y)
 ax.plot(relative_times, counts_duplicate_over_time, color='red')
 ax.set_ylim(bottom=0)
@@ -84,6 +88,8 @@ plt.show()
 
 
 fig, ax = plt.subplots(figsize=figsize)
+ax.set_xlabel(f'Time ({duration_unit})')
+ax.set_ylabel(f'Thriughput ({throughput_unit})')
 ax.plot(relative_times, throughput_over_time)
 ax.set_ylim(bottom=0)
 
