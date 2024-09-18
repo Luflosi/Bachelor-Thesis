@@ -5,42 +5,35 @@
 
 import sys
 import json
+import decimal
+import hashlib
+import scapy.all as scapy
+from scapy import layers
 
-
-def parse_time_epoch(time_epoch_str):
-    time_s_str, time_frac_str = time_epoch_str.split('.')
-    assert len(time_frac_str) == 9
-    time_s_int = int(time_s_str)
-    time_ns_int = int(time_frac_str)
-    assert time_s_int > 0
-    time_epoch_ns = time_s_int * 1000 * 1000 * 1000 + time_ns_int
-    return time_epoch_ns
-
-
-def get_only_item(data, key, convert):
-    values = data[key]
-    assert len(values) == 1
-    value = values[0]
-    return convert(value)
+assert len(sys.argv) == 2
 
 
 packets = []
 
-for line in sys.stdin:
-    data = json.loads(line)
-    if not 'timestamp' in data:
-        assert list(data.keys()) == ['index']
-        assert list(data['index'].keys()) == ['_index', '_type']
-        assert data['index']['_type'] == 'doc'
+for frame_number, frame in enumerate(scapy.rdpcap(sys.argv[1])):
+    assert isinstance(frame, layers.l2.Ether), f'Frame is not an Ethernet frame ({type(frame)})'
+
+    # Skip non-IP packets
+    if not scapy.IP in frame:
+        print('skipping', frame)
         continue
-    assert list(data.keys()) == ['timestamp', 'layers']
-    data = data['layers']
-    assert list(data.keys()) == ['frame_number', 'frame_time_epoch', 'iperf3_sequence', 'udp_length']
+
+    assert isinstance(frame.time, decimal.Decimal), f'frame.time is not a Decimal ({type(frame.time)})'
+    frame_time_epoch = int(frame.time * 1000 * 1000 * 1000)
+
+    ip = frame[scapy.IP]
+
+    digest = hashlib.blake2b(bytes(ip.payload)).hexdigest()
+
     packet = {
-        'frame_number': get_only_item(data, 'frame_number', int),
-        'frame_time_epoch': get_only_item(data, 'frame_time_epoch', parse_time_epoch),
-        'iperf3_sequence': get_only_item(data, 'iperf3_sequence', int),
-        'udp_length': get_only_item(data, 'udp_length', int)
+        'frame_number': frame_number,
+        'frame_time_epoch': frame_time_epoch,
+        'blake2b': digest,
     }
     packets.append(packet)
 
