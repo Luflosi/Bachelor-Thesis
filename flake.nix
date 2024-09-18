@@ -82,6 +82,7 @@
           pkgs.tshark
           (pkgs.python3.withPackages (python-pkgs:
             (import ./analysis/graph/python-deps.nix python-pkgs) ++
+            (import ./analysis/parse/python-deps.nix python-pkgs) ++
             [
               python-pkgs.ipython
             ]

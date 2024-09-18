@@ -4,25 +4,15 @@
 {
   packets,
   fileName,
-  runCommand,
+  stdenvNoCC,
   lib,
   python3,
-  tshark
 }:
 let
- fs = lib.fileset;
+  python = python3.withPackages (python-pkgs: (import ./python-deps.nix python-pkgs));
 in
-runCommand "parse-${fileName}" {
-  src = fs.toSource {
-    root = ./.;
-    fileset = fs.fileFilter (file: ! file.hasExt "nix") ./.;
-  };
-  nativeBuildInputs = [
-    tshark
-    python3
-  ];
-} ''
-  cd "$src"
-  mkdir -p "$out"
-  sh tshark.sh < '${packets}/${fileName}.pcap' | python parse.py > "$out/${fileName}.json"
-''
+stdenvNoCC.mkDerivation {
+  name = "parse-${fileName}";
+  realBuilder = lib.getExe python;
+  args = [ ./parse.py "${packets}/${fileName}.pcap" "--write-out-path" "${fileName}.json" ];
+}

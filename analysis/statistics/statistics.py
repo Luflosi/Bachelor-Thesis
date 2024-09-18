@@ -42,35 +42,37 @@ if len(sys.argv) == 4:
     out = os.environ['out']
     os.makedirs(out)
 
-lan_iperf3_sequence_to_frames_map = defaultdict(list)
+lan_hash_to_frames_map = defaultdict(list)
 for packet in lan_packets:
     frame_number = packet['frame_number']
     frame_time_epoch = packet['frame_time_epoch']
-    iperf3_sequence = packet['iperf3_sequence']
+    hash = bytes.fromhex(packet['hash'])
+    assert len(hash) == 32, f'Hash length was {len(hash)}'
     ip_payload_length = packet['ip_payload_length']
     assert ip_payload_length > 0, f'ip_payload_length is not greater than zero ({ip_payload_length})'
-    lan_iperf3_sequence_to_frames_map[iperf3_sequence].append((frame_number, frame_time_epoch, ip_payload_length))
-    del(iperf3_sequence, frame_number, frame_time_epoch, ip_payload_length)
+    lan_hash_to_frames_map[hash].append((frame_number, frame_time_epoch, ip_payload_length))
+    del(hash, frame_number, frame_time_epoch, ip_payload_length)
 
 
 def validate_wan_packets(wan_packets):
     frames = []
-    iperf3_sequence_to_frame_set = set()
+    hash_to_frame_set = set()
     previous_frame_number = None
     previous_frame_time_epoch = None
     for packet in wan_packets:
         frame_number = packet['frame_number']
         frame_time_epoch = packet['frame_time_epoch']
-        iperf3_sequence = packet['iperf3_sequence']
-        assert iperf3_sequence not in iperf3_sequence_to_frame_set, f'iperf3_sequence number {iperf3_sequence} is already in set'
+        hash = bytes.fromhex(packet['hash'])
+        assert hash not in hash_to_frame_set, f'hash {hash} is not unique'
+        assert len(hash) == 32, f'Hash length was {len(hash)}'
         assert previous_frame_number == None or frame_number > previous_frame_number, f'frame_number ({frame_number}) is not greater than the previous one ({previous_frame_number})'
         assert previous_frame_time_epoch == None or frame_time_epoch > previous_frame_time_epoch, f'frame_time_epoch ({frame_time_epoch}) is not greater than the previous one ({previous_frame_time_epoch})'
         ip_payload_length = packet['ip_payload_length']
         assert ip_payload_length > 0, f'ip_payload_length is not greater than zero ({ip_payload_length})'
         previous_frame_number = frame_number
         previous_frame_time_epoch = frame_time_epoch
-        iperf3_sequence_to_frame_set.add(iperf3_sequence)
-        frame = (iperf3_sequence, frame_number, frame_time_epoch, ip_payload_length)
+        hash_to_frame_set.add(hash)
+        frame = (hash, frame_number, frame_time_epoch, ip_payload_length)
         frames.append(frame)
     return frames
 
@@ -81,7 +83,7 @@ def split_into_buckets(wan_info):
     bucket_start_time = None
     bucket_end_time = None
     for frame in wan_info:
-        (_iperf3_sequence, _frame_number, frame_time_epoch, _ip_payload_length) = frame
+        (_hash, _frame_number, frame_time_epoch, _ip_payload_length) = frame
         frame_time = time_ns_to_s(frame_time_epoch)
         if bucket_start_time == None:
             bucket_start_time = frame_time
@@ -114,8 +116,8 @@ for time, wan_bucket in wan_buckets.items():
     duplicate_packets = 0
     latencies = []
     ip_payload_length_sum = 0
-    for (wan_iperf3_sequence, wan_frame_number, wan_frame_time_epoch, wan_ip_payload_length) in wan_bucket:
-        packets = lan_iperf3_sequence_to_frames_map[wan_iperf3_sequence]
+    for (wan_hash, wan_frame_number, wan_frame_time_epoch, wan_ip_payload_length) in wan_bucket:
+        packets = lan_hash_to_frames_map[wan_hash]
         number_of_packet_copies = len(packets)
         if number_of_packet_copies < 1:
             dropped_packets += 1

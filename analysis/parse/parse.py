@@ -3,46 +3,68 @@
 # SPDX-FileCopyrightText: 2024 Lukas Zirpel <thesis+lukas@zirpel.de>
 # SPDX-License-Identifier: GPL-3.0-only
 
+import os
 import sys
+import dpkt
 import json
+from blake3 import blake3
 
+assert len(sys.argv) in [2, 4]
 
-def parse_time_epoch(time_epoch_str):
-    time_s_str, time_frac_str = time_epoch_str.split('.')
-    assert len(time_frac_str) == 9
-    time_s_int = int(time_s_str)
-    time_ns_int = int(time_frac_str)
-    assert time_s_int > 0
-    time_epoch_ns = time_s_int * 1000 * 1000 * 1000 + time_ns_int
-    return time_epoch_ns
-
-
-def get_only_item(data, key, convert):
-    values = data[key]
-    assert len(values) == 1
-    value = values[0]
-    return convert(value)
-
+out = None
+if len(sys.argv) == 4:
+    assert sys.argv[2] == '--write-out-path'
+    out = os.environ['out']
+    os.makedirs(out)
 
 packets = []
 
-for line in sys.stdin:
-    data = json.loads(line)
-    if not 'timestamp' in data:
-        assert list(data.keys()) == ['index']
-        assert list(data['index'].keys()) == ['_index', '_type']
-        assert data['index']['_type'] == 'doc'
-        continue
-    assert list(data.keys()) == ['timestamp', 'layers']
-    data = data['layers']
-    assert list(data.keys()) == ['frame_number', 'frame_time_epoch', 'iperf3_sequence', 'udp_length']
-    packet = {
-        'frame_number': get_only_item(data, 'frame_number', int),
-        'frame_time_epoch': get_only_item(data, 'frame_time_epoch', parse_time_epoch),
-        'iperf3_sequence': get_only_item(data, 'iperf3_sequence', int),
-        'ip_payload_length': get_only_item(data, 'udp_length', int)
-    }
-    packets.append(packet)
+with open(sys.argv[1], 'rb') as f:
+    pcap = dpkt.pcap.Reader(f)
+
+    found_beginning = False
+
+    for (frame_number, (timestamp, buf)) in enumerate(pcap):
+        frame_time_epoch = int(timestamp * 1000 * 1000 * 1000)
+
+        eth = dpkt.ethernet.Ethernet(buf)
+
+        if isinstance(eth.data, dpkt.ip.IP) or isinstance(eth.data, dpkt.ip6.IP6):
+            ip = eth.data
+        else:
+            print(f'Skipping non IP Packet type ({eth.data.__class__.__name__})', file=sys.stderr)
+            continue
+
+        payload = bytes(ip.data)
+
+        ip_payload_length = len(payload)
+
+        # Heuristic to ignore the connection setup at the start
+        if not found_beginning:
+            if ip_payload_length > 400:
+                found_beginning = True
+            else:
+                continue
+
+        hash = blake3(payload).hexdigest()
+
+        #if hash == '0565ac6f557ff24503dacb676fc51327eca7d04a097f878287f8d36003b93bae28168012a8a19a2b8e49db82d790fc1b6d1f04da1eca5f9769c75b29000c7db9':
+        #    print(frame_number)
+
+        packet = {
+            'frame_number': frame_number,
+            'frame_time_epoch': frame_time_epoch,
+            'ip_payload_length': ip_payload_length,
+            'hash': hash,
+        }
+        packets.append(packet)
 
 print(len(packets), 'packets', file=sys.stderr)
-json.dump(obj=packets, fp=sys.stdout, allow_nan=False, separators=(',', ':'))
+
+if out != None:
+    d = open(os.path.join(out, sys.argv[3]), 'w', encoding='utf-8')
+else:
+    d = open(sys.stdout.fileno(), 'w', encoding='utf-8', closefd=False)
+
+with d as f:
+    json.dump(obj=packets, fp=f, allow_nan=False, separators=(',', ':'))

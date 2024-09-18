@@ -5,9 +5,9 @@
 
 # This file is only for testing the pipeline without Nix
 
-../parse/tshark.sh < ../../result/lan.pcap | ../parse/parse.py > lan.json &
+../parse/parse.py ../../result/lan.pcap > lan.json &
 PID_LAN=$!
-../parse/tshark.sh < ../../result/wan.pcap | ../parse/parse.py > wan.json &
+../parse/parse.py ../../result/wan.pcap > wan.json &
 PID_WAN=$!
 wait "$PID_LAN" "$PID_WAN"
 ../statistics/statistics.py lan.json wan.json > statistics.json
