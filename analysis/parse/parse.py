@@ -40,7 +40,7 @@ for line in sys.stdin:
         'frame_number': get_only_item(data, 'frame_number', int),
         'frame_time_epoch': get_only_item(data, 'frame_time_epoch', parse_time_epoch),
         'iperf3_sequence': get_only_item(data, 'iperf3_sequence', int),
-        'udp_length': get_only_item(data, 'udp_length', int)
+        'ip_payload_length': get_only_item(data, 'udp_length', int)
     }
     packets.append(packet)
 

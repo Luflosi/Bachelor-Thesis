@@ -47,10 +47,10 @@ for packet in lan_packets:
     frame_number = packet['frame_number']
     frame_time_epoch = packet['frame_time_epoch']
     iperf3_sequence = packet['iperf3_sequence']
-    udp_length = packet['udp_length']
-    assert udp_length > 0, f'udp_length is not greater than zero ({udp_length})'
-    lan_iperf3_sequence_to_frames_map[iperf3_sequence].append((frame_number, frame_time_epoch, udp_length))
-    del(iperf3_sequence, frame_number, frame_time_epoch, udp_length)
+    ip_payload_length = packet['ip_payload_length']
+    assert ip_payload_length > 0, f'ip_payload_length is not greater than zero ({ip_payload_length})'
+    lan_iperf3_sequence_to_frames_map[iperf3_sequence].append((frame_number, frame_time_epoch, ip_payload_length))
+    del(iperf3_sequence, frame_number, frame_time_epoch, ip_payload_length)
 
 
 def validate_wan_packets(wan_packets):
@@ -65,12 +65,12 @@ def validate_wan_packets(wan_packets):
         assert iperf3_sequence not in iperf3_sequence_to_frame_set, f'iperf3_sequence number {iperf3_sequence} is already in set'
         assert previous_frame_number == None or frame_number > previous_frame_number, f'frame_number ({frame_number}) is not greater than the previous one ({previous_frame_number})'
         assert previous_frame_time_epoch == None or frame_time_epoch > previous_frame_time_epoch, f'frame_time_epoch ({frame_time_epoch}) is not greater than the previous one ({previous_frame_time_epoch})'
-        udp_length = packet['udp_length']
-        assert udp_length > 0, f'udp_length is not greater than zero ({udp_length})'
+        ip_payload_length = packet['ip_payload_length']
+        assert ip_payload_length > 0, f'ip_payload_length is not greater than zero ({ip_payload_length})'
         previous_frame_number = frame_number
         previous_frame_time_epoch = frame_time_epoch
         iperf3_sequence_to_frame_set.add(iperf3_sequence)
-        frame = (iperf3_sequence, frame_number, frame_time_epoch, udp_length)
+        frame = (iperf3_sequence, frame_number, frame_time_epoch, ip_payload_length)
         frames.append(frame)
     return frames
 
@@ -81,7 +81,7 @@ def split_into_buckets(wan_info):
     bucket_start_time = None
     bucket_end_time = None
     for frame in wan_info:
-        (_iperf3_sequence, _frame_number, frame_time_epoch, _udp_length) = frame
+        (_iperf3_sequence, _frame_number, frame_time_epoch, _ip_payload_length) = frame
         frame_time = time_ns_to_s(frame_time_epoch)
         if bucket_start_time == None:
             bucket_start_time = frame_time
