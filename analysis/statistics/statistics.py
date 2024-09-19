@@ -128,7 +128,7 @@ for time, wan_bucket in wan_buckets.items():
         (lan_frame_number, lan_frame_time_epoch, lan_ip_payload_length) = first_arriving_copy_of_packet
         latency = time_ns_to_ms(lan_frame_time_epoch - wan_frame_time_epoch)
         if latency < 0:
-            print(f'WARNING: packet arrived {latency} ms before it was sent', file=sys.stderr)
+            print(f'WARNING: packet arrived {-latency} ms before it was sent', file=sys.stderr)
         packet_count += 1
         ip_payload_length_sum += wan_ip_payload_length
         latencies.append(latency)
