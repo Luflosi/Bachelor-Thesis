@@ -81,7 +81,12 @@
         packages = [
           pkgs.reuse
           pkgs.tshark
-          (pkgs.python3.withPackages (python-pkgs: (import ./analysis/graph/python-deps.nix python-pkgs)))
+          (pkgs.python3.withPackages (python-pkgs:
+            (import ./analysis/graph/python-deps.nix python-pkgs) ++
+            [
+              python-pkgs.ipython
+            ]
+          ))
           (get-latex-packages pkgs)
           (get-latex-dev-packages pkgs)
         ];
