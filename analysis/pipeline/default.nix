@@ -7,8 +7,10 @@
 }:
 let
   parse = fileName: callPackage ../parse { inherit packets fileName; };
-  lan = parse "lan";
-  wan = parse "wan";
-  statistics = callPackage ../statistics { inherit lan wan; };
-  graph = callPackage ../graph { inherit statistics; };
-in graph
+  parsed-lan = parse "lan";
+  parsed-wan = parse "wan";
+  statistics = callPackage ../statistics { lan = parsed-lan; wan = parsed-wan; };
+  graphs = callPackage ../graph { inherit statistics; };
+in {
+  inherit parsed-lan parsed-wan statistics graphs;
+}

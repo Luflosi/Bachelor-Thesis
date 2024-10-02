@@ -48,9 +48,10 @@
         overlays = import ./nix/overlays;
       };
       experiment = pkgs.testers.runNixOSTest (import ./nix/experiment.nix);
+      analysis = pkgs.callPackage ./analysis/pipeline { packets = experiment; };
     in {
       inherit experiment;
-      analysis = pkgs.callPackage ./analysis/pipeline { packets = experiment; };
+      inherit (analysis) parsed-lan parsed-wan statistics graphs;
       report = import ./report/build-document.nix {
         inherit pkgs;
         texlive = get-latex-packages pkgs;
@@ -58,7 +59,7 @@
         minted = true;
         SOURCE_DATE_EPOCH = toString self.lastModified;
       };
-      default = self.outputs.packages.${system}.analysis;
+      default = self.outputs.packages.${system}.graphs;
     });
 
     checks = lib.recursiveUpdate self.outputs.packages (forAllSystems (system: let
