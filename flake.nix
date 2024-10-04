@@ -47,11 +47,9 @@
         inherit system;
         overlays = import ./nix/overlays;
       };
-      experiment = pkgs.testers.runNixOSTest (import ./nix/experiment.nix);
-      analysis = pkgs.callPackage ./analysis/pipeline { packets = experiment; };
-    in {
-      inherit experiment;
-      inherit (analysis) parsed-lan parsed-wan statistics graphs;
+      filterPipeline = pipeline: lib.filterAttrs (n: v: builtins.elem n [ "experiment" "parsed-lan" "parsed-wan" "statistics" "graphs" ]) pipeline;
+      pipeline = filterPipeline (pkgs.callPackage ./analysis/pipeline { });
+    in pipeline // {
       report = import ./report/build-document.nix {
         inherit pkgs;
         texlive = get-latex-packages pkgs;
