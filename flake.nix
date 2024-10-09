@@ -47,9 +47,15 @@
         inherit system;
         overlays = import ./nix/overlays;
       };
+      test-matrix = lib.importJSON ./test-matrix/tests.json;
       filterPipeline = pipeline: lib.filterAttrs (n: v: builtins.elem n [ "experiment" "parsed-lan" "parsed-wan" "statistics" "graphs" ]) pipeline;
-      pipeline = filterPipeline (pkgs.callPackage ./analysis/pipeline { });
-    in pipeline // {
+      pipelineBuilder = parameters: filterPipeline (pkgs.callPackage ./analysis/pipeline { inherit parameters; });
+      defaultPipeline = pipelineBuilder (import ./nix/defaultValues.nix);
+      pipelines = builtins.map pipelineBuilder test-matrix;
+      linkAllOutputsOfPipeline = pipeline: pkgs.linkFarm "pipeline" (lib.mapAttrsToList (name: value: { inherit name; path = value; }) pipeline);
+      testsFromJSON = pkgs.linkFarm "testsFromJSON" (lib.imap0 (i: pipeline: { name = "pipeline-${toString i}"; path = (linkAllOutputsOfPipeline pipeline); }) pipelines);
+    in defaultPipeline // {
+      inherit testsFromJSON;
       report = import ./report/build-document.nix {
         inherit pkgs;
         texlive = get-latex-packages pkgs;

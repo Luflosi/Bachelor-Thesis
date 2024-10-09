@@ -1,9 +1,29 @@
 # SPDX-FileCopyrightText: 2024 Lukas Zirpel <thesis+lukas@zirpel.de>
 # SPDX-License-Identifier: GPL-3.0-only
 
-{ lib, ... }:
+{
+  test_duration_s,
+  delay_time_ms,
+  delay_jitter_ms,
+  delay_distribution,
+  loss_per_mille,
+  loss_correlation,
+  duplicate_per_mille,
+  duplicate_correlation,
+  reorder_per_mille,
+}@parameters:
+
+assert test_duration_s > 0;
+assert delay_time_ms >= 0;
+assert delay_jitter_ms >= 0;
+assert builtins.elem delay_distribution [ "experimental" "normal" "pareto" "paretonormal" ];
+assert loss_per_mille >= 0;
+assert duplicate_per_mille >= 0;
+assert reorder_per_mille >= 0;
+assert delay_time_ms == 0 -> reorder_per_mille == 0;
+
+{ lib, pkgs, ... }:
 let
-  testTimeSec = 60;
   pingTimeout = 30;
   pingTimeoutStr = toString pingTimeout;
   ethernetPayloadSize = 1500;
@@ -13,7 +33,7 @@ let
   ipv4PayloadSize' = wireguardPayloadSize - 20;
   udpPayloadSize' = ipv4PayloadSize' - 8;
   iperfArgs = [
-    "--time" (toString testTimeSec)
+    "--time" (toString test_duration_s)
     "--udp"
     "--udp-retry" "100"
     "--parallel" "1"
@@ -25,6 +45,13 @@ let
     "-R"
   ];
   iperfArgsStr = lib.concatStringsSep " " iperfArgs;
+
+  perMilleToPercentString = input: let
+    int = input / 10;
+    frac = input - (int * 10);
+  in "${toString int}.${toString frac}%";
+
+  parametersFile = pkgs.writeText "parameters.json" (builtins.toJSON parameters);
 in
 {
   name = "experiment";
@@ -86,10 +113,10 @@ in
     # https://man7.org/linux/man-pages/man8/tc-netem.8.html
     router.succeed(
       'tc qdisc add dev lan root netem'
-      ' delay 200ms 100ms distribution normal'
-      ' loss 0.5% 25%'
-      ' duplicate 0.2% 10%'
-      ' reorder 0.1%'
+      ${lib.optionalString (delay_time_ms > 0) "' delay ${toString delay_time_ms}ms ${toString delay_jitter_ms}ms distribution ${delay_distribution}'"}
+      ${lib.optionalString (loss_per_mille > 0) "' loss ${perMilleToPercentString loss_per_mille} ${loss_correlation}'"}
+      ${lib.optionalString (duplicate_per_mille > 0) "' duplicate ${perMilleToPercentString duplicate_per_mille} ${duplicate_correlation}'"}
+      ${lib.optionalString (reorder_per_mille > 0) "' reorder ${perMilleToPercentString reorder_per_mille}'"}
     )
     router.succeed("tc qdisc show dev lan >&2")
 
@@ -135,8 +162,10 @@ in
     usage = int(usage_str[:-1])
     assert usage < 90, f"The disk is too full ({usage_str}), please increase the size"
 
-    logger.copy_from_vm("/ram/lan.pcap", "")
-    logger.copy_from_vm("/ram/wan.pcap", "")
+    logger.copy_from_vm("/ram/lan.pcap")
+    logger.copy_from_vm("/ram/wan.pcap")
+    import os
+    os.symlink("${parametersFile}", logger.out_dir / "parameters.json")
 
     # TODO: assert that the files are valid and have not been cut short
   '';

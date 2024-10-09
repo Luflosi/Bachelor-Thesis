@@ -1,0 +1,13 @@
+[
+    {
+        "delay_distribution": "normal",
+        "delay_jitter_ms": 10,
+        "delay_time_ms": 50,
+        "duplicate_correlation": "10%",
+        "duplicate_per_mille": 2,
+        "loss_correlation": "25%",
+        "loss_per_mille": 5,
+        "reorder_per_mille": 1,
+        "test_duration_s": 10
+    }
+]

@@ -4,9 +4,10 @@
 {
   callPackage,
   testers,
+  parameters ? {},
 }:
 let
-  experiment = testers.runNixOSTest (import ../../nix/experiment.nix);
+  experiment = testers.runNixOSTest (import ../../nix/experiment.nix parameters);
   parse = fileName: callPackage ../parse { inherit fileName; packets = experiment; };
   parsed-lan = parse "lan";
   parsed-wan = parse "wan";

@@ -4,4 +4,4 @@
 /result
 /.nixos-test-history
 /.direnv/
-*.json
+/analysis/pipeline/*.json

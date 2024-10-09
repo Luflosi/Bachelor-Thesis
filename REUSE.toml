@@ -7,7 +7,7 @@ SPDX-PackageSupplier = "Lukas Zirpel <thesis+lukas@zirpel.de>"
 SPDX-PackageDownloadLocation = "https://github.com/Luflosi/Bachelor-Thesis"
 
 [[annotations]]
-path = "**.lock"
+path = [ "**.lock", "**.json" ]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2024 Lukas Zirpel <thesis+lukas@zirpel.de>"
 SPDX-License-Identifier = "CC0-1.0"
