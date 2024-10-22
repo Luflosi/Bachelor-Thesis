@@ -14,5 +14,5 @@ in
 stdenvNoCC.mkDerivation {
   name = "parse-${fileName}";
   realBuilder = lib.getExe python;
-  args = [ ./parse.py "${packets}/${fileName}.pcap" "--write-out-path" "${fileName}.json" ];
+  args = [ ./parse.py "--input" "${packets}/${fileName}.pcap" "--write-out-path" "${fileName}.json" ];
 }

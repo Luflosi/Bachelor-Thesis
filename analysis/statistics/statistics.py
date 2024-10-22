@@ -6,6 +6,7 @@
 import os
 import sys
 import json
+import argparse
 from collections import defaultdict
 
 
@@ -33,12 +34,21 @@ def bytes_to_bits(bytes):
     return bytes * 8
 
 
-assert 3 <= len(sys.argv) <= 4
-lan_packets = read_json_file(sys.argv[1])
-wan_packets = read_json_file(sys.argv[2])
+parser = argparse.ArgumentParser(
+                    prog='statistics',
+                    description='Aggregate the data into one second chunks and compute statistics for each chunk')
+
+parser.add_argument('-l', '--lan', required=True)
+parser.add_argument('-w', '--wan', required=True)
+parser.add_argument('-o', '--write-out-path',
+                    action='store_true')
+
+args = parser.parse_args()
+
+lan_packets = read_json_file(args.lan)
+wan_packets = read_json_file(args.wan)
 out = None
-if len(sys.argv) == 4:
-    assert sys.argv[3] == '--write-out-path'
+if args.write_out_path:
     out = os.environ['out']
     os.makedirs(out)
 

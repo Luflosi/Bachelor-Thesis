@@ -13,5 +13,5 @@ in
 stdenvNoCC.mkDerivation {
   name = "graph";
   realBuilder = lib.getExe python;
-  args = [ ./graph.py "${statistics}/statistics.json" "--write-out-path" ];
+  args = [ ./graph.py "--input" "${statistics}/statistics.json" "--write-out-path" ];
 }

@@ -4,21 +4,29 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 import os
-import sys
 import json
+import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 
 figsize = (16, 8)
 
 
-assert 2 <= len(sys.argv) <= 3
-with open(sys.argv[1], 'r', encoding='utf-8') as f:
+parser = argparse.ArgumentParser(
+                    prog='graph',
+                    description='Render the statistical data into graphs')
+
+parser.add_argument('-i', '--input', required=True)
+parser.add_argument('-o', '--write-out-path',
+                    action='store_true')
+
+args = parser.parse_args()
+
+with open(args.input, 'r', encoding='utf-8') as f:
     data = json.load(f)
 
 out = None
-if len(sys.argv) == 3:
-    assert sys.argv[2] == '--write-out-path'
+if args.write_out_path:
     out = os.environ['out']
     os.makedirs(out)
 

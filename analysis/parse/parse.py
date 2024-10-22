@@ -7,19 +7,26 @@ import os
 import sys
 import dpkt
 import json
+import argparse
 from blake3 import blake3
 
-assert len(sys.argv) in [2, 4]
+parser = argparse.ArgumentParser(
+                    prog='parse',
+                    description='Parse a packet capture file and convert it into a smaller and more useful form for our use-case')
+
+parser.add_argument('-i', '--input', required=True)
+parser.add_argument('-o', '--write-out-path')
+
+args = parser.parse_args()
 
 out = None
-if len(sys.argv) == 4:
-    assert sys.argv[2] == '--write-out-path'
+if args.write_out_path:
     out = os.environ['out']
     os.makedirs(out)
 
 packets = []
 
-with open(sys.argv[1], 'rb') as f:
+with open(args.input, 'rb') as f:
     pcap = dpkt.pcap.Reader(f)
 
     found_beginning = False
@@ -61,8 +68,8 @@ with open(sys.argv[1], 'rb') as f:
 
 print(len(packets), 'packets', file=sys.stderr)
 
-if out != None:
-    d = open(os.path.join(out, sys.argv[3]), 'w', encoding='utf-8')
+if args.write_out_path:
+    d = open(os.path.join(out, args.write_out_path), 'w', encoding='utf-8')
 else:
     d = open(sys.stdout.fileno(), 'w', encoding='utf-8', closefd=False)
 

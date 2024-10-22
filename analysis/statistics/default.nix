@@ -11,5 +11,5 @@
 stdenvNoCC.mkDerivation {
   name = "statistics";
   realBuilder = lib.getExe python3;
-  args = [ ./statistics.py "${lan}/lan.json" "${wan}/wan.json" "--write-out-path" ];
+  args = [ ./statistics.py "--lan" "${lan}/lan.json" "--wan" "${wan}/wan.json" "--write-out-path" ];
 }
