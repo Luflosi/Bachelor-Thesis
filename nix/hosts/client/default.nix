@@ -33,6 +33,4 @@
       via = "fd36:9509:c39c::2";
     };
   };
-
-  virtualisation.interfaces.lan.vlan = 1;
 }

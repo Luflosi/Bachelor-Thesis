@@ -6,6 +6,9 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+
+    disko.url = "github:nix-community/disko";
+    disko.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = { self, ... }@inputs: let
@@ -66,6 +69,31 @@
       };
       default = self.outputs.packages.${system}.graphs;
     });
+
+    nixosConfigurations = let
+      mkNixosSystem = hostName: system: inputs.nixpkgs.lib.nixosSystem {
+        inherit system;
+        modules = [
+          inputs.disko.nixosModules.disko
+          ./nix/hosts/${hostName}
+          ./nix/profiles/hardware.nix
+          ./nix/hosts/${hostName}/profiles/hardware.nix
+          {
+            networking.hostName = hostName;
+            nixpkgs.pkgs = (import inputs.nixpkgs {
+              inherit system;
+              overlays = import ./nix/overlays;
+            });
+            nixpkgs.hostPlatform = system;
+          }
+        ];
+      };
+    in {
+      client = mkNixosSystem "client"   "x86_64-linux";
+      logger = mkNixosSystem "logger"   "x86_64-linux";
+      router = mkNixosSystem "router"   "x86_64-linux";
+      server = mkNixosSystem "server"   "x86_64-linux";
+    };
 
     checks = lib.recursiveUpdate self.outputs.packages (forAllSystems (system: let
       pkgs = import inputs.nixpkgs { inherit system; };

@@ -23,7 +23,6 @@
 
 ## TODO:
 - Test various combinations of network interference and transport protocols
-- Adapt the configuration to run on real hardware
 - Try out [qperf](https://github.com/rbruenig/qperf)
 - Test performance in both directions
 

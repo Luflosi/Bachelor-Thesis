@@ -65,6 +65,7 @@ in
     client = { ... }: {
       imports = [
         ./hosts/client
+        ./hosts/client/profiles/virtual.nix
         ./hosts/client/protocols/${encapsulation}.nix
       ];
     };
@@ -72,12 +73,14 @@ in
     router = { ... }: {
       imports = [
         ./hosts/router
+        ./hosts/router/profiles/virtual.nix
       ];
     };
 
     server = { ... }: {
       imports = [
         ./hosts/server
+        ./hosts/server/profiles/virtual.nix
         ./hosts/server/protocols/${encapsulation}.nix
       ];
     };
@@ -88,6 +91,7 @@ in
     logger = { ... }: {
       imports = [
         ./hosts/logger
+        ./hosts/logger/profiles/virtual.nix
       ];
     };
   };

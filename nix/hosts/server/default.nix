@@ -34,6 +34,4 @@
       via = "fd9d:c839:3e89::2";
     };
   };
-
-  virtualisation.interfaces.wan.vlan = 2;
 }

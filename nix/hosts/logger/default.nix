@@ -24,18 +24,7 @@
     "net.ipv6.conf.wan.addr_gen_mode" = 1;
   };
 
-  virtualisation.interfaces = {
-    lan.vlan = 1;
-    wan.vlan = 2;
-  };
   # Set interface state to "up"
   networking.interfaces.lan.ipv4.addresses = [];
   networking.interfaces.wan.ipv4.addresses = [];
-
-  virtualisation.cores = 3; # Give this VM more CPU cores so it can keep up with the incoming data
-  virtualisation.memorySize = 1024 * 2 + 512;
-  virtualisation.fileSystems."/ram" = {
-    fsType = "tmpfs";
-    options = [ "size=2G" ];
-  };
 }

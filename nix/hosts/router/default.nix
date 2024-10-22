@@ -28,9 +28,4 @@
     "net.ipv6.conf.all.forwarding" = "1";
     "net.ipv6.conf.default.forwarding" = "1";
   };
-
-  virtualisation.interfaces = {
-    lan.vlan = 1;
-    wan.vlan = 2;
-  };
 }
