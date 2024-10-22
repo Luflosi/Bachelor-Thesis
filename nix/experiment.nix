@@ -3,6 +3,7 @@
 
 {
   test_duration_s,
+  encapsulation,
   delay_time_ms,
   delay_jitter_ms,
   delay_distribution,
@@ -14,6 +15,7 @@
 }@parameters:
 
 assert test_duration_s > 0;
+assert builtins.elem encapsulation [ "none" "WireGuard" ];
 assert delay_time_ms >= 0;
 assert delay_jitter_ms >= 0;
 assert builtins.elem delay_distribution [ "experimental" "normal" "pareto" "paretonormal" ];
@@ -60,21 +62,23 @@ in
     client =  { ... }: {
       imports = [
         ./profiles/virtual.nix
-        ./hosts/client.nix
+        ./hosts/client
+        ./hosts/client/protocols/${encapsulation}.nix
       ];
     };
 
     router =  { ... }: {
       imports = [
         ./profiles/virtual.nix
-        ./hosts/router.nix
+        ./hosts/router
       ];
     };
 
     server =  { ... }: {
       imports = [
         ./profiles/virtual.nix
-        ./hosts/server.nix
+        ./hosts/server
+        ./hosts/server/protocols/${encapsulation}.nix
       ];
     };
 
@@ -84,7 +88,7 @@ in
     logger =  { ... }: {
       imports = [
         ./profiles/virtual.nix
-        ./hosts/logger.nix
+        ./hosts/logger
       ];
     };
   };
@@ -129,18 +133,18 @@ in
 
     client.wait_until_succeeds("ping -c 1 fd9d:c839:3e89::3 >&2", timeout=${pingTimeoutStr})
     client.wait_until_succeeds("ping -c 1 192.168.2.3 >&2", timeout=${pingTimeoutStr})
-    client.wait_until_succeeds("ping -c 1 fded:51e9:828f::3 >&2", timeout=${pingTimeoutStr})
-    client.wait_until_succeeds("ping -c 1 192.168.20.3 >&2", timeout=${pingTimeoutStr})
+    ${lib.optionalString (encapsulation != "none") ''client.wait_until_succeeds("ping -c 1 fded:51e9:828f::3 >&2", timeout=${pingTimeoutStr})''}
+    ${lib.optionalString (encapsulation != "none") ''client.wait_until_succeeds("ping -c 1 192.168.20.3 >&2", timeout=${pingTimeoutStr})''}
     # TODO: test in the other direction as well
-    client.succeed("iperf -c 192.168.20.3 ${iperfArgsStr} >&2")
-    client.wait_until_succeeds("ping -c 1 192.168.20.3 >&2", timeout=${pingTimeoutStr})
+    client.succeed("iperf -c ${if encapsulation == "none" then "192.168.2.3" else "192.168.20.3"} ${iperfArgsStr} >&2")
+    ${lib.optionalString (encapsulation != "none") ''client.wait_until_succeeds("ping -c 1 192.168.20.3 >&2", timeout=${pingTimeoutStr})''}
     client.wait_until_succeeds("ping -c 1 192.168.2.3 >&2", timeout=${pingTimeoutStr})
 
     # TODO: find a better way to wait for wireshark to be done capturing
     client.succeed("sleep 1")
 
-    client.succeed("wg show >&2")
-    server.succeed("wg show >&2")
+    ${lib.optionalString (encapsulation == "WireGuard") ''client.succeed("wg show >&2")''}
+    ${lib.optionalString (encapsulation == "WireGuard") ''server.succeed("wg show >&2")''}
 
     logger.succeed('kill -s INT "$(</ram/pid-lan)"')
     logger.succeed('kill -s INT "$(</ram/pid-wan)"')

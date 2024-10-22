@@ -3,7 +3,7 @@
 
 { lib, ... }: {
   imports = [
-    ./common.nix
+    ../common.nix
   ];
 
   networking.interfaces.lan.ipv4.addresses = lib.singleton {

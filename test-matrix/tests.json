@@ -5,6 +5,7 @@
         "delay_time_ms": 50,
         "duplicate_correlation": "10%",
         "duplicate_per_mille": 2,
+        "encapsulation": "WireGuard",
         "loss_correlation": "25%",
         "loss_per_mille": 5,
         "reorder_per_mille": 1,

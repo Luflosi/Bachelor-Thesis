@@ -3,7 +3,7 @@
 
 { pkgs, ... }: {
   imports = [
-    ./common.nix
+    ../common.nix
   ];
 
   systemd.network.networks."40-lan".networkConfig.LinkLocalAddressing = "no";
