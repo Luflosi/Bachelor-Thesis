@@ -78,7 +78,7 @@ ax.set_ylim(bottom=0)
 ax.set_xticks(relative_times, labels=labels)
 
 if out != None:
-    plt.savefig(fname=os.path.join(out, 'latencies.png'), transparent=False)
+    plt.savefig(fname=os.path.join(out, 'latencies.svg'), transparent=False)
 plt.show()
 
 
@@ -97,7 +97,7 @@ ax2.tick_params(axis='y', labelcolor=ax2_color)
 ax2.set_ylim(bottom=0)
 
 if out != None:
-    plt.savefig(fname=os.path.join(out, 'packet_counts.png'), transparent=False)
+    plt.savefig(fname=os.path.join(out, 'packet_counts.svg'), transparent=False)
 plt.show()
 
 
@@ -108,5 +108,5 @@ ax.plot(relative_times, throughput_over_time)
 ax.set_ylim(bottom=0)
 
 if out != None:
-    plt.savefig(fname=os.path.join(out, 'throughput.png'), transparent=False)
+    plt.savefig(fname=os.path.join(out, 'throughput.svg'), transparent=False)
 plt.show()
