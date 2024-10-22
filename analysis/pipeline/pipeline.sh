@@ -5,10 +5,10 @@
 
 # This file is only for testing the pipeline without Nix
 
-../parse/parse.py ../../result/lan.pcap > lan.json &
-PID_LAN=$!
-../parse/parse.py ../../result/wan.pcap > wan.json &
-PID_WAN=$!
-wait "$PID_LAN" "$PID_WAN"
-../statistics/statistics.py lan.json wan.json > statistics.json
+../parse/parse.py ../../result/pre.pcap > pre.json &
+PID_PRE=$!
+../parse/parse.py ../../result/post.pcap > post.json &
+PID_POST=$!
+wait "$PID_PRE" "$PID_POST"
+../statistics/statistics.py pre.json post.json > statistics.json
 ../graph/graph.py statistics.json

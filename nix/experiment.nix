@@ -121,8 +121,8 @@ in
     router.succeed("tc qdisc show dev lan >&2")
 
     logger.succeed("tcpdump --list-time-stamp-types >&2") # See https://nanxiao.github.io/tcpdump-little-book/posts/set-timestamp-type-and-precision-during-capture.html
-    logger.succeed("tcpdump -n -B 10240 -i lan -w /ram/lan.pcap 2>/ram/stderr-lan >/dev/null & echo $! >/ram/pid-lan")
-    logger.succeed("tcpdump -n -B 10240 -i wan -w /ram/wan.pcap 2>/ram/stderr-wan >/dev/null & echo $! >/ram/pid-wan")
+    logger.succeed("tcpdump -n -B 10240 -i lan -w /ram/post.pcap 2>/ram/stderr-lan >/dev/null & echo $! >/ram/pid-lan")
+    logger.succeed("tcpdump -n -B 10240 -i wan -w /ram/pre.pcap 2>/ram/stderr-wan >/dev/null & echo $! >/ram/pid-wan")
 
     # Wait for tcpdump to start recording
     client.succeed("sleep 1")
@@ -153,8 +153,8 @@ in
     assert "0 packets dropped by kernel" in logger.succeed("cat /ram/stderr-lan").splitlines(), "The kernel dropped some packets"
     assert "0 packets dropped by kernel" in logger.succeed("cat /ram/stderr-wan").splitlines(), "The kernel dropped some packets"
 
-    logger.succeed("lsof -t /ram/lan.pcap >&2 || true")
-    logger.succeed("lsof -t /ram/wan.pcap >&2 || true")
+    logger.succeed("lsof -t /ram/pre.pcap >&2 || true")
+    logger.succeed("lsof -t /ram/post.pcap >&2 || true")
     # TODO: find a better way to wait for the file to be done writing
     logger.succeed("sleep 1")
 
@@ -162,8 +162,8 @@ in
     usage = int(usage_str[:-1])
     assert usage < 90, f"The disk is too full ({usage_str}), please increase the size"
 
-    logger.copy_from_vm("/ram/lan.pcap")
-    logger.copy_from_vm("/ram/wan.pcap")
+    logger.copy_from_vm("/ram/pre.pcap")
+    logger.copy_from_vm("/ram/post.pcap")
     import os
     os.symlink("${parametersFile}", logger.out_dir / "parameters.json")
 

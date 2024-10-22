@@ -9,10 +9,10 @@
 let
   experiment = testers.runNixOSTest (import ../../nix/experiment.nix parameters);
   parse = fileName: callPackage ../parse { inherit fileName; packets = experiment; };
-  parsed-lan = parse "lan";
-  parsed-wan = parse "wan";
-  statistics = callPackage ../statistics { lan = parsed-lan; wan = parsed-wan; };
+  parsed-pre = parse "pre";
+  parsed-post = parse "post";
+  statistics = callPackage ../statistics { pre = parsed-pre; post = parsed-post; };
   graphs = callPackage ../graph { inherit statistics; };
 in {
-  inherit experiment parsed-lan parsed-wan statistics graphs;
+  inherit experiment parsed-pre parsed-post statistics graphs;
 }

@@ -38,38 +38,38 @@ parser = argparse.ArgumentParser(
                     prog='statistics',
                     description='Aggregate the data into one second chunks and compute statistics for each chunk')
 
-parser.add_argument('-l', '--lan', required=True)
-parser.add_argument('-w', '--wan', required=True)
+parser.add_argument('-1', '--pre', required=True)
+parser.add_argument('-2', '--post', required=True)
 parser.add_argument('-o', '--write-out-path',
                     action='store_true')
 
 args = parser.parse_args()
 
-lan_packets = read_json_file(args.lan)
-wan_packets = read_json_file(args.wan)
+post_packets = read_json_file(args.post)
+pre_packets = read_json_file(args.pre)
 out = None
 if args.write_out_path:
     out = os.environ['out']
     os.makedirs(out)
 
-lan_hash_to_frames_map = defaultdict(list)
-for packet in lan_packets:
+post_hash_to_frames_map = defaultdict(list)
+for packet in post_packets:
     frame_number = packet['frame_number']
     frame_time_epoch = packet['frame_time_epoch']
     hash = bytes.fromhex(packet['hash'])
     assert len(hash) == 32, f'Hash length was {len(hash)}'
     ip_payload_length = packet['ip_payload_length']
     assert ip_payload_length > 0, f'ip_payload_length is not greater than zero ({ip_payload_length})'
-    lan_hash_to_frames_map[hash].append((frame_number, frame_time_epoch, ip_payload_length))
+    post_hash_to_frames_map[hash].append((frame_number, frame_time_epoch, ip_payload_length))
     del(hash, frame_number, frame_time_epoch, ip_payload_length)
 
 
-def validate_wan_packets(wan_packets):
+def validate_pre_packets(pre_packets):
     frames = []
     hash_to_frame_set = set()
     previous_frame_number = None
     previous_frame_time_epoch = None
-    for packet in wan_packets:
+    for packet in pre_packets:
         frame_number = packet['frame_number']
         frame_time_epoch = packet['frame_time_epoch']
         hash = bytes.fromhex(packet['hash'])
@@ -87,12 +87,12 @@ def validate_wan_packets(wan_packets):
     return frames
 
 
-def split_into_buckets(wan_info):
+def split_into_buckets(pre_info):
     buckets = {}
     bucket = []
     bucket_start_time = None
     bucket_end_time = None
-    for frame in wan_info:
+    for frame in pre_info:
         (_hash, _frame_number, frame_time_epoch, _ip_payload_length) = frame
         frame_time = time_ns_to_s(frame_time_epoch)
         if bucket_start_time == None:
@@ -111,23 +111,23 @@ def split_into_buckets(wan_info):
     return buckets
 
 
-wan_info = validate_wan_packets(wan_packets)
-del(wan_packets)
+pre_info = validate_pre_packets(pre_packets)
+del(pre_packets)
 
-wan_buckets = split_into_buckets(wan_info)
-del(wan_info)
+pre_buckets = split_into_buckets(pre_info)
+del(pre_info)
 
 
 time_series = []
 
-for time, wan_bucket in wan_buckets.items():
+for time, pre_bucket in pre_buckets.items():
     packet_count = 0
     dropped_packets = 0
     duplicate_packets = 0
     latencies = []
     ip_payload_length_sum = 0
-    for (wan_hash, wan_frame_number, wan_frame_time_epoch, wan_ip_payload_length) in wan_bucket:
-        packets = lan_hash_to_frames_map[wan_hash]
+    for (pre_hash, pre_frame_number, pre_frame_time_epoch, pre_ip_payload_length) in pre_bucket:
+        packets = post_hash_to_frames_map[pre_hash]
         number_of_packet_copies = len(packets)
         if number_of_packet_copies < 1:
             dropped_packets += 1
@@ -138,15 +138,15 @@ for time, wan_bucket in wan_buckets.items():
             if first_arriving_copy_of_packet == None:
                 first_arriving_copy_of_packet = packet
                 continue
-            (_lan_frame_number, lan_first_frame_time_epoch, _lan_ip_payload_length) = first_arriving_copy_of_packet
-            if lan_frame_time_epoch < lan_first_frame_time_epoch:
+            (_post_frame_number, post_first_frame_time_epoch, _post_ip_payload_length) = first_arriving_copy_of_packet
+            if post_frame_time_epoch < post_first_frame_time_epoch:
                 first_arriving_copy_of_packet = packet
-        (lan_frame_number, lan_frame_time_epoch, lan_ip_payload_length) = first_arriving_copy_of_packet
-        latency = time_ns_to_ms(lan_frame_time_epoch - wan_frame_time_epoch)
+        (post_frame_number, post_frame_time_epoch, post_ip_payload_length) = first_arriving_copy_of_packet
+        latency = time_ns_to_ms(post_frame_time_epoch - pre_frame_time_epoch)
         if latency < 0:
             print(f'WARNING: packet arrived {-latency} ms before it was sent', file=sys.stderr)
         packet_count += 1
-        ip_payload_length_sum += wan_ip_payload_length
+        ip_payload_length_sum += pre_ip_payload_length
         latencies.append(latency)
     throughput = bytes_to_bits(bytes_to_megabytes(ip_payload_length_sum)) / BUCKET_DURATION_S
     statistics = {

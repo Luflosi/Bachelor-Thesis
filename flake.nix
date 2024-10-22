@@ -48,7 +48,7 @@
         overlays = import ./nix/overlays;
       };
       test-matrix = lib.importJSON ./test-matrix/tests.json;
-      filterPipeline = pipeline: lib.filterAttrs (n: v: builtins.elem n [ "experiment" "parsed-lan" "parsed-wan" "statistics" "graphs" ]) pipeline;
+      filterPipeline = pipeline: lib.filterAttrs (n: v: builtins.elem n [ "experiment" "parsed-pre" "parsed-post" "statistics" "graphs" ]) pipeline;
       pipelineBuilder = parameters: filterPipeline (pkgs.callPackage ./analysis/pipeline { inherit parameters; });
       defaultPipeline = pipelineBuilder (import ./nix/defaultValues.nix);
       pipelines = builtins.map pipelineBuilder test-matrix;
