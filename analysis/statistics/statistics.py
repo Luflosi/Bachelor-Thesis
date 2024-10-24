@@ -72,8 +72,9 @@ def validate_pre_packets(pre_packets):
     for packet in pre_packets:
         frame_number = packet['frame_number']
         frame_time_epoch = packet['frame_time_epoch']
-        hash = bytes.fromhex(packet['hash'])
-        assert hash not in set_of_hashes, f'hash {hash} is not unique'
+        hash_str = packet['hash']
+        hash = bytes.fromhex(hash_str)
+        assert hash not in set_of_hashes, f'hash {hash_str} is not unique'
         assert len(hash) == 32, f'Hash length was {len(hash)}'
         assert previous_frame_number == None or frame_number > previous_frame_number, f'frame_number ({frame_number}) is not greater than the previous one ({previous_frame_number})'
         assert previous_frame_time_epoch == None or frame_time_epoch > previous_frame_time_epoch, f'frame_time_epoch ({frame_time_epoch}) is not greater than the previous one ({previous_frame_time_epoch})'
