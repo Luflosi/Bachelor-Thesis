@@ -8,9 +8,9 @@
 }:
 let
   experiment = testers.runNixOSTest (import ../../nix/experiment.nix parameters);
-  parse = fileName: callPackage ../parse { inherit fileName; packets = experiment; };
-  parsed-pre = parse "pre";
-  parsed-post = parse "post";
+  parse = fileName: removeEnds: callPackage ../parse { inherit fileName removeEnds; packets = experiment; };
+  parsed-pre = parse "pre" true;
+  parsed-post = parse "post" false;
   statistics = callPackage ../statistics { pre = parsed-pre; post = parsed-post; };
   graphs = callPackage ../graph { inherit statistics; };
 in {

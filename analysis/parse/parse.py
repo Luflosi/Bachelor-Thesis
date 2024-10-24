@@ -10,12 +10,22 @@ import json
 import argparse
 from blake3 import blake3
 
+
+def time_to_epoch(timestamp):
+    return int(timestamp * 1000 * 1000 * 1000)
+
+def epoch_to_time(epoch):
+    return epoch / 1000 / 1000 / 1000
+
 parser = argparse.ArgumentParser(
                     prog='parse',
                     description='Parse a packet capture file and convert it into a smaller and more useful form for our use-case')
 
 parser.add_argument('-i', '--input', required=True)
+parser.add_argument('-m', '--metadata')
 parser.add_argument('-o', '--write-out-path')
+parser.add_argument('-e', '--remove-ends',
+                    action='store_true')
 
 args = parser.parse_args()
 
@@ -26,13 +36,20 @@ if args.write_out_path:
 
 packets = []
 
+if args.remove_ends:
+    assert args.metadata, 'CLI option --remove-ends requires --metadata'
+    with open(args.metadata, 'rb') as f:
+        metadata = json.load(f)
+    test_duration_s = metadata['test_duration_s']
+
 with open(args.input, 'rb') as f:
     pcap = dpkt.pcap.Reader(f)
 
     found_beginning = False
+    end_timestamp = None
 
     for (frame_number, (timestamp, buf)) in enumerate(pcap):
-        frame_time_epoch = int(timestamp * 1000 * 1000 * 1000)
+        frame_time_epoch = time_to_epoch(timestamp)
 
         eth = dpkt.ethernet.Ethernet(buf)
 
@@ -47,11 +64,14 @@ with open(args.input, 'rb') as f:
         ip_payload_length = len(payload)
 
         # Heuristic to ignore the connection setup at the start
-        if not found_beginning:
-            if ip_payload_length > 400:
+        if args.remove_ends:
+            if not found_beginning:
+                if ip_payload_length <= 400:
+                    continue
                 found_beginning = True
-            else:
-                continue
+                end_timestamp = timestamp + test_duration_s + 1 # Add one second, because in statistics.py the last partial second will be removed again
+            elif timestamp >= end_timestamp:
+                break
 
         hash = blake3(payload).hexdigest()
 
@@ -65,6 +85,14 @@ with open(args.input, 'rb') as f:
             'hash': hash,
         }
         packets.append(packet)
+
+    if args.remove_ends:
+        last_epoch = packets[-1]['frame_time_epoch']
+        first_epoch = packets[0]['frame_time_epoch']
+        delta_epoch = last_epoch - first_epoch
+        min_allowed_time = test_duration_s
+        max_allowed_time = min_allowed_time + 1
+        assert time_to_epoch(min_allowed_time) <= delta_epoch < time_to_epoch(max_allowed_time), f'The packet capture does not have the expected length, was {epoch_to_time(delta_epoch)}, not between {min_allowed_time} and {max_allowed_time}'
 
 print(len(packets), 'packets', file=sys.stderr)
 

@@ -4,6 +4,7 @@
 {
   packets,
   fileName,
+  removeEnds,
   stdenvNoCC,
   lib,
   python3,
@@ -14,5 +15,5 @@ in
 stdenvNoCC.mkDerivation {
   name = "parse-${fileName}";
   realBuilder = lib.getExe python;
-  args = [ ./parse.py "--input" "${packets}/${fileName}.pcap" "--write-out-path" "${fileName}.json" ];
+  args = [ ./parse.py "--input" "${packets}/${fileName}.pcap" "--metadata" "${packets}/parameters.json" "--write-out-path" "${fileName}.json" ] ++ (lib.optional removeEnds "--remove-ends");
 }
