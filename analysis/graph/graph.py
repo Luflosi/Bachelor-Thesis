@@ -45,7 +45,7 @@ counts_duplicate_over_time = []
 throughput_over_time = []
 latencies_over_time = []
 for data_point in data['time_series']:
-    relative_time = data_point['time'] - first_time
+    relative_time = data_point['time'] - first_time + 1 # Start counting at 1
     relative_times.append(relative_time)
     labels.append(f'{relative_time:.0f}')
     counts_packets_over_time.append(data_point['counts']['packets'])
