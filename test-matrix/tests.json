@@ -6,6 +6,7 @@
         "duplicate_correlation": "10%",
         "duplicate_per_mille": 2,
         "encapsulation": "WireGuard",
+        "ip_payload_size": 1400,
         "loss_correlation": "25%",
         "loss_per_mille": 5,
         "reorder_per_mille": 1,

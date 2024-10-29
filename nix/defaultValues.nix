@@ -3,6 +3,7 @@
 
 {
   test_duration_s = 60;
+  ip_payload_size = 1400;
   encapsulation = "none";
   delay_time_ms = 200;
   delay_jitter_ms = 100;

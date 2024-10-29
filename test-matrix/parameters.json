@@ -1,5 +1,6 @@
 {
     "test_duration_s": [10],
+    "ip_payload_size": [1400],
     "encapsulation": ["WireGuard"],
     "delay_time_ms": [50],
     "delay_jitter_ms": [10],

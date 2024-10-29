@@ -53,7 +53,7 @@
       defaultPipeline = pipelineBuilder (import ./nix/defaultValues.nix);
       pipelines = builtins.map pipelineBuilder test-matrix;
       linkAllOutputsOfPipeline = pipeline: pkgs.linkFarm "pipeline" (lib.mapAttrsToList (name: value: { inherit name; path = value; }) pipeline);
-      mkPipelineName = p: "pipeline-duration-${toString p.test_duration_s}s-${p.encapsulation}-delay-${toString p.delay_time_ms}ms-jitter-${toString p.delay_jitter_ms}ms-${p.delay_distribution}-loss-${toString p.loss_per_mille}‰-${p.loss_correlation}-duplicate-${toString p.duplicate_per_mille}‰-${p.duplicate_correlation}-reorder-${toString p.reorder_per_mille}‰";
+      mkPipelineName = p: "pipeline-duration-${toString p.test_duration_s}s-${toString p.ip_payload_size}bytes-${p.encapsulation}-delay-${toString p.delay_time_ms}ms-jitter-${toString p.delay_jitter_ms}ms-${p.delay_distribution}-loss-${toString p.loss_per_mille}‰-${p.loss_correlation}-duplicate-${toString p.duplicate_per_mille}‰-${p.duplicate_correlation}-reorder-${toString p.reorder_per_mille}‰";
       testsFromJSON = pkgs.linkFarm "testsFromJSON" (lib.zipListsWith (parameters: pipeline: { name = mkPipelineName parameters; path = linkAllOutputsOfPipeline pipeline; }) test-matrix pipelines);
     in defaultPipeline // {
       inherit testsFromJSON;

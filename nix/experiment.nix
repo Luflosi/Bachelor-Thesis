@@ -3,6 +3,7 @@
 
 {
   test_duration_s,
+  ip_payload_size,
   encapsulation,
   delay_time_ms,
   delay_jitter_ms,
@@ -15,6 +16,7 @@
 }@parameters:
 
 assert test_duration_s > 0;
+assert ip_payload_size > 0;
 assert builtins.elem encapsulation [ "none" "WireGuard" ];
 assert delay_time_ms >= 0;
 assert delay_jitter_ms >= 0;
@@ -28,18 +30,13 @@ assert delay_time_ms == 0 -> reorder_per_mille == 0;
 let
   pingTimeout = 30;
   pingTimeoutStr = toString pingTimeout;
-  ethernetPayloadSize = 1500;
-  ipv6PayloadSize = ethernetPayloadSize - 40;
-  udpPayloadSize = ipv6PayloadSize - 8;
-  wireguardPayloadSize = udpPayloadSize - 32;
-  ipv4PayloadSize' = wireguardPayloadSize - 20;
-  udpPayloadSize' = ipv4PayloadSize' - 8;
+  udpPayloadSize = ip_payload_size - 8;
   iperfArgs = [
     "--time" (toString test_duration_s)
     "--udp"
     "--udp-retry" "100"
     "--parallel" "1"
-    "--length" (toString udpPayloadSize')
+    "--length" (toString udpPayloadSize)
     "--bitrate" "100M"
     "--fq-rate" "100M"
     "--dont-fragment"
