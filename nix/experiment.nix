@@ -58,25 +58,28 @@ in
 {
   name = "experiment";
 
+  defaults = { ... }: {
+    imports = [
+      ./profiles/virtual.nix
+    ];
+  };
+
   nodes = {
-    client =  { ... }: {
+    client = { ... }: {
       imports = [
-        ./profiles/virtual.nix
         ./hosts/client
         ./hosts/client/protocols/${encapsulation}.nix
       ];
     };
 
-    router =  { ... }: {
+    router = { ... }: {
       imports = [
-        ./profiles/virtual.nix
         ./hosts/router
       ];
     };
 
-    server =  { ... }: {
+    server = { ... }: {
       imports = [
-        ./profiles/virtual.nix
         ./hosts/server
         ./hosts/server/protocols/${encapsulation}.nix
       ];
@@ -85,9 +88,8 @@ in
     # The virtual switch of the test setup acts like a hub.
     # This makes it easy to capture the packets in a separate VM.
     # See https://github.com/NixOS/nixpkgs/blob/69bee9866a4e2708b3153fdb61c1425e7857d6b8/nixos/lib/test-driver/test_driver/vlan.py#L43
-    logger =  { ... }: {
+    logger = { ... }: {
       imports = [
-        ./profiles/virtual.nix
         ./hosts/logger
       ];
     };
