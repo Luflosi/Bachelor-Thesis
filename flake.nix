@@ -53,7 +53,7 @@
       test-matrix = lib.importJSON ./test-matrix/tests.json;
       filterPipeline = pipeline: lib.filterAttrs (n: v: builtins.elem n [ "experiment" "parsed-pre" "parsed-post" "statistics" "graphs" ]) pipeline;
       pipelineBuilder = parameters: filterPipeline (pkgs.callPackage ./analysis/pipeline { inherit parameters; });
-      defaultPipeline = pipelineBuilder (import ./nix/defaultValues.nix);
+      defaultPipeline = pipelineBuilder (import ./nix/constants/defaultValues.nix);
       pipelines = builtins.map pipelineBuilder test-matrix;
       linkAllOutputsOfPipeline = pipeline: pkgs.linkFarm "pipeline" (lib.mapAttrsToList (name: value: { inherit name; path = value; }) pipeline);
       mkPipelineName = p: "pipeline-duration-${toString p.test_duration_s}s-${toString p.ip_payload_size}bytes-${p.encapsulation}-delay-${toString p.delay_time_ms}ms-jitter-${toString p.delay_jitter_ms}ms-${p.delay_distribution}-loss-${toString p.loss_per_mille}‰-${p.loss_correlation}-duplicate-${toString p.duplicate_per_mille}‰-${p.duplicate_correlation}-reorder-${toString p.reorder_per_mille}‰";
@@ -71,6 +71,19 @@
     });
 
     nixosConfigurations = let
+      protocolsDir = hostName: "${toString inputs.self}/nix/hosts/${hostName}/protocols";
+      isHostWithProtocol = hostName: builtins.elem hostName [ "client" "server" ];
+      protocols = import ./nix/constants/protocols.nix;
+      protocolsNotNone = builtins.filter (p: p != "none") protocols;
+      importProfile = hostName: builtins.map (profile: {
+        ${profile} = {
+          configuration.imports = [
+            "${protocolsDir hostName}/${profile}.nix"
+          ];
+        };
+      }) protocolsNotNone;
+      mkSpecializations = hostName: lib.attrsets.mergeAttrsList (importProfile hostName);
+      maybeMkSpecializations = hostName: lib.optionalAttrs (isHostWithProtocol hostName) (mkSpecializations hostName);
       mkNixosSystem = hostName: system: inputs.nixpkgs.lib.nixosSystem {
         inherit system;
         modules = [
@@ -85,8 +98,9 @@
               overlays = import ./nix/overlays;
             });
             nixpkgs.hostPlatform = system;
+            specialisation = maybeMkSpecializations hostName;
           }
-        ];
+        ] ++ lib.optional (isHostWithProtocol hostName) ./nix/hosts/${hostName}/protocols/none.nix;
       };
     in {
       client = mkNixosSystem "client"   "x86_64-linux";

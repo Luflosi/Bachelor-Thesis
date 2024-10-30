@@ -17,7 +17,7 @@
 
 assert test_duration_s > 0;
 assert ip_payload_size > 0;
-assert builtins.elem encapsulation [ "none" "WireGuard" ];
+assert builtins.elem encapsulation (import ./constants/protocols.nix);
 assert delay_time_ms >= 0;
 assert delay_jitter_ms >= 0;
 assert builtins.elem delay_distribution [ "experimental" "normal" "pareto" "paretonormal" ];
