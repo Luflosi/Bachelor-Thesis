@@ -119,6 +119,11 @@
             options.mountpoint = "legacy";
             postCreateHook = "zfs list -t snapshot -H -o name tank/root | grep -E '^tank/root@blank$' || zfs snapshot tank/root@blank";
           };
+          "persist" = {
+            type = "zfs_fs";
+            mountpoint = "/persist";
+            options.mountpoint = "legacy";
+          };
           "nix" = {
             type = "zfs_fs";
             mountpoint = "/nix";
@@ -184,6 +189,34 @@
     };
   };
   fileSystems."/var/lib/systemd".neededForBoot = true;
+
+  boot.initrd.systemd.services.rollback = {
+    description = "Rollback root and tmp filesystems to a pristine state on boot";
+    wantedBy = [
+      "initrd.target"
+    ];
+    after = [ "zfs-import-tank.service" ];
+    before = [ "sysroot.mount" ];
+    path = with pkgs; [ zfs ];
+    unitConfig.DefaultDependencies = "no";
+    serviceConfig.Type = "oneshot";
+    script = ''
+      zfs rollback -r tank/root@blank && echo "  >> >> root rollback complete << <<"
+      zfs rollback -r tank/tmp@blank && echo "  >> >> tmp rollback complete << <<"
+    '';
+  };
+
+  services.openssh.hostKeys = [
+    {
+      path = "/persist/etc/ssh/ssh_host_ed25519_key";
+      type = "ed25519";
+    }
+    {
+      path = "/persist/etc/ssh/ssh_host_rsa_key";
+      type = "rsa";
+      bits = 4096;
+    }
+  ];
 
   environment.systemPackages = with pkgs; [
     git
