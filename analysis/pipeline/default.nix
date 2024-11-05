@@ -4,10 +4,25 @@
 {
   callPackage,
   testers,
+  stdenv,
+  lib,
+  pkgs,
+  experimentDriver,
   parameters ? {},
 }:
 let
-  experiment = testers.runNixOSTest (import ../../nix/experiment.nix parameters);
+  runDriver = driver: testScript: stdenv.mkDerivation {
+    name = "vm-test-run";
+    requiredSystemFeatures = [ "nixos-test" "kvm" ];
+    buildCommand = ''
+      mkdir -p $out
+      # effectively mute the XMLLogger
+      export LOGFILE=/dev/null
+      ${driver}/bin/nixos-test-driver -o $out '${testScript}'
+    '';
+  };
+  testScript = callPackage (import ../../nix/create-test-script.nix parameters) { };
+  experiment = runDriver experimentDriver testScript;
   parse = fileName: removeEnds: callPackage ../parse { inherit fileName removeEnds; packets = experiment; };
   parsed-pre = parse "pre" true;
   parsed-post = parse "post" false;

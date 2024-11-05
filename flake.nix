@@ -50,9 +50,16 @@
         inherit system;
         overlays = import ./nix/overlays;
       };
-      test-matrix = lib.importJSON ./test-matrix/tests.json;
+      parameters = lib.importJSON ./test-matrix/parameters.json;
+      test-matrix = lib.cartesianProduct parameters;
       filterPipeline = pipeline: lib.filterAttrs (n: v: builtins.elem n [ "experiment" "parsed-pre" "parsed-post" "statistics" "graphs" ]) pipeline;
-      pipelineBuilder = parameters: filterPipeline (pkgs.callPackage ./analysis/pipeline { inherit parameters; });
+      protocols = import ./nix/constants/protocols.nix;
+      protocolToDriver = encapsulation: {
+        name = encapsulation;
+        value = (pkgs.testers.runNixOSTest (import ./nix/experiment.nix { inherit encapsulation; })).driver;
+      };
+      experimentDrivers = builtins.listToAttrs (builtins.map protocolToDriver protocols);
+      pipelineBuilder = parameters: filterPipeline (pkgs.callPackage ./analysis/pipeline { inherit parameters; experimentDriver = experimentDrivers.${parameters.encapsulation}; });
       defaultPipeline = pipelineBuilder (import ./nix/constants/defaultValues.nix);
       pipelines = builtins.map pipelineBuilder test-matrix;
       linkAllOutputsOfPipeline = pipeline: pkgs.linkFarm "pipeline" (lib.mapAttrsToList (name: value: { inherit name; path = value; }) pipeline);
