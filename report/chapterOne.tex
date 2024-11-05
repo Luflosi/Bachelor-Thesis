@@ -17,7 +17,7 @@ The files could either be explicitly compressed with a compression tool like zst
 
 
 Since we're only interested in measuring what happens during the actual test and not in the connection setup and teardown of iperf3, we use heuristics
-The connection setup and teardown of iperf3 should not be part of the analysis, hence a heuristic is employed to ignore this part of the packet capture. To find the start of the test, we find the first packet which is larger than a threshhold and ignore all packets that are sent after the duration of the test is over.
+The connection setup and teardown of iperf3 should not be part of the analysis, hence a heuristic is employed to ignore this part of the packet capture. To find the start of the test, we find the first packet which is larger than a threshhold. To find the end of the test, we find the last packet which is larger than a threshhold and also ignore all packets that are sent after the duration of the test is over.
 
 %%% Local Variables:
 %%% TeX-master: "thesis"

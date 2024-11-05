@@ -46,6 +46,7 @@ with open(args.input, 'rb') as f:
     pcap = dpkt.pcap.Reader(f)
 
     found_beginning = False
+    potential_end_buffer = []
     end_timestamp = None
 
     for (frame_number, (timestamp, buf)) in enumerate(pcap):
@@ -84,6 +85,15 @@ with open(args.input, 'rb') as f:
             'ip_payload_length': ip_payload_length,
             'hash': hash,
         }
+
+        # Heuristic to ignore the connection teardown at the end
+        if args.remove_ends:
+            if ip_payload_length <= 400:
+                potential_end_buffer.append(packet)
+                continue
+            if potential_end_buffer != []: # It was not actually the end
+                packets += potential_end_buffer
+                potential_end_buffer = []
         packets.append(packet)
 
     if args.remove_ends:
