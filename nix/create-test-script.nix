@@ -108,8 +108,8 @@ in writeText "test-script" ''
   ${lib.optionalString (encapsulation == "WireGuard") ''client.succeed("wg show >&2")''}
   ${lib.optionalString (encapsulation == "WireGuard") ''server.succeed("wg show >&2")''}
 
-  logger.succeed('kill -s INT "$(</ram/pid-lan)"')
-  logger.succeed('kill -s INT "$(</ram/pid-wan)"')
+  logger.succeed('kill -s SIGTERM "$(</ram/pid-lan)"')
+  logger.succeed('kill -s SIGTERM "$(</ram/pid-wan)"')
   logger.succeed('tail --pid="$(</ram/pid-lan)" -f /dev/null')
   logger.succeed('tail --pid="$(</ram/pid-wan)" -f /dev/null')
 
