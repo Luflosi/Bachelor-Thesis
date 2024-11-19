@@ -49,6 +49,9 @@ Data analysis pipeline:
 - TODO: for gaining insights, for example while comparing two different scenarios, it's helpful to plot data from multiple experiments in one plot. This still needs to be implemented.
 
 
+TODO: explain why we're capturing packets on a separate host.
+In the VM test setup, the virtual switch is configured to behave like a \href{https://en.wikipedia.org/wiki/Ethernet_hub}{hub} (\href{https://github.com/NixOS/nixpkgs/blob/0634959ae9c75ac8cab28dfcc9a0f045cf30dfc6/nixos/lib/test-driver/test_driver/vlan.py#L43}{TODO: reference to this}), which makes it easy to capture the packets on both VLANs. On real hardware with a real switch, this is not quite as trivial. To replicate this setup with real hardware, we (TODO: correct form?) use Cisco's Switched Port Analyzer (SPAN), also known as port mirroring. Since enabling SPAN disables our ability to transmit packets from that interface for management purposes, we use a USB to Ethernet adapter for the management interface.
+
 %%% Local Variables:
 %%% TeX-master: "thesis"
 %%% End:

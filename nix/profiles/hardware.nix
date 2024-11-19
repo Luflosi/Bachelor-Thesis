@@ -235,7 +235,7 @@
     "flakes"
   ];
 
-  networking.interfaces.eno1.useDHCP = true;
+  networking.interfaces.eno1.useDHCP = lib.mkDefault true;
 
   # This option defines the first version of NixOS you have installed on this particular machine,
   # and is used to maintain compatibility with application data (e.g. databases) created on older NixOS versions.
@@ -260,31 +260,52 @@
 
 
 /*
+Connect Client to port FastEthernet 0/1
+Connect Router to port FastEthernet 0/2
+Connect Server to port FastEthernet 0/3
+Connect Logger management port (USB interface) to port FastEthernet 0/4
+Connect Logger monitoring port (built-in interface) to port GigabitEthernet 0/1
+
 To configure the Cisco Switch:
-enable
-show vlan
-show interfaces
-configure terminal
-interface fastethernet 0/1
-switchport mode trunk
-switchport trunk allowed vlan 1,2,3
-switchport trunk native vlan 1
-exit
-interface fastethernet 0/2
-switchport mode trunk
-switchport trunk allowed vlan 1,2,3
-switchport trunk native vlan 1
-exit
-interface fastethernet 0/3
-switchport mode trunk
-switchport trunk allowed vlan 1,2,3
-switchport trunk native vlan 1
-exit
-interface fastethernet 0/4
-switchport mode trunk
-switchport trunk allowed vlan 1,2,3
-switchport trunk native vlan 1
-exit
-exit
-exit
+> enable
+# show vlan
+# show interfaces
+# configure terminal
+(config)# no spanning-tree vlan 1
+(config)# no spanning-tree vlan 2
+(config)# no spanning-tree vlan 3
+(config)# interface FastEthernet 0/1
+(config-if)# switchport mode trunk
+(config-if)# switchport trunk allowed vlan 1,2
+(config-if)# switchport trunk native vlan 1
+(config-if)# exit
+(config)# interface FastEthernet 0/2
+(config-if)# switchport mode trunk
+(config-if)# switchport trunk allowed vlan 1,2,3
+(config-if)# switchport trunk native vlan 1
+(config-if)# exit
+(config)# interface FastEthernet 0/3
+(config-if)# switchport mode trunk
+(config-if)# switchport trunk allowed vlan 1,3
+(config-if)# switchport trunk native vlan 1
+(config-if)# exit
+(config)# interface FastEthernet 0/4
+(config-if)# switchport mode trunk
+(config-if)# switchport trunk allowed vlan 1
+(config-if)# switchport trunk native vlan 1
+(config-if)# exit
+(config)# interface GigabitEthernet 0/1
+(config-if)# switchport mode trunk
+(config-if)# switchport nonegotiate
+(config-if)# no ip address
+(config-if)# exit
+(config)# no monitor session 1
+(config)# monitor session 1 source interface FastEthernet 0/2
+(config)# monitor session 1 destination interface GigabitEthernet 0/1 encapsulation replicate
+(config)# exit
+# exit
+
+Resources:
+https://support.telosalliance.com/article/smctkhp4p3-how-to-setup-switched-port-analyzer-on-cisco-switches
+https://www.cisco.com/c/de_de/support/docs/switches/catalyst-6500-series-switches/10570-41.html
 */
