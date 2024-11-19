@@ -36,6 +36,7 @@ let
   pingTimeoutStr = toString pingTimeout;
   udpPayloadSize = ip_payload_size - 8;
   iperfArgs = [
+    "-c" (if encapsulation == "none" then "192.168.2.3" else "192.168.20.3")
     "--time" (toString test_duration_s)
     "--udp"
     "--udp-retry" "100"
@@ -98,7 +99,7 @@ in writeText "test-script" ''
   ${lib.optionalString (encapsulation != "none") ''client.wait_until_succeeds("ping -c 1 fded:51e9:828f::3 >&2", timeout=${pingTimeoutStr})''}
   ${lib.optionalString (encapsulation != "none") ''client.wait_until_succeeds("ping -c 1 192.168.20.3 >&2", timeout=${pingTimeoutStr})''}
   # TODO: test in the other direction as well
-  client.succeed("iperf -c ${if encapsulation == "none" then "192.168.2.3" else "192.168.20.3"} ${iperfArgsStr} >&2")
+  client.succeed("iperf ${iperfArgsStr} >&2")
   ${lib.optionalString (encapsulation != "none") ''client.wait_until_succeeds("ping -c 1 192.168.20.3 >&2", timeout=${pingTimeoutStr})''}
   client.wait_until_succeeds("ping -c 1 192.168.2.3 >&2", timeout=${pingTimeoutStr})
 
