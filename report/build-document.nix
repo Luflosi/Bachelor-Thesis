@@ -75,6 +75,7 @@ pkgs.stdenvNoCC.mkDerivation rec {
   buildPhase = ''
     runHook preBuild
 
+    export max_print_line=19999
     SOURCE_DATE_EPOCH="${SOURCE_DATE_EPOCH}" latexmk ${lib.concatStringsSep " " flags}
 
     runHook postBuild
