@@ -20,10 +20,6 @@
 # Additional flags for latexmk
 , extraFlags ? []
 
-# Do not use the default latexmk flags. Usefull if you have a .latexmkrc or you
-# don't want to use lualatex
-, dontUseDefaultFlags ? false
-
 # texlive packages needed to build the document
 # you can also include other packages as a list.
 , texlive ? pkgs.texlive.combined.scheme-full
@@ -53,7 +49,7 @@ let
     "-usepretex"
   ];
   flags = lib.concatLists [
-    (lib.optionals (!dontUseDefaultFlags) defaultFlags)
+    defaultFlags
     extraFlags
     (lib.optional shellEscape "-shell-escape")
   ];
