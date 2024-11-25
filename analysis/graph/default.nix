@@ -6,12 +6,15 @@
   lib,
   python3,
   statistics,
+  variant,
 }:
+assert builtins.elem variant [ "latencies" "packet-counts" "throughput" ];
 let
   python = python3.withPackages (python-pkgs: (import ./python-deps.nix python-pkgs));
+  inputs = builtins.map (dir: "${dir}/statistics.json") statistics;
 in
 stdenvNoCC.mkDerivation {
-  name = "graph";
+  name = "graph-${variant}";
   realBuilder = lib.getExe python;
-  args = [ ./graph.py "--input" "${statistics}/statistics.json" "--write-out-path" ];
+  args = [ ./graph-${variant}.py "--inputs" ] ++ inputs ++ [ "--write-out-path" ];
 }

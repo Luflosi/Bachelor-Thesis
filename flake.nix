@@ -52,16 +52,18 @@
       };
       parameters = lib.importJSON ./test-matrix/parameters.json;
       test-matrix = lib.cartesianProduct parameters;
-      filterPipeline = pipeline: lib.filterAttrs (n: v: builtins.elem n [ "experiment" "parsed-pre" "parsed-post" "statistics" "graphs" ]) pipeline;
+      filterPipeline = pipeline: lib.filterAttrs (n: v: builtins.elem n [ "experiment" "parsed-pre" "parsed-post" "statistics" "graph-latencies" "graph-packet-counts" "graph-throughput" ]) pipeline;
       protocols = import ./nix/constants/protocols.nix;
       protocolToDriver = encapsulation: overhead: (pkgs.testers.runNixOSTest (import ./nix/experiment.nix { inherit encapsulation; })).driver;
       experimentDrivers = builtins.mapAttrs protocolToDriver protocols;
       pipelineBuilder = parameters: filterPipeline (pkgs.callPackage ./analysis/pipeline { inherit parameters protocols; experimentDriver = experimentDrivers.${parameters.encapsulation}; });
       defaultPipeline = pipelineBuilder (import ./nix/constants/defaultValues.nix);
-      pipelines = builtins.map pipelineBuilder test-matrix;
       linkAllOutputsOfPipeline = pipeline: pkgs.linkFarm "pipeline" (lib.mapAttrsToList (name: value: { inherit name; path = value; }) pipeline);
+      renderGraphThroughput = statistics: pkgs.callPackage ./analysis/graph { inherit statistics; variant = "throughput"; };
       mkPipelineName = p: "pipeline-duration-${toString p.test_duration_s}s-${toString p.ip_payload_size}bytes-${p.encapsulation}-delay-${toString p.delay_time_ms}ms-jitter-${toString p.delay_jitter_ms}ms-${p.delay_distribution}-loss-${toString p.loss_per_mille}‰-${p.loss_correlation}-duplicate-${toString p.duplicate_per_mille}‰-${p.duplicate_correlation}-reorder-${toString p.reorder_per_mille}‰";
-      testsFromJSON = pkgs.linkFarm "testsFromJSON" (lib.zipListsWith (parameters: pipeline: { name = mkPipelineName parameters; path = linkAllOutputsOfPipeline pipeline; }) test-matrix pipelines);
+      #testsFromJSON = pkgs.linkFarm "testsFromJSON" (lib.zipListsWith (parameters: pipeline: { name = mkPipelineName parameters; path = linkAllOutputsOfPipeline pipeline; }) test-matrix pipelines);
+      #testsFromJSON = pkgs.linkFarm "testsFromJSON" (builtins.map (parameters: { name = mkPipelineName parameters; path = linkAllOutputsOfPipeline (pipelineBuilder parameters); }) test-matrix);
+      testsFromJSON = renderGraphThroughput (builtins.map (parameters: (pipelineBuilder parameters).statistics) test-matrix);
     in defaultPipeline // {
       inherit testsFromJSON;
       report = import ./report/build-document.nix {
@@ -71,7 +73,7 @@
         minted = true;
         SOURCE_DATE_EPOCH = toString self.lastModified;
       };
-      default = self.outputs.packages.${system}.graphs;
+      default = self.outputs.packages.${system}.graph-latencies; # TODO: create graphs again using linkFarm
     });
 
     nixosConfigurations = let

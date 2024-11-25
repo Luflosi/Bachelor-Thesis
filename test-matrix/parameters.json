@@ -1,7 +1,7 @@
 {
-    "test_duration_s": [10],
+    "test_duration_s": [60],
     "ip_payload_size": [1400],
-    "encapsulation": ["WireGuard"],
+    "encapsulation": ["none", "WireGuard"],
     "delay_time_ms": [50],
     "delay_jitter_ms": [10],
     "delay_distribution": ["normal"],

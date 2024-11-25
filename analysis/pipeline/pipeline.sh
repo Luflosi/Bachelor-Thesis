@@ -5,6 +5,8 @@
 
 # This file is only for testing the pipeline without Nix
 
+# TODO: make work with split graph program
+
 ../parse/parse.py ../../result/pre.pcap > pre.json &
 PID_PRE=$!
 ../parse/parse.py ../../result/post.pcap > post.json &

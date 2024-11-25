@@ -27,8 +27,12 @@ let
   parse = fileName: removeEnds: callPackage ../parse { inherit fileName removeEnds; packets = experiment; };
   parsed-pre = parse "pre" true;
   parsed-post = parse "post" false;
-  statistics = callPackage ../statistics { pre = parsed-pre; post = parsed-post; overhead = protocols.${parameters.encapsulation}; };
-  graphs = callPackage ../graph { inherit statistics; };
+  statistic = callPackage ../statistics { pre = parsed-pre; post = parsed-post; overhead = protocols.${parameters.encapsulation}; };
+  statistics = [ statistic ];
+  graph-latencies = callPackage ../graph { inherit statistics; variant = "latencies"; };
+  graph-packet-counts = callPackage ../graph { inherit statistics; variant = "packet-counts"; };
+  graph-throughput = callPackage ../graph { inherit statistics; variant = "throughput"; };
 in {
-  inherit experiment parsed-pre parsed-post statistics graphs;
+  inherit experiment parsed-pre parsed-post graph-latencies graph-packet-counts graph-throughput;
+  statistics = statistic;
 }
