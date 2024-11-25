@@ -41,6 +41,7 @@ parser = argparse.ArgumentParser(
 
 parser.add_argument('-1', '--pre', required=True)
 parser.add_argument('-2', '--post', required=True)
+parser.add_argument('-a', '--overhead', required=True)
 parser.add_argument('-o', '--write-out-path',
                     action='store_true')
 
@@ -48,6 +49,7 @@ args = parser.parse_args()
 
 post_packets = read_json_file(args.post)
 pre_packets = read_json_file(args.pre)
+overhead = int(args.overhead)
 out = None
 if args.write_out_path:
     out = os.environ['out']
@@ -127,7 +129,7 @@ for time, pre_bucket in pre_buckets.items():
     dropped_packets = 0
     duplicate_packets = 0
     latencies = []
-    ip_payload_length_sum = 0
+    payload_length_sum = 0
     for (pre_hash, pre_frame_number, pre_frame_time_epoch, pre_ip_payload_length) in pre_bucket:
         packets = post_hash_to_frames_map[pre_hash]
         number_of_packet_copies = len(packets)
@@ -148,9 +150,10 @@ for time, pre_bucket in pre_buckets.items():
         if latency < 0:
             print(f'WARNING: packet arrived {-latency} ms before it was sent', file=sys.stderr)
         packet_count += 1
-        ip_payload_length_sum += pre_ip_payload_length
+        payload_length = pre_ip_payload_length - overhead
+        payload_length_sum += payload_length
         latencies.append(latency)
-    throughput = bytes_to_bits(bytes_to_megabytes(ip_payload_length_sum)) / BUCKET_DURATION_S
+    throughput = bytes_to_bits(bytes_to_megabytes(payload_length_sum)) / BUCKET_DURATION_S
     statistics = {
         'time': time,
         'counts': {

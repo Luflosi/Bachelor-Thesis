@@ -5,7 +5,7 @@
   encapsulation,
 }:
 
-assert builtins.elem encapsulation (import ./constants/protocols.nix);
+assert builtins.elem encapsulation (builtins.attrNames (import ./constants/protocols.nix));
 
 { lib, pkgs, ... }:
 {

@@ -54,12 +54,9 @@
       test-matrix = lib.cartesianProduct parameters;
       filterPipeline = pipeline: lib.filterAttrs (n: v: builtins.elem n [ "experiment" "parsed-pre" "parsed-post" "statistics" "graphs" ]) pipeline;
       protocols = import ./nix/constants/protocols.nix;
-      protocolToDriver = encapsulation: {
-        name = encapsulation;
-        value = (pkgs.testers.runNixOSTest (import ./nix/experiment.nix { inherit encapsulation; })).driver;
-      };
-      experimentDrivers = builtins.listToAttrs (builtins.map protocolToDriver protocols);
-      pipelineBuilder = parameters: filterPipeline (pkgs.callPackage ./analysis/pipeline { inherit parameters; experimentDriver = experimentDrivers.${parameters.encapsulation}; });
+      protocolToDriver = encapsulation: overhead: (pkgs.testers.runNixOSTest (import ./nix/experiment.nix { inherit encapsulation; })).driver;
+      experimentDrivers = builtins.mapAttrs protocolToDriver protocols;
+      pipelineBuilder = parameters: filterPipeline (pkgs.callPackage ./analysis/pipeline { inherit parameters protocols; experimentDriver = experimentDrivers.${parameters.encapsulation}; });
       defaultPipeline = pipelineBuilder (import ./nix/constants/defaultValues.nix);
       pipelines = builtins.map pipelineBuilder test-matrix;
       linkAllOutputsOfPipeline = pipeline: pkgs.linkFarm "pipeline" (lib.mapAttrsToList (name: value: { inherit name; path = value; }) pipeline);
@@ -80,7 +77,7 @@
     nixosConfigurations = let
       protocolsDir = hostName: "${toString inputs.self}/nix/hosts/${hostName}/protocols";
       isHostWithProtocol = hostName: builtins.elem hostName [ "client" "server" ];
-      protocols = import ./nix/constants/protocols.nix;
+      protocols = builtins.attrNames (import ./nix/constants/protocols.nix);
       protocolsNotNone = builtins.filter (p: p != "none") protocols;
       importProfile = hostName: builtins.map (profile: {
         ${profile} = {

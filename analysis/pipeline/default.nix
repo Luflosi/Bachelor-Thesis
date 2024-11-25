@@ -9,6 +9,7 @@
   pkgs,
   experimentDriver,
   parameters ? {},
+  protocols,
 }:
 let
   runDriver = driver: testScript: stdenv.mkDerivation {
@@ -26,7 +27,7 @@ let
   parse = fileName: removeEnds: callPackage ../parse { inherit fileName removeEnds; packets = experiment; };
   parsed-pre = parse "pre" true;
   parsed-post = parse "post" false;
-  statistics = callPackage ../statistics { pre = parsed-pre; post = parsed-post; };
+  statistics = callPackage ../statistics { pre = parsed-pre; post = parsed-post; overhead = protocols.${parameters.encapsulation}; };
   graphs = callPackage ../graph { inherit statistics; };
 in {
   inherit experiment parsed-pre parsed-post statistics graphs;

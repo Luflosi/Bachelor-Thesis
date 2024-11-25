@@ -4,6 +4,7 @@
 {
   pre,
   post,
+  overhead,
   stdenvNoCC,
   lib,
   python3,
@@ -11,5 +12,5 @@
 stdenvNoCC.mkDerivation {
   name = "statistics";
   realBuilder = lib.getExe python3;
-  args = [ ./statistics.py "--pre" "${pre}/pre.json" "--post" "${post}/post.json" "--write-out-path" ];
+  args = [ ./statistics.py "--pre" "${pre}/pre.json" "--post" "${post}/post.json" "--overhead" (toString overhead) "--write-out-path" ];
 }
