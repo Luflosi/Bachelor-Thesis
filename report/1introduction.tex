@@ -4,4 +4,46 @@
 \chapter{Introduction}
 
 
-Many places in the world encounter internet censorship. To try to get around the censorship, numerous different techniques, some very creative, were developed. They obfuscate data and either hide it from or make it seem like innocent data to the censors \todo{mention steganography?}. These censorship circumvention protocols are likely developed in laboratory conditions with ideal networks and plentiful computational resources. These are not the same conditions encountered in the real world, where networks may have a high latency, high packet loss and low throughput. Running these protocols on phones or other mobile devices also constrains the available CPU and RAM resources. For this reason, we aim to analyze the behaviour of different censorship circumvention protocols under these conditions. Accurately simulating real-world conditions is challenging. We use \href{https://man7.org/linux/man-pages/man8/tc-netem.8.html}{netem}, Linux's network emulator as a reasonable approximation of the real world. In order to evaluate different protocols with many different network conditions, we need an automated testing setup. We will first use the NixOS testing framework to simulate our test setup using VMs for experimentation and then run the setup on real hardware to make sure that our results are not influenced by virtualisation. Censorship circumvention protocols usually work like a network tunnel and transport the actual payload inside of them. We will analyze the latency and packet size each protocol adds. We are also looking for pathological behaviour of the protocols such as unreasonable packet loss or latencies inside the tunnel compared to outside under unfavorable network conditions. We will also analyze the CPU and RAM resources each protocol consumes.
+Many places in the world encounter internet censorship.
+To try to get around the censorship, numerous different techniques, some very creative, were developed.
+They obfuscate data and either hide it from or make it seem like innocent data to the censors \todo{mention steganography?}.
+
+\begin{itemize}
+  \item Zensur sieht in der Realität anders aus
+\end{itemize}
+Running these protocols on phones or other mobile devices also constrains the available CPU and RAM resources.
+
+However, these censorship circumvention protocols are likely developed in laboratory conditions with ideal networks and plentiful computational resources.
+These are not the same conditions encountered in the real world, where networks may have a high latency, high packet loss and low throughput.
+
+For this reason, we aim to analyze the behaviour of different censorship circumvention protocols under these conditions.
+Specifically, we ask the research question:
+\emph{``Haupt-research question here.''}
+This research question breaks up into the following sub-questions:
+\begin{itemize}
+  \item ...
+  \item ...
+  \item ...
+  \item ...
+\end{itemize}
+
+We answer these research questions using a simulation environment.
+Accurately simulating real-world conditions is challenging.
+We use \href{https://man7.org/linux/man-pages/man8/tc-netem.8.html}{netem}, Linux's network emulator as a reasonable approximation of the real world.
+
+In order to evaluate different protocols with many different network conditions, we need an automated testing setup.
+We will first use the NixOS testing framework to simulate our test setup using VMs for experimentation and then run the setup on real hardware to make sure that our results are not influenced by virtualisation.
+Censorship circumvention protocols usually work like a network tunnel and transport the actual payload inside of them.
+
+We will analyze the latency and packet size each protocol adds.
+We are also looking for pathological behaviour of the protocols such as unreasonable packet loss or latencies inside the tunnel compared to outside under unfavorable network conditions.
+We will also analyze the CPU and RAM resources each protocol consumes.
+
+\noindent\textbf{Structure:}
+The remainder of this thesis is structured as follows:
+% Background
+In Section~\ref{TODO} we will ...
+% Methodik
+Subsequently, in Section~\ref{TODO} we (present tense) ...
+
+\todo{chapter instead of section}
