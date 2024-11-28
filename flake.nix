@@ -142,6 +142,7 @@
           ))
           (get-latex-packages pkgs)
           (get-latex-dev-packages pkgs)
+          pkgs.texstudio
         ];
       };
     }));

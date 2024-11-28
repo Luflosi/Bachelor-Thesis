@@ -3,4 +3,7 @@
 
 \chapter{Background and Related Work}
 
-There must be some analysis on WireGuard
+\todo{There must be some analysis on WireGuard}
+\todo{Split related work into separate chapter?}
+
+There are a number of \href{https://brianlinkletter.com/2023/02/network-emulators-and-network-simulators-2023/}{existing network simulators} for simulating complex network setups with routers, switches, etc.. Many of them focus on simulating mesh networks for testing routing protocols, see for example \href{https://github.com/mwarning/meshnet-lab}{Mesh Network Lab}. Our network is very simple, while the complexity lies in the configuration of the hosts. This is why we chose the NixOS testing framework. It allows declararing the exact configuration of the hosts and the virtual network in code. All dependencies are pinned in a lock file and no outside dependencies are used so everything should still be reproducible in a decade or more without having to e.g. hunt for ancient Ubuntu images.

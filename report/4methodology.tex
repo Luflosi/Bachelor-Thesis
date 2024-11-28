@@ -3,7 +3,6 @@
 
 \chapter{Methodology}
 
-TODO:page numbers
 In an attempt to save space...
 The \href{https://en.wikipedia.org/wiki/Pcap}{.pcap} files only compress well if the data is not encrypted or otherwise scrambled.
 The files could either be explicitly compressed with a compression tool like zstd or the compression could be done at the filesystem level, e.g. with \href{https://openzfs.org/wiki/Main_Page}{ZFS}.
@@ -39,4 +38,4 @@ Data analysis pipeline:
 
 \todo{explain why we're capturing packets on a separate host.}
 In the VM test setup, the virtual switch is configured to behave like a \href{https://en.wikipedia.org/wiki/Ethernet_hub}{hub} (\href{https://github.com/NixOS/nixpkgs/blob/0634959ae9c75ac8cab28dfcc9a0f045cf30dfc6/nixos/lib/test-driver/test_driver/vlan.py#L43}{\todo{reference to this}}), which makes it easy to capture the packets on both VLANs. On real hardware with a real switch, this is not quite as trivial. To replicate this setup with real hardware, we use Cisco's Switched Port Analyzer (SPAN), also known as port mirroring. Since enabling SPAN disables our ability to transmit packets from that interface for management purposes, we use a USB to Ethernet adapter for the management interface.
-
+\todo{Specify the exact hardware model of the PCs and the SBCs}
