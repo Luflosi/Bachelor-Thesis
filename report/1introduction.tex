@@ -32,18 +32,16 @@ Accurately simulating real-world conditions is challenging.
 We use \href{https://man7.org/linux/man-pages/man8/tc-netem.8.html}{netem}, Linux's network emulator as a reasonable approximation of the real world.
 
 In order to evaluate different protocols with many different network conditions, we need an automated testing setup.
-We will first use the NixOS testing framework to simulate our test setup using VMs for experimentation and then run the setup on real hardware to make sure that our results are not influenced by virtualisation.
+We first use the NixOS testing framework to simulate our test setup using VMs for experimentation and then run the setup on real hardware to make sure that our results are not influenced by virtualisation.
 Censorship circumvention protocols usually work like a network tunnel and transport the actual payload inside of them.
 
-We will analyze the latency and packet size each protocol adds.
+We analyze the latency and packet size each protocol adds.
 We are also looking for pathological behaviour of the protocols such as unreasonable packet loss or latencies inside the tunnel compared to outside under unfavorable network conditions.
-We will also analyze the CPU and RAM resources each protocol consumes.
+We also analyze the CPU and RAM resources each protocol consumes.
 
 \noindent\textbf{Structure:}
 The remainder of this thesis is structured as follows:
 % Background
-In Section~\ref{TODO} we will ...
-% Methodik
-Subsequently, in Section~\ref{TODO} we (present tense) ...
-
-\todo{chapter instead of section}
+In \Cref{chap:background} we ...
+% Methodology
+Subsequently, in \Cref{chap:methodology} we ...
