@@ -36,7 +36,7 @@
 # Date for the document in unix time. You can change it
 # to "$(date -r . +%s)" , "$(date -d "2022/02/22" +%s)", toString
 # self.lastModified
-, SOURCE_DATE_EPOCH ? "$(git log -1 --pretty=%ct)"
+, SOURCE_DATE_EPOCH
 }:
 
 let
@@ -60,7 +60,7 @@ assert minted -> shellEscape;
 pkgs.stdenvNoCC.mkDerivation rec {
   inherit src name;
 
-  buildInputs = [ texlive pkgs.git ] ++
+  buildInputs = [ texlive ] ++
     lib.optional minted [ pkgs.which pygments ];
 
   TEXMFHOME = "./cache";
