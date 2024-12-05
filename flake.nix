@@ -44,6 +44,7 @@
       texlab
       zathura
       wmctrl
+      texstudio
     ];
   in {
     packages = forAllSystems (system: let
@@ -143,7 +144,6 @@
           ))
           (get-latex-packages pkgs)
           (get-latex-dev-packages pkgs)
-          pkgs.texstudio
         ];
       };
     }));
