@@ -4,9 +4,8 @@
 # Build a reproducible latex document with latexmk, based on:
 # https://flyx.org/nix-flakes-latex/
 
-{ pkgs
-# Document source
-, src ? ./.
+{ lib
+, pkgs
 
 # Name of the final pdf file
 , name ? "document.pdf"
@@ -40,7 +39,7 @@
 }:
 
 let
-  lib = pkgs.lib;
+  fs = lib.fileset;
   defaultFlags = [
     "-interaction=nonstopmode"
     "-pdf"
@@ -58,7 +57,14 @@ in
 assert minted -> shellEscape;
 
 pkgs.stdenvNoCC.mkDerivation rec {
-  inherit src name;
+  inherit name;
+  src = fs.toSource {
+    root = ./.;
+    fileset = fs.unions [
+      ./.latexmkrc
+      (fs.fileFilter (file: file.hasExt "tex" || file.hasExt "eps" || file.hasExt "sty" || file.hasExt "bib") ./.)
+    ];
+  };
 
   buildInputs = [ texlive ] ++
     lib.optional minted [ pkgs.which pygments ];

@@ -67,7 +67,7 @@
     in defaultPipeline // {
       inherit testsFromJSON;
       report = import ./report/build-document.nix {
-        inherit pkgs;
+        inherit lib pkgs;
         texlive = get-latex-packages pkgs;
         shellEscape = true;
         minted = true;
