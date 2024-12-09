@@ -129,7 +129,8 @@ for time, pre_bucket in pre_buckets.items():
     dropped_packets = 0
     duplicate_packets = 0
     latencies = []
-    payload_length_sum = 0
+    payload_length_sum_with_overhead = 0
+    payload_length_sum_without_overhead = 0
     for (pre_hash, pre_frame_number, pre_frame_time_epoch, pre_ip_payload_length) in pre_bucket:
         packets = post_hash_to_frames_map[pre_hash]
         number_of_packet_copies = len(packets)
@@ -150,10 +151,11 @@ for time, pre_bucket in pre_buckets.items():
         if latency < 0:
             print(f'WARNING: packet arrived {-latency} ms before it was sent', file=sys.stderr)
         packet_count += 1
-        payload_length = pre_ip_payload_length - overhead
-        payload_length_sum += payload_length
+        payload_length_sum_with_overhead += pre_ip_payload_length
+        payload_length_sum_without_overhead += pre_ip_payload_length - overhead
         latencies.append(latency)
-    throughput = bytes_to_bits(bytes_to_megabytes(payload_length_sum)) / BUCKET_DURATION_S
+    throughput_with_overhead = bytes_to_bits(bytes_to_megabytes(payload_length_sum_with_overhead)) / BUCKET_DURATION_S
+    throughput_without_overhead = bytes_to_bits(bytes_to_megabytes(payload_length_sum_without_overhead)) / BUCKET_DURATION_S
     statistics = {
         'time': time,
         'counts': {
@@ -161,9 +163,11 @@ for time, pre_bucket in pre_buckets.items():
             'dropped': dropped_packets, # Packets which were sent but not received
             'duplicate': duplicate_packets, # Packets which were received more than once
         },
-        'throughput': throughput,
+        'throughput_without_overhead': throughput_without_overhead,
         'latencies': latencies,
     }
+    if throughput_with_overhead != throughput_without_overhead:
+        statistics['throughput_with_overhead'] = throughput_with_overhead
     time_series.append(statistics)
 
 

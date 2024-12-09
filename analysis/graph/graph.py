@@ -43,7 +43,8 @@ relative_times = []
 counts_packets_over_time = []
 counts_dropped_over_time = []
 counts_duplicate_over_time = []
-throughput_over_time = []
+throughput_over_time_with_overhead = []
+throughput_over_time_without_overhead = []
 latencies_over_time = []
 for data_point in data['time_series']:
     relative_time = data_point['time'] - first_time + 1 # Start counting at 1
@@ -52,10 +53,13 @@ for data_point in data['time_series']:
     counts_packets_over_time.append(data_point['counts']['packets'])
     counts_dropped_over_time.append(data_point['counts']['dropped'])
     counts_duplicate_over_time.append(data_point['counts']['duplicate'])
-    throughput_over_time.append(data_point['throughput'])
+    throughput_over_time_without_overhead.append(data_point['throughput_without_overhead'])
+    if 'throughput_with_overhead' in data_point:
+        throughput_over_time_with_overhead.append(data_point['throughput_with_overhead'])
     latencies_over_time.append(data_point['latencies'])
 
 assert sorted(set(labels)) == sorted(labels), f'The labels are not unique: {labels}'
+assert throughput_over_time_with_overhead == [] or len(throughput_over_time_with_overhead) == len(throughput_over_time_without_overhead), 'The two throughputs have inconsistent lengths'
 
 plt.style.use('_mpl-gallery')
 plt.rcParams.update({'figure.autolayout': True})
@@ -105,7 +109,9 @@ plt.show()
 fig, ax = plt.subplots(figsize=figsize)
 ax.set_xlabel(f'Time ({duration_unit})')
 ax.set_ylabel(f'Throughput ({throughput_unit})')
-ax.plot(relative_times, throughput_over_time)
+if throughput_over_time_with_overhead != []:
+    ax.plot(relative_times, throughput_over_time_with_overhead, dashes=[1, 3], dash_capstyle = 'round')
+ax.plot(relative_times, throughput_over_time_without_overhead)
 ax.set_ylim(bottom=0)
 
 if out != None:
