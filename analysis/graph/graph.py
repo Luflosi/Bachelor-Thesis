@@ -104,7 +104,7 @@ plt.show()
 
 fig, ax = plt.subplots(figsize=figsize)
 ax.set_xlabel(f'Time ({duration_unit})')
-ax.set_ylabel(f'Thriughput ({throughput_unit})')
+ax.set_ylabel(f'Throughput ({throughput_unit})')
 ax.plot(relative_times, throughput_over_time)
 ax.set_ylim(bottom=0)
 
