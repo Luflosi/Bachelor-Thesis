@@ -6,42 +6,55 @@
 
 Many places in the world encounter internet censorship.
 To try to get around the censorship, numerous different techniques, some very creative, were developed.
-They obfuscate data and either hide it from or make it seem like innocent data to the censors \todo{mention steganography?}.
+Depending on the threat model, the goal can be to either "just" circumvent the censorship or to also hide from the censors the fact that circumvention took place.
+\href{https://en.wikipedia.org/wiki/Steganography}{Steganography} \href{https://en.wikipedia.org/wiki/List_of_steganography_techniques}{techniques} can help with the latter goal.
+Internet censorship doesn't happen equally everywhere.
+It is often employed to restrict access of a population to sensitive information and as such is much more likely to be present on kinds of internet connections used by many people as opposed to e.g. data centers and these people are likely using portable or low-power devices such as laptops and phones as opposed to servers.
+These kinds of internet connections are optimized for low cost and include access technologies like cellular networks, DSL and WLAN.
+\todo{mention coffe shops, hotels, city WiFi?}
 
+The \href{https://ooni.org/about/}{Open Observatory of Network Interference (OONI)} project measures internet censorship.
+Censorship in the real world can be done in many different ways:
 \begin{itemize}
-  \item Zensur sieht in der Realität anders aus
+  \item TODO: Zensur sieht in der Realität anders aus
+  \item Passively analyzing the data traffic and sending TCP RST packets to terminate unwanted TCP connections
+  \item Filtering DNS queries and return useless responses for unwanted domains
+  \item Drop all packets to certain IP addresses
+  \item \todo{add more items and add structure with sub-items}
 \end{itemize}
-Running these protocols on phones or other mobile devices also constrains the available CPU and RAM resources.
+These types of censorship can be circumvented in different ways, e.g. fake TCP RST packets sent by unsophisticated firewalls can often be differentiated from the real ones and then simply ignored\todo{reference project to circumvent the Russian firewall}. More sophisticated firewalls can be circumvented with different types of tunnels.
 
+Running these protocols on phones or other mobile devices also constrains the available CPU and RAM resources.
 However, these censorship circumvention protocols are likely developed in laboratory conditions with ideal networks and plentiful computational resources.
 These are not the same conditions encountered in the real world, where networks may have a high latency, high packet loss and low throughput.
 
 For this reason, we aim to analyze the behaviour of different censorship circumvention protocols under these conditions.
 Specifically, we ask the research question:
-\emph{``Haupt-research question here.''}
+\emph{``How do censorship circumvention protocols react to bad network conditions?''}
 This research question breaks up into the following sub-questions:
 \begin{itemize}
-  \item ...
-  \item ...
-  \item ...
-  \item ...
+  \item How much packet size overhead does each protocol add?
+  \item How much does the MTU decrease by using each protocol?
+  \item How much additional latency does each protocol add?
+  \item Do any protocols introduce additional packet loss?
+  \item How much processing power and RAM does each protocol consume/require?
 \end{itemize}
 
 We answer these research questions using a simulation environment.
 Accurately simulating real-world conditions is challenging.
-We use \href{https://man7.org/linux/man-pages/man8/tc-netem.8.html}{netem}, Linux's network emulator as a reasonable approximation of the real world.
+We use \href{https://man7.org/linux/man-pages/man8/tc-netem.8.html}{netem}, Linux's network emulator as an approximation of the real world.
+We first use the NixOS testing framework to simulate our test setup using VMs for experimentation and then run the setup on real hardware to make sure that our results are not influenced by the virtualisation.
 
-In order to evaluate different protocols with many different network conditions, we need an automated testing setup.
-We first use the NixOS testing framework to simulate our test setup using VMs for experimentation and then run the setup on real hardware to make sure that our results are not influenced by virtualisation.
 Censorship circumvention protocols usually work like a network tunnel and transport the actual payload inside of them.
 
-We analyze the latency and packet size each protocol adds.
 We are also looking for pathological behaviour of the protocols such as unreasonable packet loss or latencies inside the tunnel compared to outside under unfavorable network conditions.
-We also analyze the CPU and RAM resources each protocol consumes.
 
 \noindent\textbf{Structure:}
 The remainder of this thesis is structured as follows:
 % Background
-In \Cref{chap:background} we ...
+In \Cref{chap:background} we summarize previous research on the topic.
 % Methodology
-Subsequently, in \Cref{chap:methodology} we ...
+Subsequently, in \Cref{chap:methodology} we describe our test setup and how we measure things.
+After that, in \Cref{chap:results} we show the results of our measurements and compare them to each other.
+In \Cref{chap:discussion} we answer our research questions, describe interesting and surprising things we found along the way but also limitations of our testing methodology and things we could have done better.
+Finally, in \Cref{chap:conclusion} we briefly summarize our research and discuss future research.
