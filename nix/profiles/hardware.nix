@@ -41,7 +41,7 @@
 
   boot.zfs.devNodes = lib.mkDefault "/dev/disk/by-partlabel";
 
-  boot.kernelPackages = lib.mkDefault pkgs.linuxPackages_6_10;
+  boot.kernelPackages = lib.mkDefault pkgs.linuxPackages_6_12;
 
   boot.loader = {
     efi = {
