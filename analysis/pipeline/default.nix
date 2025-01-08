@@ -4,7 +4,7 @@
 {
   callPackage,
   testers,
-  stdenv,
+  stdenvNoCC,
   lib,
   pkgs,
   experimentDriver,
@@ -12,7 +12,7 @@
   protocols,
 }:
 let
-  runDriver = driver: testScript: stdenv.mkDerivation {
+  runDriver = driver: testScript: stdenvNoCC.mkDerivation {
     name = "vm-test-run";
     requiredSystemFeatures = [ "nixos-test" "kvm" ];
     buildCommand = ''
