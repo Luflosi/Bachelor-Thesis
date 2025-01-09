@@ -221,6 +221,7 @@
   environment.systemPackages = with pkgs; [
     git
     helix
+    htop
     kitty.terminfo
     tree
   ];
