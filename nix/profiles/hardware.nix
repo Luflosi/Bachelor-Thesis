@@ -3,14 +3,17 @@
 
 # To install: nix run github:nix-community/nixos-anywhere -- --flake .#client nixos@nixos.lan
 
-{ lib, pkgs, ... }: {
+{ lib, pkgs, ... }:
+let
+  constantsSSH = import ../constants/ssh.nix;
+in {
   services.openssh = {
     enable = true;
     allowSFTP = false;
     settings = {
       KbdInteractiveAuthentication = false;
       PasswordAuthentication = false;
-      PermitRootLogin = "no";
+      PermitRootLogin = "yes";
       AllowTcpForwarding = false;
       X11Forwarding = false;
       AllowAgentForwarding = false;
@@ -26,10 +29,9 @@
     shell = pkgs.zsh;
     group = "users";
     password = ""; # Allow login without a password
-    openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL280aidPimp3aTHGiLN99bQS8AIv/Dz4+YkfxE8fgsp key"
-    ];
+    openssh.authorizedKeys.keys = constantsSSH.userKeys;
   };
+  users.users.root.openssh.authorizedKeys.keys = constantsSSH.rootKeys;
 
   programs.zsh.enable = true;
 
