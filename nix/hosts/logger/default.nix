@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2024 Lukas Zirpel <thesis+lukas@zirpel.de>
 # SPDX-License-Identifier: GPL-3.0-only
 
-{ pkgs, ... }: {
+{ lib, pkgs, ... }: {
   imports = [
     ../common.nix
   ];
@@ -27,4 +27,21 @@
   # Set interface state to "up"
   networking.interfaces.lan.ipv4.addresses = [];
   networking.interfaces.wan.ipv4.addresses = [];
+
+  systemd.services = let
+    mkUnit = interface: filename: {
+      "tcpdump-${interface}" = {
+        description = "Service that captures network traffic on the ${interface} interface";
+        after = [ "network.target" ];
+        startLimitBurst = 1;
+        serviceConfig = {
+          ExecStart = "${lib.getExe pkgs.tcpdump} -n -B 10240 -i ${interface} -w /ram/${filename}.pcap";
+        };
+      };
+    };
+  in
+    (mkUnit "lan" "post")
+    //
+    (mkUnit "wan" "pre")
+  ;
 }

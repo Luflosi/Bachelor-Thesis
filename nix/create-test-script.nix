@@ -89,8 +89,12 @@ in writeText "test-script" ''
   router.succeed("tc qdisc show dev lan >&2")
 
   logger.succeed("tcpdump --list-time-stamp-types >&2") # See https://nanxiao.github.io/tcpdump-little-book/posts/set-timestamp-type-and-precision-during-capture.html
-  logger.succeed("tcpdump -n -B 10240 -i lan -w /ram/post.pcap 2>/ram/stderr-lan >/dev/null & echo $! >/ram/pid-lan")
-  logger.succeed("tcpdump -n -B 10240 -i wan -w /ram/pre.pcap 2>/ram/stderr-wan >/dev/null & echo $! >/ram/pid-wan")
+  logger.succeed("systemctl start tcpdump-lan.service")
+  logger.succeed("systemctl start tcpdump-wan.service")
+  lan_id = logger.succeed("systemctl show -p InvocationID --value tcpdump-lan.service").strip()
+  wan_id = logger.succeed("systemctl show -p InvocationID --value tcpdump-wan.service").strip()
+  assert len(lan_id) > 10, "The lan InvocationID is too short"
+  assert len(wan_id) > 10, "The wan InvocationID is too short"
 
   # Wait for tcpdump to start recording
   client.succeed("sleep 1")
@@ -110,16 +114,20 @@ in writeText "test-script" ''
   ${lib.optionalString (encapsulation == "WireGuard") ''client.succeed("wg show >&2")''}
   ${lib.optionalString (encapsulation == "WireGuard") ''server.succeed("wg show >&2")''}
 
-  logger.succeed('kill -s SIGTERM "$(</ram/pid-lan)"')
-  logger.succeed('kill -s SIGTERM "$(</ram/pid-wan)"')
-  logger.succeed('tail --pid="$(</ram/pid-lan)" -f /dev/null')
-  logger.succeed('tail --pid="$(</ram/pid-wan)" -f /dev/null')
+  logger.succeed("systemctl stop tcpdump-lan.service")
+  logger.succeed("systemctl stop tcpdump-wan.service")
 
-  logger.succeed("cat /ram/stderr-lan >&2")
-  logger.succeed("cat /ram/stderr-wan >&2")
+  logger.succeed(f"journalctl _SYSTEMD_INVOCATION_ID={lan_id} >&2")
+  logger.succeed(f"journalctl _SYSTEMD_INVOCATION_ID={wan_id} >&2")
 
-  assert "0 packets dropped by kernel" in logger.succeed("cat /ram/stderr-lan").splitlines(), "The kernel dropped some packets"
-  assert "0 packets dropped by kernel" in logger.succeed("cat /ram/stderr-wan").splitlines(), "The kernel dropped some packets"
+  def assert_no_dropped_packets(interface, id):
+    log = logger.succeed(f"journalctl _SYSTEMD_INVOCATION_ID={id}")
+    lines = log.splitlines()
+    messages = [line.split(": ")[1] for line in lines]
+    assert "0 packets dropped by kernel" in messages, f"The kernel dropped some packets on the {interface} interface"
+
+  assert_no_dropped_packets("lan", lan_id)
+  assert_no_dropped_packets("wan", wan_id)
 
   logger.succeed("lsof -t /ram/pre.pcap >&2 || true")
   logger.succeed("lsof -t /ram/post.pcap >&2 || true")
