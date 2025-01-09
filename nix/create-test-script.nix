@@ -63,6 +63,7 @@ in writeText "test-script" ''
   router.wait_for_unit("network.target")
   server.wait_for_unit("network.target")
   logger.wait_for_unit("network.target")
+  client.succeed("systemctl start network-online.target")
   client.wait_for_unit("network-online.target")
   server.wait_for_unit("iperf3.service")
 
