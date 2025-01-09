@@ -34,4 +34,9 @@
       interface = "eno1";
     };
   };
+
+  fileSystems."/ram" = {
+    fsType = "tmpfs";
+    options = [ "size=2G" ];
+  };
 }
