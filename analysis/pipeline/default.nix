@@ -3,10 +3,7 @@
 
 {
   callPackage,
-  testers,
   stdenvNoCC,
-  lib,
-  pkgs,
   measurementDriver,
   parameters ? {},
   protocols,
