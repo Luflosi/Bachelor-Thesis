@@ -69,12 +69,12 @@ nixos-anywhere uses \href{https://github.com/nix-community/disko}{disko} to part
 
 Data analysis pipeline:
 \begin{itemize}
-  \item run the experiment setup
+  \item run the measurement setup
   \item capture packets before and after the router and store them in .pcap files
   \item for each packet, extract the timestamp and compute the size and \href{https://en.wikipedia.org/wiki/BLAKE_(hash_function)#BLAKE3}{BLAKE3} hash of the IP payload and write the information into a \href{https://en.wikipedia.org/wiki/JSON}{JSON} file (done in analysis/parse/parse.py)
   \item for each packet captured before the router, find the same packet after the router (done in analysis/statistics/statistics.py). If we assume, that all packets are unique and that the router does not modify packets, then we can match up the unique hash of each packet before the router to some number of packets after the router. If no matching packet can be found after flowing through the router, it means that the packet was dropped. If more than one packet matches, it means that it was duplicated. If exactly one packet matches, it was routed without duplication or being dropped. For meaningful statistics, we group the data into short chunks (buckets) (1s) and compute bandwidth and packet counts over that bucket. The latency introduced by the router can be measured by computing the difference between the timestamps of each packet before the router and the first corresponding packet after the router. Dropped packets are ignored and for duplicated packets only the first arriving packet is counted. Throughput can be measured by summing up the IP payload \todo{should we measure at a different layer?} and dividing it by the time duration of the bucket. Dropped packets are ignored and packets which were duplicated count only once. The timestamp, dropped, duplicated and normal packet counts, throughput and a list of the latency of each packet are stored per bucket and written to a JSON file.
   \item Graphs are drawn using \href{https://matplotlib.org/}{Matplotlib} (done in analysis/graph/graph.py)
-  \item \todo{for gaining insights, for example while comparing two different scenarios, it's helpful to plot data from multiple experiments in one plot. This still needs to be implemented.}
+  \item \todo{for gaining insights, for example while comparing two different scenarios, it's helpful to plot data from multiple measurements in one plot. This still needs to be implemented.}
 \end{itemize}
 
 

@@ -7,7 +7,7 @@
   stdenvNoCC,
   lib,
   pkgs,
-  experimentDriver,
+  measurementDriver,
   parameters ? {},
   protocols,
 }:
@@ -23,12 +23,12 @@ let
     '';
   };
   testScript = callPackage (import ../../nix/create-test-script.nix parameters) { };
-  experiment = runDriver experimentDriver testScript;
-  parse = fileName: removeEnds: callPackage ../parse { inherit fileName removeEnds; packets = experiment; };
+  measurement = runDriver measurementDriver testScript;
+  parse = fileName: removeEnds: callPackage ../parse { inherit fileName removeEnds; packets = measurement; };
   parsed-pre = parse "pre" true;
   parsed-post = parse "post" false;
   statistics = callPackage ../statistics { pre = parsed-pre; post = parsed-post; overhead = protocols.${parameters.encapsulation}; };
   graphs = callPackage ../graph { inherit statistics; };
 in {
-  inherit experiment parsed-pre parsed-post statistics graphs;
+  inherit measurement parsed-pre parsed-post statistics graphs;
 }

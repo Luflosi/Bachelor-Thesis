@@ -9,7 +9,7 @@ assert builtins.elem encapsulation (builtins.attrNames (import ./constants/proto
 
 { lib, pkgs, ... }:
 {
-  name = "experiment";
+  name = "measurement";
 
   defaults = { ... }: {
     imports = [

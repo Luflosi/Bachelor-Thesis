@@ -54,11 +54,11 @@
       };
       parameters = lib.importJSON ./test-matrix/parameters.json;
       test-matrix = lib.cartesianProduct parameters;
-      filterPipeline = pipeline: lib.filterAttrs (n: v: builtins.elem n [ "experiment" "parsed-pre" "parsed-post" "statistics" "graphs" ]) pipeline;
+      filterPipeline = pipeline: lib.filterAttrs (n: v: builtins.elem n [ "measurement" "parsed-pre" "parsed-post" "statistics" "graphs" ]) pipeline;
       protocols = import ./nix/constants/protocols.nix;
-      protocolToDriver = encapsulation: overhead: (pkgs.testers.runNixOSTest (import ./nix/experiment.nix { inherit encapsulation; })).driver;
-      experimentDrivers = builtins.mapAttrs protocolToDriver protocols;
-      pipelineBuilder = parameters: filterPipeline (pkgs.callPackage ./analysis/pipeline { inherit parameters protocols; experimentDriver = experimentDrivers.${parameters.encapsulation}; });
+      protocolToDriver = encapsulation: overhead: (pkgs.testers.runNixOSTest (import ./nix/measurement.nix { inherit encapsulation; })).driver;
+      measurementDrivers = builtins.mapAttrs protocolToDriver protocols;
+      pipelineBuilder = parameters: filterPipeline (pkgs.callPackage ./analysis/pipeline { inherit parameters protocols; measurementDriver = measurementDrivers.${parameters.encapsulation}; });
       defaultPipeline = pipelineBuilder (import ./nix/constants/defaultValues.nix);
       pipelines = builtins.map pipelineBuilder test-matrix;
       linkAllOutputsOfPipeline = pipeline: pkgs.linkFarm "pipeline" (lib.mapAttrsToList (name: value: { inherit name; path = value; }) pipeline);
