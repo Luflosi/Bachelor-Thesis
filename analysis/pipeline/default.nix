@@ -3,24 +3,12 @@
 
 {
   callPackage,
-  stdenvNoCC,
   measurementDriver,
   parameters ? {},
   protocols,
 }:
 let
-  runDriver = driver: testScript: stdenvNoCC.mkDerivation {
-    name = "vm-test-run";
-    requiredSystemFeatures = [ "nixos-test" "kvm" ];
-    buildCommand = ''
-      mkdir -p $out
-      # effectively mute the XMLLogger
-      export LOGFILE=/dev/null
-      ${driver}/bin/nixos-test-driver -o $out '${testScript}'
-    '';
-  };
-  testScript = callPackage (import ../../nix/create-test-script.nix parameters) { };
-  measurement = runDriver measurementDriver testScript;
+  measurement = callPackage ../../nix/measurement/VM/run.nix { inherit measurementDriver parameters; };
   parse = fileName: removeEnds: callPackage ../parse { inherit fileName removeEnds; packets = measurement; };
   parsed-pre = parse "pre" true;
   parsed-post = parse "post" false;

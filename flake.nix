@@ -56,14 +56,14 @@
       test-matrix = lib.cartesianProduct parameters;
       filterPipeline = pipeline: lib.filterAttrs (n: v: builtins.elem n [ "measurement" "parsed-pre" "parsed-post" "statistics" "graphs" ]) pipeline;
       protocols = import ./nix/constants/protocols.nix;
-      protocolToDriver = encapsulation: overhead: (pkgs.testers.runNixOSTest (import ./nix/measurement.nix { inherit encapsulation; })).driver;
+      protocolToDriver = encapsulation: overhead: (pkgs.testers.runNixOSTest (import ./nix/measurement/VM/define.nix { inherit encapsulation; })).driver;
       measurementDrivers = builtins.mapAttrs protocolToDriver protocols;
       pipelineBuilder = parameters: filterPipeline (pkgs.callPackage ./analysis/pipeline { inherit parameters protocols; measurementDriver = measurementDrivers.${parameters.encapsulation}; });
       defaultPipeline = pipelineBuilder (import ./nix/constants/defaultValues.nix);
       pipelines = builtins.map pipelineBuilder test-matrix;
       linkAllOutputsOfPipeline = pipeline: pkgs.linkFarm "pipeline" (lib.mapAttrsToList (name: value: { inherit name; path = value; }) pipeline);
-      mkPipelineName = p: "pipeline-duration-${toString p.test_duration_s}s-${toString p.ip_payload_size}bytes-${p.encapsulation}-delay-${toString p.delay_time_ms}ms-jitter-${toString p.delay_jitter_ms}ms-${p.delay_distribution}-loss-${toString p.loss_per_mille}‰-${p.loss_correlation}-duplicate-${toString p.duplicate_per_mille}‰-${p.duplicate_correlation}-reorder-${toString p.reorder_per_mille}‰";
-      testsFromJSON = pkgs.linkFarm "testsFromJSON" (lib.zipListsWith (parameters: pipeline: { name = mkPipelineName parameters; path = linkAllOutputsOfPipeline pipeline; }) test-matrix pipelines);
+      parametersToString = p: "duration-${toString p.test_duration_s}s-${toString p.ip_payload_size}bytes-${p.encapsulation}-delay-${toString p.delay_time_ms}ms-jitter-${toString p.delay_jitter_ms}ms-${p.delay_distribution}-loss-${toString p.loss_per_mille}‰-${p.loss_correlation}-duplicate-${toString p.duplicate_per_mille}‰-${p.duplicate_correlation}-reorder-${toString p.reorder_per_mille}‰";
+      testsFromJSON = pkgs.linkFarm "testsFromJSON" (lib.zipListsWith (parameters: pipeline: { name = "pipeline-" + parametersToString parameters; path = linkAllOutputsOfPipeline pipeline; }) test-matrix pipelines);
     in defaultPipeline // {
       inherit testsFromJSON;
       report = import ./report/build-document.nix {

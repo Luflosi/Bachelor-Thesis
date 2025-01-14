@@ -5,7 +5,7 @@
   encapsulation,
 }:
 
-assert builtins.elem encapsulation (builtins.attrNames (import ./constants/protocols.nix));
+assert builtins.elem encapsulation (builtins.attrNames (import ../../constants/protocols.nix));
 
 { lib, pkgs, ... }:
 {
@@ -13,31 +13,31 @@ assert builtins.elem encapsulation (builtins.attrNames (import ./constants/proto
 
   defaults = { ... }: {
     imports = [
-      ./profiles/virtual.nix
+      ../../profiles/virtual.nix
     ];
   };
 
   nodes = {
     client = { ... }: {
       imports = [
-        ./hosts/client
-        ./hosts/client/profiles/virtual.nix
-        ./hosts/client/protocols/${encapsulation}.nix
+        ../../hosts/client
+        ../../hosts/client/profiles/virtual.nix
+        ../../hosts/client/protocols/${encapsulation}.nix
       ];
     };
 
     router = { ... }: {
       imports = [
-        ./hosts/router
-        ./hosts/router/profiles/virtual.nix
+        ../../hosts/router
+        ../../hosts/router/profiles/virtual.nix
       ];
     };
 
     server = { ... }: {
       imports = [
-        ./hosts/server
-        ./hosts/server/profiles/virtual.nix
-        ./hosts/server/protocols/${encapsulation}.nix
+        ../../hosts/server
+        ../../hosts/server/profiles/virtual.nix
+        ../../hosts/server/protocols/${encapsulation}.nix
       ];
     };
 
@@ -46,8 +46,8 @@ assert builtins.elem encapsulation (builtins.attrNames (import ./constants/proto
     # See https://github.com/NixOS/nixpkgs/blob/69bee9866a4e2708b3153fdb61c1425e7857d6b8/nixos/lib/test-driver/test_driver/vlan.py#L43
     logger = { ... }: {
       imports = [
-        ./hosts/logger
-        ./hosts/logger/profiles/virtual.nix
+        ../../hosts/logger
+        ../../hosts/logger/profiles/virtual.nix
       ];
     };
   };
