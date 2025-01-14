@@ -76,6 +76,8 @@ in writeText "test-script" ''
   logger.succeed("ip a >&2")
   logger.succeed("(ip route && ip -6 route) >&2")
 
+  # Delete any queueing disciplines that may be left from previous tests on the hardware
+  router.succeed("tc qdisc del dev lan root || true")
 
   # https://stackoverflow.com/questions/614795/simulate-delayed-and-dropped-packets-on-linux
   # https://man7.org/linux/man-pages/man8/tc-netem.8.html
@@ -89,8 +91,8 @@ in writeText "test-script" ''
   router.succeed("tc qdisc show dev lan >&2")
 
   logger.succeed("tcpdump --list-time-stamp-types >&2") # See https://nanxiao.github.io/tcpdump-little-book/posts/set-timestamp-type-and-precision-during-capture.html
-  logger.succeed("systemctl start tcpdump-lan.service")
-  logger.succeed("systemctl start tcpdump-wan.service")
+  logger.succeed("systemctl restart tcpdump-lan.service")
+  logger.succeed("systemctl restart tcpdump-wan.service")
   lan_id = logger.succeed("systemctl show -p InvocationID --value tcpdump-lan.service").strip()
   wan_id = logger.succeed("systemctl show -p InvocationID --value tcpdump-wan.service").strip()
   assert len(lan_id) > 10, "The lan InvocationID is too short"
@@ -129,17 +131,17 @@ in writeText "test-script" ''
   assert_no_dropped_packets("lan", lan_id)
   assert_no_dropped_packets("wan", wan_id)
 
-  logger.succeed("lsof -t /ram/pre.pcap >&2 || true")
-  logger.succeed("lsof -t /ram/post.pcap >&2 || true")
+  logger.succeed("lsof -t /pcap/pre.pcap >&2 || true")
+  logger.succeed("lsof -t /pcap/post.pcap >&2 || true")
   # TODO: find a better way to wait for the file to be done writing
   logger.succeed("sleep 1")
 
-  usage_str = logger.succeed("df --output=pcent /ram | sed -e /^Use%/d").strip()
+  usage_str = logger.succeed("df --output=pcent /pcap | sed -e /^Use%/d").strip()
   usage = int(usage_str[:-1])
   assert usage < 90, f"The disk is too full ({usage_str}), please increase the size"
 
-  logger.copy_from_vm("/ram/pre.pcap")
-  logger.copy_from_vm("/ram/post.pcap")
+  logger.copy_from_vm("/pcap/pre.pcap")
+  logger.copy_from_vm("/pcap/post.pcap")
   import os
   os.symlink("${parametersFile}", logger.out_dir / "parameters.json")
 

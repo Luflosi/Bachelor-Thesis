@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2024 Lukas Zirpel <thesis+lukas@zirpel.de>
 # SPDX-License-Identifier: GPL-3.0-only
 
-# To install: nix run github:nix-community/nixos-anywhere -- --flake .#client nixos@nixos.lan
+# To install: nix run github:nix-community/nixos-anywhere -- --flake .#client nixos@nixos
 
 { lib, pkgs, ... }:
 let

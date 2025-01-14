@@ -80,7 +80,7 @@ def validate_pre_packets(pre_packets):
         assert hash not in set_of_hashes, f'hash {hash_str} is not unique'
         assert len(hash) == 32, f'Hash length was {len(hash)}'
         assert previous_frame_number == None or frame_number > previous_frame_number, f'frame_number ({frame_number}) is not greater than the previous one ({previous_frame_number})'
-        assert previous_frame_time_epoch == None or frame_time_epoch > previous_frame_time_epoch, f'frame_time_epoch ({frame_time_epoch}) is not greater than the previous one ({previous_frame_time_epoch})'
+        assert previous_frame_time_epoch == None or frame_time_epoch >= previous_frame_time_epoch, f'frame_time_epoch ({frame_time_epoch}) is not greater than the previous one ({previous_frame_time_epoch})'
         ip_payload_length = packet['ip_payload_length']
         assert ip_payload_length > 0, f'ip_payload_length is not greater than zero ({ip_payload_length})'
         previous_frame_number = frame_number

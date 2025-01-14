@@ -10,7 +10,7 @@
     };
     cores = 3; # Give this VM more CPU cores so it can keep up with the incoming data
     memorySize = 1024 * 2 + 512;
-    fileSystems."/ram" = {
+    fileSystems."/pcap" = {
       fsType = "tmpfs";
       options = [ "size=2G" ];
     };

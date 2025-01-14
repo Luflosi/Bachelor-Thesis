@@ -35,8 +35,7 @@
     };
   };
 
-  fileSystems."/ram" = {
-    fsType = "tmpfs";
-    options = [ "size=2G" ];
-  };
+  systemd.tmpfiles.rules = [
+    "d '/pcap' 0755 'root' 'root' - -"
+  ];
 }

@@ -6,9 +6,15 @@
   measurementDriver,
   parameters ? {},
   protocols,
+  settings,
 }:
+
+assert builtins.elem settings.mode [ "VM" "Hardware" ];
+
 let
-  measurement = callPackage ../../nix/measurement/VM/run.nix { inherit measurementDriver parameters; };
+  measurement = if settings.mode == "VM"
+    then callPackage ../../nix/measurement/VM/run.nix { inherit measurementDriver parameters; }
+    else callPackage ../../nix/measurement/Hardware/run.nix { inherit parameters; };
   parse = fileName: removeEnds: callPackage ../parse { inherit fileName removeEnds; packets = measurement; };
   parsed-pre = parse "pre" true;
   parsed-post = parse "post" false;

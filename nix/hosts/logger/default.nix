@@ -35,7 +35,7 @@
         after = [ "network.target" ];
         startLimitBurst = 1;
         serviceConfig = {
-          ExecStart = "${lib.getExe pkgs.tcpdump} -n -B 10240 -i ${interface} -w /ram/${filename}.pcap";
+          ExecStart = "${lib.getExe pkgs.tcpdump} -n -B 10240 -i ${interface} -w /pcap/${filename}.pcap";
         };
       };
     };
