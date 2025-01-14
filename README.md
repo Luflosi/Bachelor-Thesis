@@ -2,7 +2,7 @@
 [SPDX-License-Identifier: GPL-3.0-only]::
 
 # Bachelor Thesis
-## Comparing the Network Throughput of Censorship Circumvention Protocols under Constrained Resources
+## Measuring the overhead of encryption and censorship evasion protocols over lossy links
 
 > [!IMPORTANT]
 > This project is only in its infancy at the time of writing.
