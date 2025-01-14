@@ -10,6 +10,8 @@
   \item Wie können wir das erreichen?
   \item Was müssen wir dabei beachten?
 \end{itemize}
+We want to measure ...
+
 
 \section{Testbed}
 \begin{itemize}
@@ -54,10 +56,6 @@ The files could either be explicitly compressed with a compression tool like zst
 
 Since we're only interested in measuring what happens during the actual test and not in the connection setup and teardown of iperf3, we use heuristics
 The connection setup and teardown of iperf3 should not be part of the analysis, hence a heuristic is employed to ignore this part of the packet capture. To find the start of the test, we find the first packet which is larger than a threshhold. To find the end of the test, we find the last packet which is larger than a threshhold and also ignore all packets that are sent after the duration of the test is over.
-
-\href{https://en.wikipedia.org/wiki/Maximum_transmission_unit}{MTU}:
-When the MTU inside of a tunnel is so large, that the overhead of the tunnel protocol would make the packet too big to be transported over the internet
-Needs to be dealt with in some way. Usually by either dropping the packet and/or communicating the error to the application (\href{https://en.wikipedia.org/wiki/Path_MTU_Discovery}{Path MTU discovery}) or by fragmenting the packet. Since fragmentation has a relatively large performance overhead, this is usually avoided in practice. For this reason, we avoid fragmentation in this research by carefully choosing the MTU inside of the tunnels.
 
 \todo{go through presentation and extract the info here}
 
