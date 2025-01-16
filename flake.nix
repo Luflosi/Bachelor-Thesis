@@ -36,8 +36,10 @@
           xfor
           datatool
           cleveref
+          biblatex
           ;
       })
+      biber
     ];
 
     get-latex-dev-packages = pkgs: with pkgs; [

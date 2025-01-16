@@ -7,17 +7,17 @@
 \todo{There must be some analysis on WireGuard}
 \todo{Split related work into separate chapter?}
 
-There are a number of \href{https://brianlinkletter.com/2023/02/network-emulators-and-network-simulators-2023/}{existing network simulators} for simulating complex network setups with routers, switches, etc..
-Many of them focus on simulating mesh networks for testing routing protocols, see for example \href{https://github.com/mwarning/meshnet-lab}{Mesh Network Lab}.
+There are a number of \textit{existing network simulators} \cite{network-simulators-list} for simulating complex network setups with routers, switches, etc..
+Many of them focus on simulating mesh networks for testing routing protocols, for example \textit{Mesh Network Lab} \cite{meshnet-lab}.
 Our network is relatively simple, while the complexity lies in the configuration of the hosts.
 This is why we chose the NixOS testing framework for our first prototype.
 It allows declararing the exact configuration of the hosts and the virtual network in code.
 All dependencies are pinned in a lock file and no outside dependencies are used so everything should still be reproducible in a decade or more without having to e.g. hunt for ancient Ubuntu images.
 
 \section{Network data transmission and MTU}
-\href{https://en.wikipedia.org/wiki/Maximum_transmission_unit}{MTU}:
+\textit{MTU} \cite{wiki:Maximum_transmission_unit}:
 When the MTU inside of a tunnel is so large, that the overhead of the tunnel protocol would make the packet too big to be transported over the internet
-Needs to be dealt with in some way. Usually by either dropping the packet and/or communicating the error to the application (\href{https://en.wikipedia.org/wiki/Path_MTU_Discovery}{Path MTU discovery}) or by fragmenting the packet. Since fragmentation has a relatively large performance overhead, this is usually avoided in practice. For this reason, we avoid fragmentation in this research by carefully choosing the MTU inside of the tunnels.
+Needs to be dealt with in some way. Usually by either dropping the packet and/or communicating the error to the application (\textit{Path MTU discovery} \cite{wiki:Path_MTU_Discovery}) or by fragmenting the packet. Since fragmentation has a relatively large performance overhead, this is usually avoided in practice. For this reason, we avoid fragmentation in this research by carefully choosing the MTU inside of the tunnels.
 
 \section{Censorship}
 \subsection{Preventing content access}
@@ -50,7 +50,7 @@ Network throughput is a measure of how much data can be transmitted over a given
 Every communication protocol has a certain overhead, including tunnel protocols, reducing the maximum possible useful network throughput called goodput.
 Goodput can be influenced by many factors including every piece of hardware in the chain from one end of the communication to the other, retransmissions due to packet loss, protocol overhead and many more.
 
-related work: \href{https://link.springer.com/chapter/10.1007/978-3-031-56252-5_12}{1} or \href{https://pam2024.cs.northwestern.edu/pdfs/paper-59.pdf}{2}
+related work: \textit{Promises and Potential of BBRv3} \cite{Promises-and-Potential-of-BBRv3}\todo{Also link \href{https://pam2024.cs.northwestern.edu/pdfs/paper-59.pdf}{the PDF} somehow}
 
 \section{Reproducibility in Network Measurement}
 Achieving reproducibility for any performance measurement is tricky. Both hard- and software need to be reproduced as closely as possible.

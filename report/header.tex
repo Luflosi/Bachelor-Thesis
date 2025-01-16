@@ -43,14 +43,13 @@
 \setlength{\marginparwidth}{3cm}
 
 \usepackage[toc]{glossaries}
-\usepackage{natbib}
-\bibpunct{[}{]}{,}{n}{,}{;}
-
-%\usepackage[breaklinks, draft=false, pdfusetitle]{hyperref}
+\usepackage[backend=biber,style=numeric,datamodel=archiving]{biblatex}
 
 \input{Macros.tex}
 
 \input{Environments.tex}
+
+\addbibresource{bibliography.bib}
 
 %% Geometrie
 \newdimen\lines

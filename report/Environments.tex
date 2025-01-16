@@ -21,3 +21,30 @@
 \newtheorem{proof}{Proof}
 \providecommand*{\toclevel@proof}{0}
 \theoremclass{LaTeX}
+
+
+% From https://tex.stackexchange.com/questions/302968/biblatex-add-a-second-url-where-content-is-archived
+\NewBibliographyString{archivedat,archivedon}
+\DefineBibliographyStrings{english}{%
+  archivedat = {archived at},
+  archivedon = {on},
+}
+
+\DeclareFieldFormat{archiveurl}{\bibstring{archivedat}\space\url{#1}}
+\DeclareFieldFormat{archivedate}{\bibstring{archivedon}\space#1}
+
+\newbibmacro*{archiveurl}{\printfield{archiveurl}}
+\newbibmacro*{archivedate}{\printarchivedate}
+
+\renewbibmacro*{url+urldate}{%
+  \usebibmacro{url}%
+  \iffieldundef{urlyear}
+    {}
+    {\setunit*{\addspace}%
+     \usebibmacro{urldate}}%
+  \setunit{\addcomma\space}%
+  \usebibmacro{archiveurl}%
+  \iffieldundef{archiveyear}
+    {}
+    {\setunit*{\addspace}%
+     \usebibmacro{archivedate}}}

@@ -62,7 +62,7 @@ pkgs.stdenvNoCC.mkDerivation rec {
     root = ./.;
     fileset = fs.unions [
       ./.latexmkrc
-      (fs.fileFilter (file: file.hasExt "tex" || file.hasExt "eps" || file.hasExt "sty" || file.hasExt "bib") ./.)
+      (fs.fileFilter (file: file.hasExt "tex" || file.hasExt "eps" || file.hasExt "sty" || file.hasExt "bib" || file.hasExt "dbx") ./.)
     ];
   };
 
