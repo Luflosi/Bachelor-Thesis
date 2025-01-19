@@ -83,7 +83,7 @@ in writeText "test-script" ''
   # https://man7.org/linux/man-pages/man8/tc-netem.8.html
   router.succeed(
     'tc qdisc add dev lan root netem'
-    ${lib.optionalString (delay_time_ms > 0) "' delay ${toString delay_time_ms}ms ${toString delay_jitter_ms}ms distribution ${delay_distribution}'"}
+    ${lib.optionalString (delay_time_ms > 0) "' delay ${toString delay_time_ms}ms${lib.optionalString (delay_jitter_ms > 0) " ${toString delay_jitter_ms}ms distribution ${delay_distribution}"}'"}
     ${lib.optionalString (loss_per_mille > 0) "' loss ${perMilleToPercentString loss_per_mille} ${loss_correlation}'"}
     ${lib.optionalString (duplicate_per_mille > 0) "' duplicate ${perMilleToPercentString duplicate_per_mille} ${duplicate_correlation}'"}
     ${lib.optionalString (reorder_per_mille > 0) "' reorder ${perMilleToPercentString reorder_per_mille}'"}
