@@ -66,7 +66,7 @@ pkgs.stdenvNoCC.mkDerivation rec {
     ];
   };
 
-  buildInputs = [ texlive ] ++
+  nativeBuildInputs = [ texlive ] ++
     lib.optional minted [ pkgs.which pygments ];
 
   TEXMFHOME = "./cache";
@@ -90,4 +90,6 @@ pkgs.stdenvNoCC.mkDerivation rec {
 
     runHook postInstall
   '';
+
+  strictDeps = true;
 }

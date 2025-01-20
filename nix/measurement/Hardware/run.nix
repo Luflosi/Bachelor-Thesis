@@ -27,6 +27,7 @@ let
   runDriver = testScriptDir: stdenvNoCC.mkDerivation {
     name = "hardware-test-run";
     __noChroot = true; # Disable the sandbox to allow SSHing into the machines
+    strictDeps = true;
 
     # How to create a readable key:
     # sudo mkdir -p /persist/thesis-ssh/
@@ -48,6 +49,7 @@ let
   };
   complete-test-script-dir = stdenvNoCC.mkDerivation {
     name = "complete-test-script";
+    strictDeps = true;
     buildCommand = let
       known_hosts = writeTextFile {
         name = "known_hosts";

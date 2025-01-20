@@ -11,6 +11,7 @@ let
   runDriver = driver: testScript: stdenvNoCC.mkDerivation {
     name = "vm-test-run";
     requiredSystemFeatures = [ "nixos-test" "kvm" ];
+    strictDeps = true;
     buildCommand = ''
       mkdir -p $out
       # effectively mute the XMLLogger
