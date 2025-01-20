@@ -32,7 +32,8 @@ args = parser.parse_args()
 
 out = None
 if args.write_out_path:
-    out = os.environ['out']
+    with open('.attrs.json', 'r', encoding='utf-8') as f:
+        out = json.load(f)['outputs']['out']
     os.makedirs(out)
 
 packets = []

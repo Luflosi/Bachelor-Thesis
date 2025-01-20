@@ -15,4 +15,5 @@ stdenvNoCC.mkDerivation {
   realBuilder = lib.getExe python;
   args = [ ./graph.py "--input" "${statistics}/statistics.json" "--write-out-path" ];
   strictDeps = true;
+  __structuredAttrs = true;
 }

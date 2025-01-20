@@ -21,7 +21,7 @@
 
 # texlive packages needed to build the document
 # you can also include other packages as a list.
-, texlive ? pkgs.texlive.combined.scheme-full
+, texlive ? [ pkgs.texlive.combined.scheme-full ]
 
 # Pygments package to use (needed for minted)
 , pygments ? pkgs.python3Packages.pygments
@@ -66,19 +66,19 @@ pkgs.stdenvNoCC.mkDerivation rec {
     ];
   };
 
-  nativeBuildInputs = [ texlive ] ++
-    lib.optional minted [ pkgs.which pygments ];
+  nativeBuildInputs = texlive ++
+    lib.optionals minted [ pkgs.which pygments ];
 
-  TEXMFHOME = "./cache";
-  TEXMFVAR = "./cache/var";
-
-  OSFONTDIR = lib.optionalString (fonts != null) "${fonts}/share/fonts";
+  env.TEXMFHOME = "./cache";
+  env.TEXMFVAR = "./cache/var";
+  env.OSFONTDIR = lib.optionalString (fonts != null) "${fonts}/share/fonts";
+  env.SOURCE_DATE_EPOCH = SOURCE_DATE_EPOCH;
+  env.max_print_line = 19999;
 
   buildPhase = ''
     runHook preBuild
 
-    export max_print_line=19999
-    SOURCE_DATE_EPOCH="${SOURCE_DATE_EPOCH}" latexmk ${lib.concatStringsSep " " flags}
+    latexmk ${lib.concatStringsSep " " flags}
 
     runHook postBuild
   '';
@@ -92,4 +92,5 @@ pkgs.stdenvNoCC.mkDerivation rec {
   '';
 
   strictDeps = true;
+  __structuredAttrs = true;
 }

@@ -50,6 +50,7 @@ let
   complete-test-script-dir = stdenvNoCC.mkDerivation {
     name = "complete-test-script";
     strictDeps = true;
+    __structuredAttrs = true;
     buildCommand = let
       known_hosts = writeTextFile {
         name = "known_hosts";

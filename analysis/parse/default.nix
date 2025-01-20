@@ -17,4 +17,5 @@ stdenvNoCC.mkDerivation {
   realBuilder = lib.getExe python;
   args = [ ./parse.py "--input" "${packets}/${fileName}.pcap" "--metadata" "${packets}/parameters.json" "--write-out-path" "${fileName}.json" ] ++ (lib.optional removeEnds "--remove-ends");
   strictDeps = true;
+  __structuredAttrs = true;
 }

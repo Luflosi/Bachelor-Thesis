@@ -52,7 +52,8 @@ pre_packets = read_json_file(args.pre)
 overhead = int(args.overhead)
 out = None
 if args.write_out_path:
-    out = os.environ['out']
+    with open('.attrs.json', 'r', encoding='utf-8') as f:
+        out = json.load(f)['outputs']['out']
     os.makedirs(out)
 
 post_hash_to_frames_map = defaultdict(list)
