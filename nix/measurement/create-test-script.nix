@@ -28,6 +28,7 @@ assert delay_time_ms == 0 -> reorder_per_mille == 0;
 
 {
   lib,
+  settings,
   writeText,
   ...
 }:
@@ -56,8 +57,17 @@ let
   in "${toString int}.${toString frac}%";
 
   parametersFile = writeText "parameters.json" (builtins.toJSON parameters);
-in writeText "test-script" ''
+in writeText "test-script" (''
   start_all()
+
+  configuration_revisions = {
+'' + (lib.optionalString (settings.mode == "Hardware") ''
+    "client": client.succeed("nixos-version --configuration-revision"),
+    "router": router.succeed("nixos-version --configuration-revision"),
+    "server": server.succeed("nixos-version --configuration-revision"),
+    "logger": logger.succeed("nixos-version --configuration-revision"),
+'') + ''
+  }
 
   client.wait_for_unit("network.target")
   router.wait_for_unit("network.target")
@@ -144,6 +154,10 @@ in writeText "test-script" ''
   logger.copy_from_vm("/pcap/post.pcap")
   import os
   os.symlink("${parametersFile}", logger.out_dir / "parameters.json")
+  if configuration_revisions != {}:
+    import json
+    with open(logger.out_dir / 'configuration_revisions.json', 'w', encoding='utf-8') as f:
+      json.dump(obj=configuration_revisions, fp=f, allow_nan=False)
 
   # TODO: assert that the files are valid and have not been cut short
-''
+'')

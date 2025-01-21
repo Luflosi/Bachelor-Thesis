@@ -13,8 +13,8 @@ assert builtins.elem settings.mode [ "VM" "Hardware" ];
 
 let
   measurement = if settings.mode == "VM"
-    then callPackage ../../nix/measurement/VM/run.nix { inherit measurementDriver parameters; }
-    else callPackage ../../nix/measurement/Hardware/run.nix { inherit parameters; };
+    then callPackage ../../nix/measurement/VM/run.nix { inherit measurementDriver parameters settings; }
+    else callPackage ../../nix/measurement/Hardware/run.nix { inherit parameters settings; };
   parse = fileName: removeEnds: callPackage ../parse { inherit fileName removeEnds; packets = measurement; };
   parsed-pre = parse "pre" true;
   parsed-post = parse "post" false;

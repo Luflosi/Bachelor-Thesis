@@ -108,6 +108,9 @@
             });
             nixpkgs.hostPlatform = system;
             specialisation = maybeMkSpecializations hostName;
+
+            system.configurationRevision = self.rev or self.dirtyRev or "dirty-inputs";
+            system.nixos.label = self.shortRev or self.dirtyShortRev or "dirty-inputs";
           }
         ] ++ lib.optional (isHostWithProtocol hostName) ./nix/hosts/${hostName}/protocols/none.nix;
       };
