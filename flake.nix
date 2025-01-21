@@ -95,7 +95,6 @@
       mkSpecializations = hostName: lib.attrsets.mergeAttrsList (importProfile hostName);
       maybeMkSpecializations = hostName: lib.optionalAttrs (isHostWithProtocol hostName) (mkSpecializations hostName);
       mkNixosSystem = hostName: system: inputs.nixpkgs.lib.nixosSystem {
-        inherit system;
         modules = [
           inputs.disko.nixosModules.disko
           ./nix/hosts/${hostName}
