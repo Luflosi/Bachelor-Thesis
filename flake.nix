@@ -57,19 +57,20 @@
       parameters = lib.importJSON ./test-matrix/parameters.json;
       settings = lib.importJSON ./test-matrix/settings.json;
       test-matrix = lib.cartesianProduct parameters;
-      filterPipeline = pipeline: lib.filterAttrs (n: v: builtins.elem n [ "measurement" "parsed-pre" "parsed-post" "statistics" "graphs" ]) pipeline;
+      filterPipeline = pipeline: lib.filterAttrs (n: v: builtins.elem n [ "graphs" "intermediates" ]) pipeline;
       protocols = import ./nix/constants/protocols.nix;
       protocolToDriver = encapsulation: overhead: (pkgs.testers.runNixOSTest (import ./nix/measurement/VM/define.nix { inherit encapsulation; })).driver;
       measurementDrivers = builtins.mapAttrs protocolToDriver protocols;
-      pipelineBuilder = parameters: filterPipeline (pkgs.callPackage ./analysis/pipeline { inherit parameters protocols settings; measurementDriver = measurementDrivers.${parameters.encapsulation}; });
-      defaultPipeline = pipelineBuilder (import ./nix/constants/defaultValues.nix);
-      pipelines = builtins.map pipelineBuilder test-matrix;
+      pipelineBuilder = allParameters: filterPipeline (pkgs.callPackage ./analysis/pipeline { inherit measurementDrivers allParameters protocols settings; });
+      defaultPipeline = pipelineBuilder [(import ./nix/constants/defaultValues.nix)];
+      pipelines = pipelineBuilder test-matrix;
       linkAllOutputsOfPipeline = pipeline: pkgs.linkFarm "pipeline" (lib.mapAttrsToList (name: value: { inherit name; path = value; }) pipeline);
       parametersToString = p: "duration-${toString p.test_duration_s}s-${toString p.ip_payload_size}bytes-${p.encapsulation}-delay-${toString p.delay_time_ms}ms-jitter-${toString p.delay_jitter_ms}ms-${p.delay_distribution}-loss-${toString p.loss_per_mille}‰-${p.loss_correlation}-duplicate-${toString p.duplicate_per_mille}‰-${p.duplicate_correlation}-reorder-${toString p.reorder_per_mille}‰";
-      measurements = pkgs.linkFarm "measurements" (lib.zipListsWith (parameters: pipeline: { name = parametersToString parameters; path = pipeline.measurement; }) test-matrix pipelines);
-      testsFromJSON = pkgs.linkFarm "testsFromJSON" (lib.zipListsWith (parameters: pipeline: { name = "pipeline-" + parametersToString parameters; path = linkAllOutputsOfPipeline pipeline; }) test-matrix pipelines);
-    in defaultPipeline // {
-      inherit measurements testsFromJSON;
+      measurements = pkgs.linkFarm "measurements" (lib.zipListsWith (parameters: intermediates: { name = parametersToString parameters; path = intermediates.measurement; }) test-matrix pipelines.intermediates);
+    in (builtins.head defaultPipeline.intermediates) // {
+      inherit (defaultPipeline) graphs;
+      graphsMulti = pipelines.graphs;
+      inherit measurements;
       report = import ./report/build-document.nix {
         inherit lib pkgs;
         texlive = get-latex-packages pkgs;
