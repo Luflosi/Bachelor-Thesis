@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 {
+  cacheID = 0;
   test_duration_s = 60;
   ip_payload_size = 1400;
   encapsulation = "none";

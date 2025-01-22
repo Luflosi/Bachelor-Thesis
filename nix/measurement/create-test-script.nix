@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 {
+  cacheID,
   test_duration_s,
   ip_payload_size,
   encapsulation,
@@ -15,6 +16,7 @@
   reorder_per_mille,
 }@parameters:
 
+assert builtins.isInt cacheID;
 assert test_duration_s > 0;
 assert ip_payload_size > 0;
 assert builtins.elem encapsulation (builtins.attrNames (import ../constants/protocols.nix));
@@ -58,6 +60,9 @@ let
 
   parametersFile = writeText "parameters.json" (builtins.toJSON parameters);
 in writeText "test-script" (''
+  # Comment to allow invalidating the cache to rerun specific tests:
+  # ${toString cacheID}
+
   start_all()
 
   configuration_revisions = {

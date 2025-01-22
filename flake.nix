@@ -54,9 +54,21 @@
         inherit system;
         overlays = import ./nix/overlays;
       };
-      parameters = lib.importJSON ./test-matrix/parameters.json;
+      testMatrixNoCacheID = lib.cartesianProduct (lib.importJSON ./test-matrix/parameters.json);
+      reruns = lib.importJSON ./test-matrix/reruns.json;
       settings = lib.importJSON ./test-matrix/settings.json;
-      test-matrix = lib.cartesianProduct parameters;
+      parametersToCacheID = parameters: let
+        checkRerun = acc: rerun: let
+          rerunNoCacheID = builtins.removeAttrs rerun [ "cacheID" ];
+        in
+          if rerunNoCacheID == parameters then
+            assert acc == 0; # There should be at most one matching entry in the rerun file
+            rerun.cacheID
+          else
+            acc;
+      in builtins.foldl' checkRerun 0 reruns;
+      addCacheID = parameters: assert !builtins.hasAttr "cacheID" parameters; parameters // { cacheID = parametersToCacheID parameters; };
+      test-matrix = builtins.map addCacheID testMatrixNoCacheID;
       filterPipeline = pipeline: lib.filterAttrs (n: v: builtins.elem n [ "graphs" "intermediates" ]) pipeline;
       protocols = import ./nix/constants/protocols.nix;
       protocolToDriver = encapsulation: overhead: (pkgs.testers.runNixOSTest (import ./nix/measurement/VM/define.nix { inherit encapsulation; })).driver;
