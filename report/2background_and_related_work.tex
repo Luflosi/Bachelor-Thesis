@@ -38,6 +38,23 @@ If so, it replies with a different answer.
 If the query was for example for the AAAA record of example.org, Bob could make his DNS server reply with the IPv6 address ::1, which is not the true address of example.org, thereby preventing Alice from accessing it.
 To circumvent the censorship, alice can simply choose a different DNS resolver, which does not lie about its responses.
 Or Alice could even run her own recursive DNS resolver.
+To prevent this, Bob tries to block access to all other DNS servers by blocking UDP and TCP ports 53.
+This involves parsing the TCP and UDP headers of all packets through Bob's infrastructure, which he didn't have to do previously.
+Alice works around the block by choosing DNS servers that listen on non-standard ports. She can also use \href{https://en.wikipedia.org/wiki/DNS_over_TLS}{DNS over TLS} or \href{https://en.wikipedia.org/wiki/DNS_over_HTTPS}{DNS over HTTPS}, which also transport the data over different ports.
+Bob now assembles a list of all public DNS servers he can find and blocks all communication with their IP addresses.
+This likely causes some collateral damage as some DNS servers may also host other things on the same IP addresses, such as websites or email servers.
+Alice only needs to find one working DNS server to circumvent the censorship.
+Presuming Bob successfully found all public (recursive and authoritative) DNS servers and blocked communication with their IP addresses, Alice can use proxies, VPNs or the Tor network to transport her DNS queries.
+This causes slightly more latency while resolving DNS queries (assuming optimal internet routing), since the network packets have to traverse (at least) one extra server.
+But the latency increase is probably not very noticeable and preferrable to censored websites.
+
+
+He could also try to use fingerprinting to detect encrypted DNS traffic but this may not be reliable or the amount of false-positives may be too high.
+Fingerprinting uses many mor
+
+TODO:
+- active probing
+- how to terminate a connection? analyze the packet and only then forward or forward immediately and terminate later
 
 \todo{continue}
 

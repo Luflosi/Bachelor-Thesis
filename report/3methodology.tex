@@ -17,6 +17,8 @@ We want to measure ...
 \begin{itemize}
   \item Was haben wir zusammengesteckt (Figure)
   \item Warum Hardware und nicht virtuell?
+  \item while it is possible to build a reliable benchmarking setup using virtual machines, ...
+  one less variable
   \item Warum Nix?
 \end{itemize}
 
@@ -77,5 +79,8 @@ Data analysis pipeline:
 
 
 \todo{explain why we're capturing packets on a separate host.}
+We're capturing packets on a separate host to make sure the measurement does not influence the rest of the test setup, e.g. through higher CPU utilization of a host.
+\todo{also talk about avoiding the need for clock synchronization}
+
 In the VM test setup, the virtual switch is configured to behave like a \textit{hub} \cite{wiki:Ethernet_hub} \cite{NixOS-VM-test-Hub}, which makes it easy to capture the packets on both VLANs. On real hardware with a real switch, this is not quite as trivial. To replicate this setup with real hardware, we use Cisco's Switched Port Analyzer (SPAN), also known as port mirroring. Since enabling SPAN disables our ability to transmit packets from that interface for management purposes, we use a USB to Ethernet adapter for the management interface.
 \todo{Specify the exact hardware model of the PCs and the SBCs}
