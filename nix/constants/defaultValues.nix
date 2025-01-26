@@ -10,7 +10,7 @@
   delay_jitter_ms = 100;
   delay_distribution = "normal";
   loss_per_mille = 5;
-  loss_correlation = "25%";
+  loss_correlation = "0%";
   duplicate_per_mille = 2;
   duplicate_correlation = "0%";
   reorder_per_mille = 1;
