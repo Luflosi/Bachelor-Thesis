@@ -3,6 +3,7 @@
 
 {
   cacheID = 0;
+  platform = "VM";
   test_duration_s = 60;
   ip_payload_size = 1400;
   encapsulation = "none";

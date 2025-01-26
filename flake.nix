@@ -56,7 +56,6 @@
       };
       testMatrixNoCacheID = lib.cartesianProduct (lib.importJSON ./test-matrix/parameters.json);
       reruns = lib.importJSON ./test-matrix/reruns.json;
-      settings = lib.importJSON ./test-matrix/settings.json;
       parametersToCacheID = parameters: let
         checkRerun = acc: rerun: let
           rerunNoCacheID = builtins.removeAttrs rerun [ "cacheID" ];
@@ -73,7 +72,7 @@
       protocols = import ./nix/constants/protocols.nix;
       protocolToDriver = encapsulation: overhead: (pkgs.testers.runNixOSTest (import ./nix/measurement/VM/define.nix { inherit encapsulation; })).driver;
       measurementDrivers = builtins.mapAttrs protocolToDriver protocols;
-      pipelineBuilder = allParameters: filterPipeline (pkgs.callPackage ./analysis/pipeline { inherit measurementDrivers allParameters protocols settings; });
+      pipelineBuilder = allParameters: filterPipeline (pkgs.callPackage ./analysis/pipeline { inherit measurementDrivers allParameters protocols; });
       defaultPipeline = pipelineBuilder [(import ./nix/constants/defaultValues.nix)];
       pipelines = pipelineBuilder test-matrix;
       linkAllOutputsOfPipeline = pipeline: pkgs.linkFarm "pipeline" (lib.mapAttrsToList (name: value: { inherit name; path = value; }) pipeline);

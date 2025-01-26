@@ -9,7 +9,6 @@
   python3,
   replaceVars,
   rsync,
-  settings,
   stdenvNoCC,
   testers,
   writeTextFile,
@@ -85,7 +84,7 @@ let
       ln -s '${./lib/test-driver/src/test_driver/logger.py}' "$out/test_driver/logger.py"
     '';
   };
-  test-script = callPackage (import ../create-test-script.nix parameters) { inherit settings; };
+  test-script = callPackage (import ../create-test-script.nix parameters) { };
   measurement = runDriver complete-test-script-dir;
 in
   measurement

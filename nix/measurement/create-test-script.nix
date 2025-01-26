@@ -3,6 +3,7 @@
 
 {
   cacheID,
+  platform,
   test_duration_s,
   ip_payload_size,
   encapsulation,
@@ -17,6 +18,7 @@
 }@parameters:
 
 assert builtins.isInt cacheID;
+assert builtins.elem platform [ "VM" "PC" ];
 assert test_duration_s > 0;
 assert ip_payload_size > 0;
 assert builtins.elem encapsulation (builtins.attrNames (import ../constants/protocols.nix));
@@ -30,7 +32,6 @@ assert delay_time_ms == 0 -> reorder_per_mille == 0;
 
 {
   lib,
-  settings,
   writeText,
   ...
 }:
@@ -66,7 +67,7 @@ in writeText "test-script" (''
   start_all()
 
   configuration_revisions = {
-'' + (lib.optionalString (settings.mode == "Hardware") ''
+'' + (lib.optionalString (platform != "VM") ''
     "client": client.succeed("nixos-version --configuration-revision"),
     "router": router.succeed("nixos-version --configuration-revision"),
     "server": server.succeed("nixos-version --configuration-revision"),

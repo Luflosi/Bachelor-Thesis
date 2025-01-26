@@ -6,18 +6,18 @@
   measurementDrivers,
   allParameters,
   protocols,
-  settings,
 }:
 
 assert builtins.isList allParameters;
-assert builtins.elem settings.mode [ "VM" "Hardware" ];
 
 let
-  parameterToStatistic = parameters: let
+  parameterToStatistic = parameters:
+    assert builtins.elem parameters.platform [ "VM" "PC" ];
+  let
     result = rec {
-      measurement = if settings.mode == "VM"
-        then callPackage ../../nix/measurement/VM/run.nix { inherit parameters settings; measurementDriver = measurementDrivers.${parameters.encapsulation}; }
-        else callPackage ../../nix/measurement/Hardware/run.nix { inherit parameters settings; };
+      measurement = if parameters.platform == "VM"
+        then callPackage ../../nix/measurement/VM/run.nix { inherit parameters; measurementDriver = measurementDrivers.${parameters.encapsulation}; }
+        else callPackage ../../nix/measurement/Hardware/run.nix { inherit parameters; };
       parse = fileName: removeEnds: callPackage ../parse { inherit fileName removeEnds; packets = measurement; };
       parsed-pre = parse "pre" true;
       parsed-post = parse "post" false;

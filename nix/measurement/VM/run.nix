@@ -5,7 +5,6 @@
   callPackage,
   measurementDriver,
   parameters,
-  settings,
   stdenvNoCC,
 }:
 let
@@ -20,7 +19,7 @@ let
       ${driver}/bin/nixos-test-driver -o $out '${testScript}'
     '';
   };
-  testScript = callPackage (import ../create-test-script.nix parameters) { inherit settings; };
+  testScript = callPackage (import ../create-test-script.nix parameters) { };
   measurement = runDriver measurementDriver testScript;
 in
   measurement
