@@ -10,28 +10,37 @@
 There are a number of \textit{existing network simulators} \cite{network-simulators-list} for simulating complex network setups with routers, switches, etc..
 Many of them focus on simulating mesh networks for testing routing protocols, for example \textit{Mesh Network Lab} \cite{meshnet-lab}.
 Our network is relatively simple, while the complexity lies in the configuration of the hosts.
-This is why we chose the NixOS testing framework for our first prototype.
+This is why we chose the NixOS testing framework for our first prototypes.
 It allows declararing the exact configuration of the hosts and the virtual network in code.
-All dependencies are pinned in a lock file and no outside dependencies are used so everything should still be reproducible in a decade or more without having to e.g. hunt for ancient Ubuntu images.
+All dependencies are pinned in a lock file and no outside dependencies are used so everything should still be reproducible in a decade or more without having to distribute gigabytes of VM or container images while still being able to easily modify any part of the system.
 
 \section{Network data transmission and MTU}
-\textit{MTU} \cite{wiki:Maximum_transmission_unit}:
-When the MTU inside of a tunnel is so large, that the overhead of the tunnel protocol would make the packet too big to be transported over the internet
-Needs to be dealt with in some way. Usually by either dropping the packet and/or communicating the error to the application (\textit{Path MTU discovery} \cite{wiki:Path_MTU_Discovery}) or by fragmenting the packet. Since fragmentation has a relatively large performance overhead, this is usually avoided in practice. For this reason, we avoid fragmentation in this research by carefully choosing the MTU inside of the tunnels.
+Packet switched networks like the internet have a maximum packet size they can transport, called \textit{MTU} (Maximum Transmission Unit) \cite{wiki:Maximum_transmission_unit}.
+Every link between two subsequent routers may have a different MTU.
+The maximum size of a packet being transported along the path from one host to another is the minimum of the MTUs along the path.
+In practice, the current MTU along this path can be determined using \textit{Path MTU discovery} \cite{wiki:Path_MTU_Discovery}.
+When trying to send a packet larger than the MTU, the packet is either fragmented (split into multiple smaller pieces) or dropped.
+Tunnel protocols almost always add some overhead to each packet.
+When the MTU inside of a tunnel is too large, the overhead of the tunnel protocol makes the packet too big to be transported.
+Since fragmentation has a relatively large performance overhead, this is usually avoided in practice.
+For this reason, we also avoid fragmentation in this research by carefully choosing the MTU inside of the tunnels.
 
 \section{Censorship}
+\textit{Censorship} \cite{wiki:Censorship} \todo{explain censorship in one or two sentences}
+
 \subsection{Preventing content access}
-generell censorship
-content access
-net neutrality
-ist technisch ähnlich
-wie läuft das ab, beispiel:
-There are numerous ways to do censorship online, so the following is structured in a cat-and-mouse game between two fictional parties, a censor Bob and a person Alice:
+\todo{explain content access}
+\textit{Net neutrality} \cite{wiki:Net_neutrality} is technically very similar since it also requires inspecting packets and making decisions based on that.
+
+There are numerous ways to do censorship online, so the following example is structured in a cat-and-mouse game between two fictional parties, a censor Bob and a person Alice:
+
 Bob wants to censor what Alice can see online.
 Bob operates an ISP and Alice is connected to it via DSL. Alice gets her IP address from Bob's DHCP server.
 The DHCP server also advertises a DNS resolver to Alice, which she gladly uses.
+
 Now Bob decides that he does not want Alice to be able to access the website example.org.
 He wants to keep the collateral damage low by trying to not block any other websites.
+
 As a first step, he modifies his DNS resolver.
 Instead of replying to a query directly with the correct reply, it first checks if the DNS query asks for example.org.
 If so, it replies with a different answer.
@@ -40,34 +49,70 @@ To circumvent the censorship, alice can simply choose a different DNS resolver, 
 Or Alice could even run her own recursive DNS resolver.
 To prevent this, Bob tries to block access to all other DNS servers by blocking UDP and TCP ports 53.
 This involves parsing the TCP and UDP headers of all packets through Bob's infrastructure, which he didn't have to do previously.
-Alice works around the block by choosing DNS servers that listen on non-standard ports. She can also use \href{https://en.wikipedia.org/wiki/DNS_over_TLS}{DNS over TLS} or \href{https://en.wikipedia.org/wiki/DNS_over_HTTPS}{DNS over HTTPS}, which also transport the data over different ports.
+Alice works around the block by choosing DNS servers that listen on non-standard ports.
+She can also use \textit{DNS over TLS} \cite{wiki:DNS_over_TLS} or \textit{DNS over HTTPS} \cite{wiki:DNS_over_HTTPS}, which also transport the data over different ports.
 Bob now assembles a list of all public DNS servers he can find and blocks all communication with their IP addresses.
 This likely causes some collateral damage as some DNS servers may also host other things on the same IP addresses, such as websites or email servers.
 Alice only needs to find one working DNS server to circumvent the censorship.
-Presuming Bob successfully found all public (recursive and authoritative) DNS servers and blocked communication with their IP addresses, Alice can use proxies, VPNs or the Tor network to transport her DNS queries.
+Presuming Bob successfully found all public (recursive and authoritative) DNS servers and blocked communication with their IP addresses, Alice can use proxies, VPNs or other means such as the Tor network to transport her DNS queries.
 This causes slightly more latency while resolving DNS queries (assuming optimal internet routing), since the network packets have to traverse (at least) one extra server.
-But the latency increase is probably not very noticeable and preferrable to censored websites.
+But the latency increase is probably not very noticeable to Alice and preferrable to censored websites.
 
+He could also try to use fingerprinting to detect encrypted DNS traffic but this may either not be reliable or the amount of false-positives may be too high.
+Fingerprinting uses more resources and is thus more expensive than simpler forms of traffic analysis.
+Bob can also assemble lists of IP addresses running proxies, VPN servers or Tor relays and block communication with them.
+An alternative is a technique called active probing, where Bob observes, which servers Alice connects to and if he suspects the server to be used for censorship circumvention, he can veify this by trying to establish a connection himself.
 
-He could also try to use fingerprinting to detect encrypted DNS traffic but this may not be reliable or the amount of false-positives may be too high.
-Fingerprinting uses many mor
+If Bob fails to prevent Alice from resolving the domain example.org, he can periodically resolve example.org himself and block all communication with the associated IP addresses.
+This works quite well, if all authoritative DNS servers in the world responsible for example.org return the same IP address(es).
+This is often true for smaller websites but larger ones may employ Anycast DNS servers, where each DNS server returns the IP address of the geographically closest server.
+If this is the case, Bob can try resolving the domain from different geographical locations and hope that he found all IP addresses associated with the domain.
+The downside of this censorship technique is that multiple different websites may be hosted on one IP address and this technique would block all of them, even if Bob only wants to censor one of them.
 
-TODO:
-- active probing
-- how to terminate a connection? analyze the packet and only then forward or forward immediately and terminate later
+If Alice uses HTTP (unencrypted) to access example.org, Bob can use deep packet inspection to read the HTTP Host header, which tells Bob that Alice is trying to connect to example.org.
 
-\todo{continue}
+Alice now encrypts her connection by using HTTPS. But Bob can still use a very similar technique since the TLS header usually includes the Server Name Indication (SNI), which is similar to the HTTP Host header.
 
-wie gesehen, gibt es viele Möglichkeiten der evasion:
+Since Alice still wants to access example.org, she gets some help from example.com.
+example.com is hosted on the same infrastructure and IP address as example.org.
+Alice can now set the SNI to example.com while setting the HTTP Host header to example.org.
+Since the HTTP request is encrypted, Bob can only read the SNI.
+If the infrastructure running example.com and example.org is configured in the right way, the website will still work for Alice while Bob is none the wiser.
+This technique is called \textit{Domain fronting} \cite{wiki:Domain_fronting}.
+
+If the collateral damage of also blocking example.com is acceptable to Bob, he can use the above technique of resolving the domain of example.org and blocking associated the IP address.
+
+As with DNS queries above, Alice can use proxies, VPNs or other means such as the Tor network to transport the actual data as well and Bob can use the same techniques as mentioned above to try to prevent this.
+
+There are many more techniques Alice can use to attempt to circumvent the censorship, for example by hiding data in other protocols or using Tor bridges.
+
+As we saw, there are many possibilities of evading the censorship:
 
 \subsection{Censorship evasion}
+Depending on the threat model and local laws, the goal can be to just work around the censorship itself.
+But since it may be illegal to circumvent the censorship in a country, it may also be desirable to avoid detection, which is much more difficult. \todo{this repeats the meaning of a sentence in the introduction}
 
 \section{Network Throughput Performance Measurements}
 Network throughput is a measure of how much data can be transmitted over a given communication channel per time.
 Every communication protocol has a certain overhead, including tunnel protocols, reducing the maximum possible useful network throughput called goodput.
-Goodput can be influenced by many factors including every piece of hardware in the chain from one end of the communication to the other, retransmissions due to packet loss, protocol overhead and many more.
+Goodput can be influenced by many factors including every piece of hardware in the chain from one end of the communication to the other, protocol overhead, retransmissions due to packet loss and many more.
 
 related work: \textit{Promises and Potential of BBRv3} \cite{Promises-and-Potential-of-BBRv3}\todo{Also link \href{https://pam2024.cs.northwestern.edu/pdfs/paper-59.pdf}{the PDF} somehow}
 
 \section{Reproducibility in Network Measurement}
 Achieving reproducibility for any performance measurement is tricky. Both hard- and software need to be reproduced as closely as possible.
+
+Ideally the exact same hardware is used to reproduce the measurement but it may be difficult and expensive to aquire the exact same hardware.
+As an alternative, using hardware, which is similar enough may reproduce measurements close enough.
+
+For reproducing the software exactly, we use Nix and NixOS.
+All systems, testing scripts and the data analysys pipeline can be reproduced almost perfectly this way with very little effort.
+
+Nix, the build system and package manager used in NixOS, is inspired by functional programming principles.
+It treats build steps as functions with the inputs being the dependencies (including source code) and build commands.
+The outputs are the files produced by the build commands.
+It assumes the build step is pure i.e. does not depend on inputs which were not declared, which usually seems to work out pretty well as over 90\% of all packages in the Nixpkgs repository are bitwise reproducible and over 99.7\% can be rebuilt \cite{malka:hal-04913007}.
+A package not being bitwise reproducible is usually caused by it embedding information such as dates, the Linux kernel version, OS version, environment variables such as the number of available cores or different kinds of randomness.
+In practice though, one does not usually recompile everything from source but rather uses the official binary cache.
+This allows perfectly recreating our measurement setup, even if some packages are not perfectly reproducible.
+While Nix cannot guarantee reproducibility, it does help a lot since it makes it easier to not accidentally depend on anything which is not declared as an input.

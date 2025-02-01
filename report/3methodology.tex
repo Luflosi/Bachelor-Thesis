@@ -5,6 +5,7 @@
 \label{chap:methodology}
 
 \section{Experimental design}
+
 \begin{itemize}
   \item Was haben wir vor?
   \item Wie können wir das erreichen?
@@ -20,6 +21,25 @@ We want to measure ...
   \item while it is possible to build a reliable benchmarking setup using virtual machines, ...
   one less variable
   \item Warum Nix?
+\end{itemize}
+
+\subsection{Hardware used}
+\subsubsection{Switch}
+\todo{catalyst-6500-series-switches}
+
+\subsubsection{PCs}
+\begin{itemize}
+  \item DELL OptiPlex 7070 Micro
+  \item INTEL® CORE™ i5-9600 (6 cores)
+  \item 16GB RAM (One 2666 MHz DDR4 SODIMM module, HMA82GS6JJR8N-VK)
+  \item 512GB NVME SSD
+\end{itemize}
+
+\subsubsection{SBCs}
+\begin{itemize}
+  \item Orange Pi Zero3 (4 cores)
+  \item 2GB RAM
+  \item 32GB microSD card
 \end{itemize}
 
 \section{Scenario Selection}
@@ -53,7 +73,7 @@ explain why these parameters, etwas wie Tabelle, Spalten Parameter
 
 In an attempt to save space...
 The \textit{.pcap} \cite{wiki:Pcap} files only compress well if the data is not encrypted or otherwise scrambled.
-The files could either be explicitly compressed with a compression tool like zstd or the compression could be done at the filesystem level, e.g. with \textit{OpenZFS} \cite{OpenZFS}.
+The files could either be explicitly compressed with a compression tool like zstd or the compression could be done at the filesystem level, e.g. with \textit{OpenZFS} \cite{OpenZFS}. \todo{Btrfs}
 
 
 Since we're only interested in measuring what happens during the actual test and not in the connection setup and teardown of iperf3, we use heuristics
@@ -84,3 +104,9 @@ We're capturing packets on a separate host to make sure the measurement does not
 
 In the VM test setup, the virtual switch is configured to behave like a \textit{hub} \cite{wiki:Ethernet_hub} \cite{NixOS-VM-test-Hub}, which makes it easy to capture the packets on both VLANs. On real hardware with a real switch, this is not quite as trivial. To replicate this setup with real hardware, we use Cisco's Switched Port Analyzer (SPAN), also known as port mirroring. Since enabling SPAN disables our ability to transmit packets from that interface for management purposes, we use a USB to Ethernet adapter for the management interface.
 \todo{Specify the exact hardware model of the PCs and the SBCs}
+
+
+
+\todo{put the following in the right spot}
+First we use the NixOS testing framework for prototyping and then transfer the setup to bare-metal hardware.
+For real measurements we installed NixOS on PCs, which are centrally controlled from a custom measurement harness. It is designed to be compatible enough with the NixOS testing framework to work with the same test script.
