@@ -47,6 +47,8 @@ let
                 then "192.168.20.3"
                 else if encapsulation == "icmptx"
                 then "192.168.21.3"
+                else if encapsulation == "iodine"
+                then "192.168.22.3"
                 else throw "Unknown encapsulation";
   iperfArgs = [
     "-c" iperfServerAddress
@@ -70,12 +72,16 @@ let
   '' else if encapsulation == "icmptx" then ''
     server.wait_until_succeeds("ping -c 1 fdb1:f1ae:e1d5::1 >&2", timeout=${pingTimeoutStr})
     client.wait_until_succeeds("ping -c 1 fdb1:f1ae:e1d5::3 >&2", timeout=${pingTimeoutStr})
+  '' else if encapsulation == "iodine" then ''
+    client.wait_until_succeeds("ping -c 1 192.168.22.3 >&2", timeout=${pingTimeoutStr})
   '' else throw "Unknown encapsulation";
 
   pingAfterIperf = if encapsulation == "none" then ''
   '' else if encapsulation == "WireGuard" then ''
     client.wait_until_succeeds("ping -c 1 192.168.20.3 >&2", timeout=${pingTimeoutStr})
   '' else if encapsulation == "icmptx" then ''
+  '' else if encapsulation == "iodine" then ''
+    client.wait_until_succeeds("ping -c 1 192.168.22.3 >&2", timeout=${pingTimeoutStr})
   '' else throw "Unknown encapsulation";
 
   perMilleToPercentString = input: let

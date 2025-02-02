@@ -10,4 +10,5 @@
   "none" = 0;
   "WireGuard" = 8 + 32 + 20; # UDP + WireGuard + IPv4
   "icmptx" = 8 + 20; # ICMP + IPv4
+  "iodine" = 0; # TODO
 }
