@@ -146,7 +146,7 @@
       '';
     }));
 
-    devShells = (forAllSystems (system: let
+    devShells = forAllSystems (system: let
       pkgs = import inputs.nixpkgs { inherit system; };
     in {
       default = pkgs.mkShellNoCC {
@@ -164,6 +164,6 @@
           (get-latex-dev-packages pkgs)
         ];
       };
-    }));
+    });
   };
 }
