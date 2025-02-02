@@ -37,7 +37,9 @@ assert delay_time_ms == 0 -> reorder_per_mille == 0;
 }:
 let
   pingTimeout = 30;
+  iperfTimeout = test_duration_s + 30;
   pingTimeoutStr = toString pingTimeout;
+  iperfTimeoutStr = toString iperfTimeout;
   udpPayloadSize = ip_payload_size - 8;
   iperfServerAddress = if encapsulation == "none"
                 then "192.168.2.3"
@@ -146,7 +148,7 @@ in writeText "test-script" (''
   client.wait_until_succeeds("ping -c 1 192.168.2.3 >&2", timeout=${pingTimeoutStr})
   '' + pingBeforeIperf + ''
   # TODO: test in the other direction as well
-  client.succeed("iperf ${iperfArgsStr} >&2")
+  client.succeed("iperf ${iperfArgsStr} >&2", timeout=${iperfTimeoutStr})
   '' + pingAfterIperf + ''
   client.wait_until_succeeds("ping -c 1 192.168.2.3 >&2", timeout=${pingTimeoutStr})
 
