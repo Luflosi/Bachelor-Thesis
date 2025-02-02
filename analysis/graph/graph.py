@@ -9,6 +9,7 @@ import json
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mtick
 
 figsize = (16, 8)
 
@@ -89,9 +90,8 @@ def read_inputs(inputs):
     time = None
     labels = None
     latencies = []
-    counts_packets = []
-    counts_dropped = []
-    counts_duplicate = []
+    dropped_ratio = []
+    duplicate_ratio = []
     throughput_over_time_with_overhead = []
     throughput_over_time_without_overhead = []
 
@@ -130,9 +130,15 @@ def read_inputs(inputs):
                 for latencies_per_second in data['latencies']:
                     latencies_from_single_measurement += latencies_per_second
                 latencies.append(latencies_from_single_measurement)
-                counts_packets.append(data['counts']['packets'])
-                counts_dropped.append(data['counts']['dropped'])
-                counts_duplicate.append(data['counts']['duplicate'])
+                del(latencies_from_single_measurement)
+                dropped_ratio_from_single_measurement = []
+                duplicate_ratio_from_single_measurement = []
+                for count, dropped, duplicate in zip(data['counts']['packets'], data['counts']['dropped'], data['counts']['duplicate']):
+                    dropped_ratio_from_single_measurement.append(dropped / count)
+                    duplicate_ratio_from_single_measurement.append(duplicate / count)
+                dropped_ratio.append(dropped_ratio_from_single_measurement)
+                duplicate_ratio.append(duplicate_ratio_from_single_measurement)
+                del(dropped_ratio_from_single_measurement)
                 throughput_over_time_without_overhead.append(data['throughput']['without_overhead'])
                 tmp = data['throughput']['with_overhead']
                 if tmp != []:
@@ -164,14 +170,11 @@ def read_inputs(inputs):
                 'y2': counts_duplicate,
             }
         case 'multi':
-            plot['counts_packets'] = {
-                'y': counts_packets,
+            plot['dropped_ratio'] = {
+                'y': dropped_ratio,
             }
-            plot['counts_dropped'] = {
-                'y': counts_dropped,
-            }
-            plot['counts_duplicate'] = {
-                'y': counts_duplicate,
+            plot['duplicate_ratio'] = {
+                'y': duplicate_ratio,
             }
         case _:
             raise Exception("Invalid mode")
@@ -249,22 +252,12 @@ match mode:
     case 'multi':
         fig, ax = plt.subplots(figsize=figsize)
         ax.set_xlabel('Measurement run')
-        ax.set_ylabel('Arrived')
-        ax.violinplot(plot['counts_packets']['y'], positions=plot['x'],
-                      showextrema = True, showmedians = True, widths=1)
-        ax.set_xticks(plot['x'])
-        ax.set_ylim(bottom=0)
-        if out != None:
-            plt.savefig(fname=os.path.join(out, 'packet_counts.svg'), transparent=False)
-        plt.show()
-
-        fig, ax = plt.subplots(figsize=figsize)
-        ax.set_xlabel('Measurement run')
         ax.set_ylabel('Dropped')
-        ax.violinplot(plot['counts_dropped']['y'], positions=plot['x'],
+        ax.violinplot(plot['dropped_ratio']['y'], positions=plot['x'],
                       showextrema = True, showmedians = True, widths=1)
         ax.set_xticks(plot['x'])
         ax.set_ylim(bottom=0)
+        ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=1))
         if out != None:
             plt.savefig(fname=os.path.join(out, 'packet_dropped.svg'), transparent=False)
         plt.show()
@@ -272,10 +265,11 @@ match mode:
         fig, ax = plt.subplots(figsize=figsize)
         ax.set_xlabel('Measurement run')
         ax.set_ylabel('Duplicated')
-        ax.violinplot(plot['counts_duplicate']['y'], positions=plot['x'],
+        ax.violinplot(plot['duplicate_ratio']['y'], positions=plot['x'],
                       showextrema = True, showmedians = True, widths=1)
         ax.set_xticks(plot['x'])
         ax.set_ylim(bottom=0)
+        ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=1))
         if out != None:
             plt.savefig(fname=os.path.join(out, 'packet_duplicate.svg'), transparent=False)
         plt.show()
