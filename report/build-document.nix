@@ -6,6 +6,7 @@
 
 { lib
 , pkgs
+, rfc-bib
 
 # Name of the final pdf file
 , name ? "document.pdf"
@@ -52,17 +53,28 @@ let
     extraFlags
     (lib.optional shellEscape "-shell-escape")
   ];
+  report-src = fs.toSource {
+    root = ./.;
+    fileset = fs.unions [
+      ./.latexmkrc
+      (fs.fileFilter (file: file.hasExt "tex" || file.hasExt "eps" || file.hasExt "sty" || file.hasExt "bib" || file.hasExt "dbx") ./.)
+    ];
+  };
+  rfc-bib-src = pkgs.linkFarm "rfc.bib-src" [{
+    name = "rfc.bib";
+    path = rfc-bib;
+  }];
 in
 
 assert minted -> shellEscape;
 
 pkgs.stdenvNoCC.mkDerivation rec {
   inherit name;
-  src = fs.toSource {
-    root = ./.;
-    fileset = fs.unions [
-      ./.latexmkrc
-      (fs.fileFilter (file: file.hasExt "tex" || file.hasExt "eps" || file.hasExt "sty" || file.hasExt "bib" || file.hasExt "dbx") ./.)
+  src = pkgs.symlinkJoin {
+    name = "combined-report-src";
+    paths = [
+      report-src
+      rfc-bib-src
     ];
   };
 

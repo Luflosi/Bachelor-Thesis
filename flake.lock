@@ -36,10 +36,27 @@
         "type": "github"
       }
     },
+    "rfc-bib": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1724758087,
+        "narHash": "sha256-Yf4/YOYGdxUBqTZotQ8vZ1SwyE1Vuc75e8skmFadVo8=",
+        "ref": "refs/heads/master",
+        "rev": "fbf63f2b44a81de4084209c30358ec5bdfece25a",
+        "revCount": 35,
+        "type": "git",
+        "url": "file:report/rfc.bib"
+      },
+      "original": {
+        "type": "git",
+        "url": "file:report/rfc.bib"
+      }
+    },
     "root": {
       "inputs": {
         "disko": "disko",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "rfc-bib": "rfc-bib"
       }
     }
   },

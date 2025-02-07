@@ -1,0 +1,6 @@
+# SPDX-FileCopyrightText: 2025 Lukas Zirpel <thesis+lukas@zirpel.de>
+# SPDX-License-Identifier: CC0-1.0
+
+[submodule "report/rfc.bib"]
+	path = report/rfc.bib
+	url = https://github.com/ichdasich/rfc.bib.git

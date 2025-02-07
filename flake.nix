@@ -9,6 +9,11 @@
 
     disko.url = "github:nix-community/disko";
     disko.inputs.nixpkgs.follows = "nixpkgs";
+
+    rfc-bib = {
+      url = "git+file:report/rfc.bib";
+      flake = false;
+    };
   };
 
   outputs = { self, ... }@inputs: let
@@ -84,6 +89,7 @@
       inherit measurements;
       report = import ./report/build-document.nix {
         inherit lib pkgs;
+        inherit (inputs) rfc-bib;
         texlive = get-latex-packages pkgs;
         shellEscape = true;
         minted = true;
