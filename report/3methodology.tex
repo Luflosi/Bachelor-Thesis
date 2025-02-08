@@ -5,39 +5,109 @@
 \label{chap:methodology}
 
 \section{Experimental design}
-
 \begin{itemize}
-  \item Was haben wir vor?
-  \item Wie können wir das erreichen?
-  \item Was müssen wir dabei beachten?
+	\item Was haben wir vor?
+	\item Wie können wir das erreichen?
+	\item Was müssen wir dabei beachten?
 \end{itemize}
-We want to measure ...
-
+We want to measure the overhead of encryption and censorship evasion protocols over lossy links.
+Therefore we need a measurement setup, which allows us to so so.
+It should offer repeatability and consistency.
+It should include a traffic generator which generates the simplest possible traffic pattern, a constant stream of data.
+The stream of data should only flow in one direction and should not attempt to do congestion control as we don't want to evaluate congestion control algorithms but 
+capture all packets in their original form so we can tweak the analysis later without rerunning all tests again
+analyze packet captures later (post-experiment analysis)
+need to be careful with synchronization of timestamps between different points
+It should also be easy to add new protocols and experiment with the setup both for us and for future researchers wishing to tweak the setup or test more protocols.
 
 \section{Testbed}
 \begin{itemize}
   \item Was haben wir zusammengesteckt (Figure)
   \item Warum Hardware und nicht virtuell?
-  \item while it is possible to build a reliable benchmarking setup using virtual machines, ...
-  one less variable
   \item Warum Nix?
 \end{itemize}
+There are a number of \textit{existing network simulators} \cite{network-simulators-list} for simulating complex network setups with routers, switches, etc..
+Many of them focus on simulating mesh networks for testing routing protocols, for example \textit{Mesh Network Lab} \cite{meshnet-lab}.
+Our network is relatively simple, while the complexity lies in the configuration of the hosts.
+This is part of the reason why we chose the NixOS testing framework for our first prototypes.
+It allows declararing the exact configuration of the hosts and the virtual network in code.
+All dependencies are pinned in a lock file and no outside dependencies are used so everything should still be reproducible in a decade or more without having to distribute gigabytes of VM or container images while still being able to easily modify any part of the system.
+
+First we use the NixOS testing framework for prototyping and then transfer the setup to bare-metal hardware.
+The NixOS testing framework launches several VMs with QEMU and sets up a virtual network switch.
+Using the NixOS testing framework we declare the configuration of all four hosts as well as the network topology in Nix code.
+We also specify a test script, which imperatively executes one command at a time.
+We roughly execute these steps: start all hosts, wait for them to be ready, tell the router to emulate the network conditions we want, start the traffic generator, wait for it to be done and finally collect the packet captures.
+We store the packet captures for later analysis.
+
+
+For real measurements we installed NixOS on PCs, which are centrally controlled from a custom measurement harness.
+It is designed to be compatible enough with the NixOS testing framework to work with the same test script.
+
+
+
+Nix is not really designed for this use-case as it isolates the build steps in a sandbox with no network access and 
+we disable the sandbox, allowing SSH to reach all the machines
+this invalidates some guarantees Nix normally provides.
+does not ensure an SSH key was generated, that the four machines are running or that OS running on the machines is what was expected
+nevertheless
+if Nix got in the way after running the measurements, can also be easily copied out of the Nix store by specifying the measurements you want to export in \todo{file path here} and running \todo{nix build .\#measurements}
+
+store results in Nix store for easy processing by the pipeline
+downside: have to be careful to not modify the test script, otherwise tests will be run again, could also be seen as a positive to prevent modifications that "should" not influence the results but actually do.
+positive side: when modifying any part of the pipeline, only the modified and later parts will be rerun, no need to manually run only the appropriate parts of the pipeline, which is tedious and error-prone or rerun the entire pipeline every time, which is time consuming.
+
+
+In the VM test setup, the virtual switch is configured to behave like a \textit{hub} \cite{wiki:Ethernet_hub} \cite{NixOS-VM-test-Hub}, which makes it easy to capture the packets on both VLANs.
+On real hardware with a real switch, this is not quite as trivial.
+To replicate this setup with real hardware, we use Cisco's Switched Port Analyzer (SPAN), also known as port mirroring.
+Since enabling SPAN disables our ability to transmit packets from that interface for management purposes, we use a USB to Ethernet adapter for the management interface.
+Switch has 100MBit/s and 1GBit/s ports
+three PCs connected to 100MBit/s, limiting bandwidth therefore 100MBit/s, thanks to full duplex on the link between router and switch
+monitor port of logger connected to 1GBit/s port to keep up with 200MBit/s maximum data rate
+iperf send with 100MBit/s
+Switch has 100MBit/s and 1GBit/s ports
+three PCs connected to 100MBit/s, limiting bandwidth therefore 100MBit/s, thanks to full duplex on the link between router and switch
+monitor port of logger connected to 1GBit/s port to keep up with 200MBit/s maximum data rate
+iperf send with 100MBit/s
+first vm setup for experimentation
+then real hardware to eliminate variables
+while it is possible to build a reliable benchmarking setup using virtual machines, ...
+one less variable
 
 \subsection{Hardware used}
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{|c|l|}
+		\hline
+		\textbf{Category} & \textbf{Details} \\ \hline
+		\textbf{Switch} & Catalyst 6500 Series Switch (TBD) \\ \hline
+		\textbf{PCs} & DELL OptiPlex 7070 Micro \\ \hline
+		& INTEL® CORE™ i5-9600 (6 cores, 3.1GHz) \\ \hline
+		& 16GB RAM (One 2666 MHz DDR4 SODIMM module, HMA82GS6JJR8N-VK) \\ \hline
+		& 512GB NVME SSD \\ \hline
+		\textbf{SBCs} & Orange Pi Zero3 \\ \hline
+		& Allwinner H618 Cortex-A53 (4 cores, 1.5GHz) \\ \hline
+		& 2GB RAM \\ \hline
+		& 32GB microSD card \\ \hline
+	\end{tabular}
+\end{table}
+
 \subsubsection{Switch}
-\todo{catalyst-6500-series-switches}
+\todo{catalyst-6500-series-switch}
 
 \subsubsection{PCs}
 \begin{itemize}
   \item DELL OptiPlex 7070 Micro
-  \item INTEL® CORE™ i5-9600 (6 cores)
+  \item INTEL® CORE™ i5-9600 (6 cores, 3.1GHz)
   \item 16GB RAM (One 2666 MHz DDR4 SODIMM module, HMA82GS6JJR8N-VK)
   \item 512GB NVME SSD
 \end{itemize}
 
 \subsubsection{SBCs}
 \begin{itemize}
-  \item Orange Pi Zero3 (4 cores)
+  \item Orange Pi Zero3
+  \item Allwinner H618 Cortex-A53 (4 cores, 1.5GHz)
   \item 2GB RAM
   \item 32GB microSD card
 \end{itemize}
@@ -56,14 +126,24 @@ We want to measure ...
 \todo{provide reasoning why we chose these protocols specifically and describe them briefly}
 
 \subsection{Parameters to test}
-\begin{itemize}
-  \item Packet loss
-  \item Latency
-  \item Reorder packets
-  \item Duplicate packets
-  \item MTU
-\end{itemize}
-explain why these parameters, etwas wie Tabelle, Spalten Parameter
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{|c|c|c|c|c|c|}
+		\hline
+		Parameter & Loss & Delay & Jitter & Duplicate & MTU\\ \hline
+		Unit      &  \%  &  ms   &   ms   &   \%      & Bytes \\ \hline
+		          &  0   &     0 &      0 &    2      & 1400 \\ \hline
+		          &  0.1 &     1 &     10 &  100      & \\ \hline
+		          &  0.2 &    10 &        &           & \\ \hline
+		          &  0.5 &    50 &        &           & \\ \hline
+		          &    1 &   100 &        &           & \\ \hline
+		          &   10 &   200 &        &           & \\ \hline
+		          &   50 &  1000 &        &           & \\ \hline
+		          &  100 &       &        &           & \\ \hline
+
+	\end{tabular}
+\end{table}
+explain why these parameters
 
 
 
@@ -77,7 +157,8 @@ The files could either be explicitly compressed with a compression tool like zst
 
 
 Since we're only interested in measuring what happens during the actual test and not in the connection setup and teardown of iperf3, we use heuristics
-The connection setup and teardown of iperf3 should not be part of the analysis, hence a heuristic is employed to ignore this part of the packet capture. To find the start of the test, we find the first packet which is larger than a threshhold. To find the end of the test, we find the last packet which is larger than a threshhold and also ignore all packets that are sent after the duration of the test is over.
+The connection setup and teardown of iperf3 should not be part of the analysis, hence a heuristic is employed to ignore this part of the packet capture.
+To find the start of the test, we find the first packet which is larger than a threshhold. To find the end of the test, we find the last packet which is larger than a threshhold and also ignore all packets that are sent after the duration of the test is over.
 
 \todo{go through presentation and extract the info here}
 
@@ -102,11 +183,13 @@ Data analysis pipeline:
 We're capturing packets on a separate host to make sure the measurement does not influence the rest of the test setup, e.g. through higher CPU utilization of a host.
 \todo{also talk about avoiding the need for clock synchronization}
 
-In the VM test setup, the virtual switch is configured to behave like a \textit{hub} \cite{wiki:Ethernet_hub} \cite{NixOS-VM-test-Hub}, which makes it easy to capture the packets on both VLANs. On real hardware with a real switch, this is not quite as trivial. To replicate this setup with real hardware, we use Cisco's Switched Port Analyzer (SPAN), also known as port mirroring. Since enabling SPAN disables our ability to transmit packets from that interface for management purposes, we use a USB to Ethernet adapter for the management interface.
-\todo{Specify the exact hardware model of the PCs and the SBCs}
+
+Because Nix has the properties mentioned in \ref{Nix-explanation}, we use it in our methodology.
+
+
+For reproducing the software exactly, we use Nix and NixOS.
+All systems, testing scripts and the data analysys pipeline can be reproduced almost perfectly this way with very little effort.
 
 
 
-\todo{put the following in the right spot}
-First we use the NixOS testing framework for prototyping and then transfer the setup to bare-metal hardware.
-For real measurements we installed NixOS on PCs, which are centrally controlled from a custom measurement harness. It is designed to be compatible enough with the NixOS testing framework to work with the same test script.
+\cite{RFC7858}

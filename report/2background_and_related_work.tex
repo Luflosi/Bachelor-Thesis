@@ -7,90 +7,87 @@
 \todo{There must be some analysis on WireGuard}
 \todo{Split related work into separate chapter?}
 
-There are a number of \textit{existing network simulators} \cite{network-simulators-list} for simulating complex network setups with routers, switches, etc..
-Many of them focus on simulating mesh networks for testing routing protocols, for example \textit{Mesh Network Lab} \cite{meshnet-lab}.
-Our network is relatively simple, while the complexity lies in the configuration of the hosts.
-This is why we chose the NixOS testing framework for our first prototypes.
-It allows declararing the exact configuration of the hosts and the virtual network in code.
-All dependencies are pinned in a lock file and no outside dependencies are used so everything should still be reproducible in a decade or more without having to distribute gigabytes of VM or container images while still being able to easily modify any part of the system.
+In this section, we will introduce the background necessary for executing this research project.
+Furthermore, we will review the related work to more clearly define the research gap, and leverage insights from that work alike.
+For that, we will first provide an overview of common censorship approaches.
+Subsequently, we will discuss various censorship evasion techniques.
+Finally, we will discuss related work in terms of censorship measurements and performance evaluation.
 
 \section{Network data transmission and MTU}
 Packet switched networks like the internet have a maximum packet size they can transport, called \textit{MTU} (Maximum Transmission Unit) \cite{wiki:Maximum_transmission_unit}.
 Every link between two subsequent routers may have a different MTU.
 The maximum size of a packet being transported along the path from one host to another is the minimum of the MTUs along the path.
-In practice, the current MTU along this path can be determined using \textit{Path MTU discovery} \cite{wiki:Path_MTU_Discovery}.
-When trying to send a packet larger than the MTU, the packet is either fragmented (split into multiple smaller pieces) or dropped.
-Tunnel protocols almost always add some overhead to each packet.
-When the MTU inside of a tunnel is too large, the overhead of the tunnel protocol makes the packet too big to be transported.
+
+When trying to send an IPv4 packet which is larger than the MTU, the packet is either fragmented (split into multiple smaller pieces) or if the DF (don't fragment) flag is set, it is dropped and an ICMP Destination Unreachable (Datagram Too Big) message is sent back to the sender.
+IPv6 does not support fragmentation, so the packet is always dropped and an ICMP message sent in this case.
+
+The current MTU along a certain path can be determined using \textit{Path MTU discovery} \cite{wiki:Path_MTU_Discovery}.
+Unfortunately, some firewalls are configured to drop all ICMP packets for perceived security reasons, which breaks Path MTU discovery.
+The Path MTU may also change (up or down) over time, which Path MTU discovery cannot account for.
+In practice, the transport layer (protocol being transported as the IP payload) therefore needs to react to ICMP Datagram Too Big messages anyways, which means that Path MTU discovery is not required for this application.
+The link layer needs to be able to be able to transport payloads of at least 68 bytes if it wants to be able to transport IPv4 packets.
+For IPv6 this value is 1280 bytes large.
+
+As using any form of encapsulation for tunneling adds overhead, the MTU inside of an IP tunnel (also called inner MTU or in-tunnel MTU) is always smaller than the MTU of der underlay (outer MTU / underlay MTU).
 Since fragmentation has a relatively large performance overhead, this is usually avoided in practice.
 For this reason, we also avoid fragmentation in this research by carefully choosing the MTU inside of the tunnels.
+To avoid fragmentation, the inner MTU should equate to (or be less than) the outer MTU minus the protocol's overhead.
+
 
 \section{Censorship}
-\textit{Censorship} \cite{wiki:Censorship} \todo{explain censorship in one or two sentences}
+\textit{Censorship} \cite{wiki:Censorship} is the suppression of information that is deemed objectionable, dangerous or "inconvenient" by governments or institutions.
+\todo{\href{https://en.wikipedia.org/wiki/Internet_censorship}{link}}
 
 \subsection{Preventing content access}
 \todo{explain content access}
-\textit{Net neutrality} \cite{wiki:Net_neutrality} is technically very similar since it also requires inspecting packets and making decisions based on that.
 
-There are numerous ways to do censorship online, so the following example is structured in a cat-and-mouse game between two fictional parties, a censor Bob and a person Alice:
+Since the Internet gained increasing relevance for information exchange in the general public, entities have investigated methods to inhibit information retrieval.[x]
+From a technical perspective, censorship is not necessarily different than any other form of analyzing and preventing traffic flows, i.e., firewalling and deep packet inspection. [x]
+The core difference is that for censorship, a state level actor determines semantically which network connections need to be prevented, i.e., based on the information or type of service that could be transported over the connection.[x]
 
-Bob wants to censor what Alice can see online.
-Bob operates an ISP and Alice is connected to it via DSL. Alice gets her IP address from Bob's DHCP server.
-The DHCP server also advertises a DNS resolver to Alice, which she gladly uses.
+The most simple version of censorship interferes with service discovery.
+Here, the cannonical example are DNS blocklists.[x]
+For DNS blocking, authorities communicate either FQDNs in the DNS, or full zones, which should not be discoverable by clients.
+The DNS operator is then instructed to prevent correct IP lookups of the associated resource records.
+Regularly, operators are also asked to, instead, redirect users trying to access these resources to, e.g., an informational page.
 
-Now Bob decides that he does not want Alice to be able to access the website example.org.
-He wants to keep the collateral damage low by trying to not block any other websites.
+However, blocking by DNS operators can be easily circumvented [x] by seeking alternative DNS resolvers.
 
-As a first step, he modifies his DNS resolver.
-Instead of replying to a query directly with the correct reply, it first checks if the DNS query asks for example.org.
-If so, it replies with a different answer.
-If the query was for example for the AAAA record of example.org, Bob could make his DNS server reply with the IPv6 address ::1, which is not the true address of example.org, thereby preventing Alice from accessing it.
-To circumvent the censorship, alice can simply choose a different DNS resolver, which does not lie about its responses.
-Or Alice could even run her own recursive DNS resolver.
-To prevent this, Bob tries to block access to all other DNS servers by blocking UDP and TCP ports 53.
-This involves parsing the TCP and UDP headers of all packets through Bob's infrastructure, which he didn't have to do previously.
-Alice works around the block by choosing DNS servers that listen on non-standard ports.
-She can also use \textit{DNS over TLS} \cite{wiki:DNS_over_TLS} or \textit{DNS over HTTPS} \cite{wiki:DNS_over_HTTPS}, which also transport the data over different ports.
-Bob now assembles a list of all public DNS servers he can find and blocks all communication with their IP addresses.
-This likely causes some collateral damage as some DNS servers may also host other things on the same IP addresses, such as websites or email servers.
-Alice only needs to find one working DNS server to circumvent the censorship.
-Presuming Bob successfully found all public (recursive and authoritative) DNS servers and blocked communication with their IP addresses, Alice can use proxies, VPNs or other means such as the Tor network to transport her DNS queries.
-This causes slightly more latency while resolving DNS queries (assuming optimal internet routing), since the network packets have to traverse (at least) one extra server.
-But the latency increase is probably not very noticeable to Alice and preferrable to censored websites.
+Since DNS blocking can be easily circumvented, censors now often also resort to network layer interference.
+One of the simplest form is IP address blocking.
+A list of IP addresses to block can be assembled by using the DNS to resolve unwanted domain names.
+The downside of this relatively simple form of censorship is that multiple different websites may be hosted on one IP address and this technique would block all of them, even if the censor only intended to block one of them.
 
-He could also try to use fingerprinting to detect encrypted DNS traffic but this may either not be reliable or the amount of false-positives may be too high.
-Fingerprinting uses more resources and is thus more expensive than simpler forms of traffic analysis.
-Bob can also assemble lists of IP addresses running proxies, VPN servers or Tor relays and block communication with them.
-An alternative is a technique called active probing, where Bob observes, which servers Alice connects to and if he suspects the server to be used for censorship circumvention, he can veify this by trying to establish a connection himself.
+In response to the circumvention of DNS restrictions, censors may also block the standard DNS port (UDP and TCP port 53).
+However, users adapt by utilizing non-standard ports [\href{https://forum.opnsense.org/index.php?topic=21106.0}{todo}] and encryption like DoT \cite{wiki:DNS_over_TLS} and DoH \cite{wiki:DNS_over_HTTPS}, making it difficult for censors to comprehensively block all potential avenues without causing significant collateral damage.
 
-If Bob fails to prevent Alice from resolving the domain example.org, he can periodically resolve example.org himself and block all communication with the associated IP addresses.
-This works quite well, if all authoritative DNS servers in the world responsible for example.org return the same IP address(es).
-This is often true for smaller websites but larger ones may employ Anycast DNS servers, where each DNS server returns the IP address of the geographically closest server.
-If this is the case, Bob can try resolving the domain from different geographical locations and hope that he found all IP addresses associated with the domain.
-The downside of this censorship technique is that multiple different websites may be hosted on one IP address and this technique would block all of them, even if Bob only wants to censor one of them.
+Censors escalate their efforts by targeting the IP addresses of known DNS servers.
+This causes some collateral damage if these IPs host other services as well.
+Users counteract this by employing proxies, VPNs, Tor, and other means, which tunnel traffic through other nodes.
+These services are however also not immune to IP blocking.
+For Tor for example, there exist public lists with IP addresses of all Tor relays.
+Allowing legitimate users to discover the IP addresses of servers running these services, while not allowing the censors to do the same is a very challenging problem.
 
-If Alice uses HTTP (unencrypted) to access example.org, Bob can use deep packet inspection to read the HTTP Host header, which tells Bob that Alice is trying to connect to example.org.
+Advanced censors deploy active probing techniques to detect servers being used for circumvention.
+This involves monitoring network traffic for patterns indicative of proxy or VPN usage.
+Users respond by using encryption and developing sophisticated obfuscation methods.
 
-Alice now encrypts her connection by using HTTPS. But Bob can still use a very similar technique since the TLS header usually includes the Server Name Indication (SNI), which is similar to the HTTP Host header.
+Censors resort to deep packet inspection (DPI) techniques to identify specific websites from HTTP and HTTPS traffic.
+By examining Host headers in HTTP or Server Name Indication (SNI) in HTTPS, they can block access to targeted domains.
+Users counter this with domain fronting \cite{wiki:Domain_fronting}, masking their requests behind legitimate domains to avoid detection and with Encrypted Client Hello, where the TLS handshake and thus also SNI is encrypted.
+As with DNS queries, users can also employ proxies, VPNs, Tor, and similar means to circumvent the censorship.
 
-Since Alice still wants to access example.org, she gets some help from example.com.
-example.com is hosted on the same infrastructure and IP address as example.org.
-Alice can now set the SNI to example.com while setting the HTTP Host header to example.org.
-Since the HTTP request is encrypted, Bob can only read the SNI.
-If the infrastructure running example.com and example.org is configured in the right way, the website will still work for Alice while Bob is none the wiser.
-This technique is called \textit{Domain fronting} \cite{wiki:Domain_fronting}.
-
-If the collateral damage of also blocking example.com is acceptable to Bob, he can use the above technique of resolving the domain of example.org and blocking associated the IP address.
-
-As with DNS queries above, Alice can use proxies, VPNs or other means such as the Tor network to transport the actual data as well and Bob can use the same techniques as mentioned above to try to prevent this.
-
-There are many more techniques Alice can use to attempt to circumvent the censorship, for example by hiding data in other protocols or using Tor bridges.
+\textit{Net neutrality} \cite{wiki:Net_neutrality} is technically very similar to censorship since it also requires inspecting packets and making decisions based on that.
 
 As we saw, there are many possibilities of evading the censorship:
 
 \subsection{Censorship evasion}
 Depending on the threat model and local laws, the goal can be to just work around the censorship itself.
 But since it may be illegal to circumvent the censorship in a country, it may also be desirable to avoid detection, which is much more difficult. \todo{this repeats the meaning of a sentence in the introduction}
+The goal of not letting the censor know that the censorship was circumvented is related to the concept of \textit{anonymity} \cite{wiki:Anonymity}.
+The latter hides the identity of a person, while the former hides that circumvention is happening.
+With anonymity the adversaries may be various parties trying to identify the user, while censorship evasion specifically targets the censor's detection mechanisms.
+\todo{\href{https://en.wikipedia.org/wiki/Internet_censorship_circumvention}{link}}
 
 \section{Network Throughput Performance Measurements}
 Network throughput is a measure of how much data can be transmitted over a given communication channel per time.
@@ -100,19 +97,61 @@ Goodput can be influenced by many factors including every piece of hardware in t
 related work: \textit{Promises and Potential of BBRv3} \cite{Promises-and-Potential-of-BBRv3}\todo{Also link \href{https://pam2024.cs.northwestern.edu/pdfs/paper-59.pdf}{the PDF} somehow}
 
 \section{Reproducibility in Network Measurement}
-Achieving reproducibility for any performance measurement is tricky. Both hard- and software need to be reproduced as closely as possible.
+\textit{Reproducibility} \cite{wiki:Reproducibility} underpins the scientific method.
+When a scientific study is reproducible, the findings of the study can be replicated by different researchers at any point in the future.
 
-Ideally the exact same hardware is used to reproduce the measurement but it may be difficult and expensive to aquire the exact same hardware.
-As an alternative, using hardware, which is similar enough may reproduce measurements close enough.
+Achieving reproducibility is not easy as there are many challenges.
+One such challenge is that new versions of a software are released over time, which may behave differently than a previous version of the same software and could change the findings of the study.
+A specific piece of software may also not be compatible with other software if they were released at significantly different times.
+Special care needs to be taken to use the correct versions of all software (including dependencies) when trying to reproduce a study.
+This is not trivial with most Linux distributions and package managers.
+One way to resolve this problem is to distribute VM images with all the correct software installed along with the study but VM images require a lot of storage space and has other problems and inconveniences.
 
-For reproducing the software exactly, we use Nix and NixOS.
-All systems, testing scripts and the data analysys pipeline can be reproduced almost perfectly this way with very little effort.
+Experimental systems also tend to accumulate state.
+It is not clear if successive experiments start from the same state since a previous experiment run may have left behind some state that now influences the results.
+\textit{Idempotence} \cite{wiki:Idempotence} in the context of running a computer science experiment refers to the experiment having the same outcome when running it multiple times in succession.
+This is a desired and important property.
+Stringent testing protocols and automation can bring a setup closer to idempotence or even reach it.
+One possibility is to reboot all systems after each experiment and roll their state back to a known state, for example using filesystem snapshots.
 
-Nix, the build system and package manager used in NixOS, is inspired by functional programming principles.
-It treats build steps as functions with the inputs being the dependencies (including source code) and build commands.
+\label{Nix-explanation}
+Nix is a build system and package manager, which is inspired by functional programming principles.
+It treats build steps as functions with the inputs being the dependencies (including source code) and build commands (or -recipe).
 The outputs are the files produced by the build commands.
-It assumes the build step is pure i.e. does not depend on inputs which were not declared, which usually seems to work out pretty well as over 90\% of all packages in the Nixpkgs repository are bitwise reproducible and over 99.7\% can be rebuilt \cite{malka:hal-04913007}.
+They are stored under a unique location in the filesystem, which includes a hash of all inputs in its name.
+An output can never be changed after being created as outputs are immutable (read-only).
+Changing the build recipe or any other input causes a new output to be created with a new hash.
+Nix goes to great lengths to try to ensure that the build step is pure i.e. does not depend on inputs which were not declared.
+This seems to work out pretty well as over 90\% of all packages in the Nixpkgs repository are bitwise reproducible and over 99.7\% can be rebuilt \cite{malka:hal-04913007}.
 A package not being bitwise reproducible is usually caused by it embedding information such as dates, the Linux kernel version, OS version, environment variables such as the number of available cores or different kinds of randomness.
 In practice though, one does not usually recompile everything from source but rather uses the official binary cache.
 This allows perfectly recreating our measurement setup, even if some packages are not perfectly reproducible.
 While Nix cannot guarantee reproducibility, it does help a lot since it makes it easier to not accidentally depend on anything which is not declared as an input.
+
+\todo{write about Nix language (functional, lazy, etc.)}
+
+NixOS is a Linux distribution built on Nix.
+A single file written in the Nix language can declare all software and configuration of the system.
+By using a lock file, the software and configuration can be recreated exactly.
+NixOS uses Nix to build a single directory containing the entire operating system.
+The directory is immutable, but a regular operating system is expected to be able to keep state.
+For this reason, it also includes a so-called activation script, which essentially creates or changes a couple symlinks to point to files or directories in that directory.
+This includes /etc and all executable software available to users, which is stored in /run/current-system/sw/bin.
+NixOS can boot with just two directories: /boot and /nix \cite{Erase_your_darlings}.
+Everything else can be erased during a reboot to eliminate as much state as possible.
+One method of achieving this is using a tmpfs, which stores all data in RAM and thus looses the data when shutting down the machine.
+Another method is using ZFS or btrfs snapshots and rolling back to an empty snapshot while booting.
+Opting in to keepig some state can be done per directory by storing the data on a different filesystem, ZFS dataset or btrfs subvolume.
+
+Using NixOS and erasing the state on each reboot like this can be used to implement idempotent experiments.
+
+The Nix ecosystem (specifically Nixpkgs) also includes a very powerful integration testing framework.
+To use the NixOS testing framework, a setup and test script need to be declared.
+The setup is declared in the Nix language and specifies one or more NixOS VM(s) and the network (VLANs) connecting them.
+The test script is written in Python and can start and stop the VMs and execute commands.
+
+Achieving reproducibility for performance measurements is especially tricky.
+Not only the software needs to be reproduced as closely as possible but also the hardware.
+
+Ideally the exact same hardware is used but it may be difficult and expensive to aquire the exact same hardware.
+As an alternative, using hardware, which is similar enough may reproduce measurements close enough.
