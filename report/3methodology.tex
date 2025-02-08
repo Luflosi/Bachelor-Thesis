@@ -76,21 +76,29 @@ while it is possible to build a reliable benchmarking setup using virtual machin
 one less variable
 
 \subsection{Hardware used}
-\begin{table}[h!]
+\begin{table}[]
 	\centering
-	\begin{tabular}{|c|l|}
-		\hline
-		\textbf{Category} & \textbf{Details} \\ \hline
-		\textbf{Switch} & Catalyst 6500 Series Switch (TBD) \\ \hline
-		\textbf{PCs} & DELL OptiPlex 7070 Micro \\ \hline
-		& INTEL® CORE™ i5-9600 (6 cores, 3.1GHz) \\ \hline
-		& 16GB RAM (One 2666 MHz DDR4 SODIMM module, HMA82GS6JJR8N-VK) \\ \hline
-		& 512GB NVME SSD \\ \hline
-		\textbf{SBCs} & Orange Pi Zero3 \\ \hline
-		& Allwinner H618 Cortex-A53 (4 cores, 1.5GHz) \\ \hline
-		& 2GB RAM \\ \hline
-		& 32GB microSD card \\ \hline
+	\footnotesize
+	\begin{tabular}{cl}
+		\toprule
+		\textbf{Category} & \textbf{Details}                                                                                       \\ \midrule
+		\rowcolor[HTML]{EFEFEF}
+		Switch            & Catalyst 6500 Series Switch (TBD)                                                                      \\ \midrule
+		PCs               & DELL OptiPlex 7070 Micro                                                                               \\
+		\rowcolor[HTML]{EFEFEF}
+		& INTEL® CORE™ i5-9600 (6 cores, 3.1GHz)                                                                 \\
+		& \begin{tabular}[c]{@{}l@{}}16GB RAM\\ One 2666 MHz DDR4 SODIMM module,\\ HMA82GS6JJR8N-VK\end{tabular} \\
+		\rowcolor[HTML]{EFEFEF}
+		& 512GB NVME SSD                                                                                         \\ \midrule
+		SBCs              & Orange Pi Zero3                                                                                        \\
+		\rowcolor[HTML]{EFEFEF}
+		& Allwinner H618 Cortex-A53 (4 cores, 1.5GHz)                                                            \\
+		& 2GB RAM                                                                                                \\
+		\rowcolor[HTML]{EFEFEF}
+		& 32GB microSD card                                                                                      \\ \bottomrule
 	\end{tabular}
+	\caption{Hardware used}
+	\label{tab:hardware}
 \end{table}
 
 \subsubsection{Switch}
@@ -126,22 +134,29 @@ one less variable
 \todo{provide reasoning why we chose these protocols specifically and describe them briefly}
 
 \subsection{Parameters to test}
-\begin{table}[h!]
+\begin{table}[]
 	\centering
-	\begin{tabular}{|c|c|c|c|c|c|}
-		\hline
-		Parameter & Loss & Delay & Jitter & Duplicate & MTU\\ \hline
-		Unit      &  \%  &  ms   &   ms   &   \%      & Bytes \\ \hline
-		          &  0   &     0 &      0 &    2      & 1400 \\ \hline
-		          &  0.1 &     1 &     10 &  100      & \\ \hline
-		          &  0.2 &    10 &        &           & \\ \hline
-		          &  0.5 &    50 &        &           & \\ \hline
-		          &    1 &   100 &        &           & \\ \hline
-		          &   10 &   200 &        &           & \\ \hline
-		          &   50 &  1000 &        &           & \\ \hline
-		          &  100 &       &        &           & \\ \hline
-
+	\footnotesize
+	\begin{tabular}{cccccc}
+		\toprule
+		\textbf{Parameter} & \textbf{Loss} & \textbf{Delay} & \textbf{Jitter} & \textbf{Duplicate} & \textbf{MTU} \\ \midrule
+		\rowcolor[HTML]{EFEFEF}
+		Unit               & \%            & ms             & ms              & \%                 & Bytes        \\
+		& 0             & 0              & 0               & 0                  & 1400         \\
+		\rowcolor[HTML]{EFEFEF}
+		& 0.1           & 1              & 10              & 2                  &              \\
+		& 0.2           & 10             &                 & 100                &              \\
+		\rowcolor[HTML]{EFEFEF}
+		& 0.5           & 50             &                 &                    &              \\
+		& 1             & 100            &                 &                    &              \\
+		\rowcolor[HTML]{EFEFEF}
+		& 10            & 200            &                 &                    &              \\
+		& 50            & 1000           &                 &                    &              \\
+		\rowcolor[HTML]{EFEFEF}
+		& 100           &                &                 &                    &              \\ \bottomrule
 	\end{tabular}
+	\caption{Sampling the Parameters}
+	\label{tab:parameters}
 \end{table}
 explain why these parameters
 

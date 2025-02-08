@@ -13,7 +13,7 @@ SPDX-FileCopyrightText = "2024 Lukas Zirpel <thesis+lukas@zirpel.de>"
 SPDX-License-Identifier = "CC0-1.0"
 
 [[annotations]]
-path = [ "report/bibliography.bib", "report/logo.eps" ]
+path = [ "report/bibliography.bib", "report/logo.eps", "report/tablesgenerator.com/**" ]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2024 Lukas Zirpel <thesis+lukas@zirpel.de>"
 SPDX-License-Identifier = "GPL-3.0-only"
