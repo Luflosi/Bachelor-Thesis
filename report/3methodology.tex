@@ -15,6 +15,8 @@ Therefore we need a measurement setup, which allows us to so so.
 It should offer repeatability and consistency.
 It should include a traffic generator which generates the simplest possible traffic pattern, a constant stream of data.
 The stream of data should only flow in one direction and should not attempt to do congestion control as we don't want to evaluate congestion control algorithms but 
+The setup should allow simulating different network conditions.
+The data traffic should flow from the traffic generator, be encoded differently by the censorship protocol, pass through the network emulator and finally be decoded by the censorship protocol.
 capture all packets in their original form so we can tweak the analysis later without rerunning all tests again
 analyze packet captures later (post-experiment analysis)
 need to be careful with synchronization of timestamps between different points
@@ -111,25 +113,6 @@ one less variable
 	\label{tab:hardware}
 \end{table}
 
-\subsubsection{Switch}
-\todo{catalyst-6500-series-switch}
-
-\subsubsection{PCs}
-\begin{itemize}
-  \item DELL OptiPlex 7070 Micro
-  \item INTEL® CORE™ i5-9600 (6 cores, 3.1GHz)
-  \item 16GB RAM (One 2666 MHz DDR4 SODIMM module, HMA82GS6JJR8N-VK)
-  \item 512GB NVME SSD
-\end{itemize}
-
-\subsubsection{SBCs}
-\begin{itemize}
-  \item Orange Pi Zero3
-  \item Allwinner H618 Cortex-A53 (4 cores, 1.5GHz)
-  \item 2GB RAM
-  \item 32GB microSD card
-\end{itemize}
-
 \section{Scenario Selection}
 \subsection{Protocols to test}
 \begin{itemize}
@@ -183,7 +166,8 @@ The files could either be explicitly compressed with a compression tool like zst
 
 Since we're only interested in measuring what happens during the actual test and not in the connection setup and teardown of iperf3, we use heuristics
 The connection setup and teardown of iperf3 should not be part of the analysis, hence a heuristic is employed to ignore this part of the packet capture.
-To find the start of the test, we find the first packet which is larger than a threshhold. To find the end of the test, we find the last packet which is larger than a threshhold and also ignore all packets that are sent after the duration of the test is over.
+To find the start of the test, we find the first packet which is larger than a threshhold.
+To find the end of the test, we find the last packet which is larger than a threshhold and also ignore all packets that are sent after the duration of the test is over.
 
 \todo{go through presentation and extract the info here}
 
