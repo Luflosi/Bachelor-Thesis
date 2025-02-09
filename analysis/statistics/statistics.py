@@ -7,6 +7,7 @@
 import os
 import sys
 import json
+import math
 import argparse
 from collections import defaultdict
 
@@ -124,6 +125,8 @@ del(pre_info)
 
 
 time_series = []
+min_latency = math.inf
+time_traveling_packet_count = 0
 
 for time, pre_bucket in pre_buckets.items():
     packet_count = 0
@@ -149,8 +152,10 @@ for time, pre_bucket in pre_buckets.items():
                 first_arriving_copy_of_packet = packet
         (post_frame_number, post_frame_time_epoch, post_ip_payload_length) = first_arriving_copy_of_packet
         latency = time_ns_to_ms(post_frame_time_epoch - pre_frame_time_epoch)
+        if latency < min_latency:
+          min_latency = latency
         if latency < 0:
-            print(f'WARNING: packet arrived {-latency} ms before it was sent', file=sys.stderr)
+            time_traveling_packet_count += 1
         packet_count += 1
         payload_length_sum_with_overhead += pre_ip_payload_length
         payload_length_sum_without_overhead += pre_ip_payload_length - overhead
@@ -171,6 +176,8 @@ for time, pre_bucket in pre_buckets.items():
         statistics['throughput_with_overhead'] = throughput_with_overhead
     time_series.append(statistics)
 
+if time_traveling_packet_count > 0:
+    print(f'WARNING: {time_traveling_packet_count} packets arrived before they were sent, with one packet arriving {-min_latency:.1f} ms earlier', file=sys.stderr)
 
 data = {
     'duration': BUCKET_DURATION_S,
