@@ -75,4 +75,4 @@ tramp
 # elpa packages
 /elpa/
 
-*.pdf
+/*.pdf

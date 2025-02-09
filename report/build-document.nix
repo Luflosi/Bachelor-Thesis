@@ -57,6 +57,7 @@ let
     root = ./.;
     fileset = fs.unions [
       ./.latexmkrc
+      (fs.fileFilter (file: file.hasExt "pdf") ./figures)
       (fs.fileFilter (file: file.hasExt "tex" || file.hasExt "eps" || file.hasExt "sty" || file.hasExt "bib" || file.hasExt "dbx") ./.)
     ];
   };
