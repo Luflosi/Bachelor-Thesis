@@ -23,7 +23,8 @@ Censorship in the real world can be done in many different ways:
   \item Drop all packets to certain IP addresses
   \item \todo{add more items and add structure with sub-items}
 \end{itemize}
-These types of censorship can be circumvented in different ways, e.g. fake TCP RST packets sent by unsophisticated firewalls can often be differentiated from the real ones and then simply ignored\todo{reference project to circumvent the Russian firewall}. More sophisticated firewalls can be circumvented with different types of tunnels.
+These types of censorship can be circumvented in a variety of ways, e.g. fake TCP RST packets sent by unsophisticated firewalls can often be differentiated from the real ones and then simply ignored\todo{reference project to circumvent the Russian firewall}.
+More sophisticated firewalls can be circumvented by tunneling.
 
 Running these protocols on phones or other mobile devices also constrains the available CPU and RAM resources.
 However, these censorship circumvention protocols are likely developed in laboratory conditions with ideal networks and plentiful computational resources.
@@ -33,13 +34,13 @@ For this reason, we aim to analyze the behaviour of different censorship circumv
 Specifically, we ask the research question:
 \emph{``How do censorship circumvention protocols react to bad network conditions?''}
 This research question breaks up into the following sub-questions:
-\begin{itemize}
+\begin{enumerate}
   \item How much packet size overhead does each protocol add?
   \item How much does the MTU decrease by using each protocol?
   \item How much additional latency does each protocol add?
   \item Do any protocols introduce additional packet loss?
   \item How much processing power and RAM does each protocol consume/require?
-\end{itemize}
+\end{enumerate}
 
 We answer these research questions using a simulation environment.
 Accurately simulating real-world conditions is challenging.
