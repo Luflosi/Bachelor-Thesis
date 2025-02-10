@@ -25,10 +25,10 @@ The current MTU along a certain path can be determined using \textit{Path MTU di
 Unfortunately, some firewalls are configured to drop all ICMP packets for perceived security reasons, which breaks Path MTU discovery.
 The Path MTU may also change (up or down) over time, which Path MTU discovery cannot account for.
 In practice, the transport layer (protocol being transported as the IP payload) therefore needs to react to ICMP Datagram Too Big messages anyways, which means that Path MTU discovery is not required for this application.
-The link layer needs to be able to be able to transport payloads of at least 68 bytes if it wants to be able to transport IPv4 packets.
+The link layer needs to be able to transport payloads of at least 68 bytes if it wants to allow transporting IPv4 packets.
 For IPv6 this value is 1280 bytes large.
 
-As using any form of encapsulation for tunneling adds overhead, the MTU inside of an IP tunnel (also called inner MTU or in-tunnel MTU) is always smaller than the MTU of der underlay (outer MTU / underlay MTU).
+As using any form of encapsulation for tunneling adds overhead, the MTU inside of an IP tunnel (also called inner MTU or in-tunnel MTU) is always smaller than the MTU of the underlay (outer MTU / underlay MTU).
 Since fragmentation has a relatively large performance overhead, this is usually avoided in practice.
 For this reason, we also avoid fragmentation in this research by carefully choosing the MTU inside of the tunnels.
 To avoid fragmentation, the inner MTU should equate to (or be less than) the outer MTU minus the protocol's overhead.
@@ -121,7 +121,7 @@ The outputs are the files produced by the build commands.
 They are stored under a unique location in the filesystem, which includes a hash of all inputs in its name.
 An output can never be changed after being created as outputs are immutable (read-only).
 Changing the build recipe or any other input causes a new output to be created with a new hash.
-Nix goes to great lengths to try to ensure that the build step is pure i.e. does not depend on inputs which were not declared.
+Nix goes to great lengths to try to ensure that the build step is pure i.e., does not depend on inputs which were not declared.
 This seems to work out pretty well as over 90\% of all packages in the Nixpkgs repository are bitwise reproducible and over 99.7\% can be rebuilt \cite{malka:hal-04913007}.
 A package not being bitwise reproducible is usually caused by it embedding information such as dates, the Linux kernel version, OS version, environment variables such as the number of available cores or different kinds of randomness.
 In practice though, one does not usually recompile everything from source but rather uses the official binary cache.
