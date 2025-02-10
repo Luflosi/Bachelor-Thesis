@@ -39,8 +39,15 @@ let
   pingTimeout = 30;
   pingTimeoutStr = toString pingTimeout;
   udpPayloadSize = ip_payload_size - 8;
+  iperfServerAddress = if encapsulation == "none"
+                then "192.168.2.3"
+                else if encapsulation == "WireGuard"
+                then "192.168.20.3"
+                else if encapsulation == "icmptx"
+                then "192.168.21.3"
+                else throw "Unknown encapsulation";
   iperfArgs = [
-    "-c" (if encapsulation == "none" then "192.168.2.3" else "192.168.20.3")
+    "-c" iperfServerAddress
     "--time" (toString test_duration_s)
     "--udp"
     "--udp-retry" "100"
@@ -53,6 +60,24 @@ let
     "-R"
   ];
   iperfArgsStr = lib.concatStringsSep " " iperfArgs;
+
+  pingBeforeIperf = if encapsulation == "none" then ''
+
+
+  '' else if encapsulation == "WireGuard" then ''
+    client.wait_until_succeeds("ping -c 1 fded:51e9:828f::3 >&2", timeout=${pingTimeoutStr})
+    client.wait_until_succeeds("ping -c 1 192.168.20.3 >&2", timeout=${pingTimeoutStr})
+  '' else if encapsulation == "icmptx" then ''
+    server.wait_until_succeeds("ping -c 1 fdb1:f1ae:e1d5::1 >&2", timeout=${pingTimeoutStr})
+    client.wait_until_succeeds("ping -c 1 fdb1:f1ae:e1d5::3 >&2", timeout=${pingTimeoutStr})
+  '' else throw "Unknown encapsulation";
+
+  pingAfterIperf = if encapsulation == "none" then ''
+
+  '' else if encapsulation == "WireGuard" then ''
+    client.wait_until_succeeds("ping -c 1 192.168.20.3 >&2", timeout=${pingTimeoutStr})
+  '' else if encapsulation == "icmptx" then ''
+  '' else throw "Unknown encapsulation";
 
   perMilleToPercentString = input: let
     int = input / 10;
@@ -119,11 +144,10 @@ in writeText "test-script" (''
 
   client.wait_until_succeeds("ping -c 1 fd9d:c839:3e89::3 >&2", timeout=${pingTimeoutStr})
   client.wait_until_succeeds("ping -c 1 192.168.2.3 >&2", timeout=${pingTimeoutStr})
-  ${lib.optionalString (encapsulation != "none") ''client.wait_until_succeeds("ping -c 1 fded:51e9:828f::3 >&2", timeout=${pingTimeoutStr})''}
-  ${lib.optionalString (encapsulation != "none") ''client.wait_until_succeeds("ping -c 1 192.168.20.3 >&2", timeout=${pingTimeoutStr})''}
+  '' + pingBeforeIperf + ''
   # TODO: test in the other direction as well
   client.succeed("iperf ${iperfArgsStr} >&2")
-  ${lib.optionalString (encapsulation != "none") ''client.wait_until_succeeds("ping -c 1 192.168.20.3 >&2", timeout=${pingTimeoutStr})''}
+  '' + pingAfterIperf + ''
   client.wait_until_succeeds("ping -c 1 192.168.2.3 >&2", timeout=${pingTimeoutStr})
 
   # TODO: find a better way to wait for wireshark to be done capturing

@@ -13,6 +13,8 @@ from collections import defaultdict
 
 
 BUCKET_DURATION_S = 1 # In Seconds
+MAX_LATENCY_MS = 5000
+MIN_LATENCY_MS = -100
 
 
 def read_json_file(file_path):
@@ -26,6 +28,10 @@ def time_ns_to_ms(time):
 
 def time_ns_to_s(time):
     return time_ns_to_ms(time) / 1000
+
+
+def time_ms_to_ns(time):
+    return time * 1000 * 1000
 
 
 def bytes_to_megabytes(bytes):
@@ -61,7 +67,9 @@ post_hash_to_frames_map = defaultdict(list)
 for packet in post_packets:
     frame_number = packet['frame_number']
     frame_time_epoch = packet['frame_time_epoch']
-    hash = bytes.fromhex(packet['hash'])
+    hash_str = packet['hash']
+    assert len(hash_str) == 64, f'Hash string length is {len(hash_str)}'
+    hash = bytes.fromhex(hash_str)
     assert len(hash) == 32, f'Hash length was {len(hash)}'
     ip_payload_length = packet['ip_payload_length']
     assert ip_payload_length > 0, f'ip_payload_length is not greater than zero ({ip_payload_length})'
@@ -71,26 +79,36 @@ for packet in post_packets:
 
 def validate_pre_packets(pre_packets):
     frames = []
-    set_of_hashes = set()
+    hash_to_pre_time_epochs_map = defaultdict(list)
     previous_frame_number = None
     previous_frame_time_epoch = None
+    duplicate_count = 0
     for packet in pre_packets:
         frame_number = packet['frame_number']
         frame_time_epoch = packet['frame_time_epoch']
         hash_str = packet['hash']
+        assert len(hash_str) == 64, f'Hash string length is {len(hash_str)}'
         hash = bytes.fromhex(hash_str)
-        assert hash not in set_of_hashes, f'hash {hash_str} is not unique'
-        assert len(hash) == 32, f'Hash length was {len(hash)}'
+        assert len(hash) == 32, f'Hash length is {len(hash)}'
         assert previous_frame_number == None or frame_number > previous_frame_number, f'frame_number ({frame_number}) is not greater than the previous one ({previous_frame_number})'
         assert previous_frame_time_epoch == None or frame_time_epoch >= previous_frame_time_epoch, f'frame_time_epoch ({frame_time_epoch}) is not greater than the previous one ({previous_frame_time_epoch})'
         ip_payload_length = packet['ip_payload_length']
         assert ip_payload_length > 0, f'ip_payload_length is not greater than zero ({ip_payload_length})'
-        previous_frame_number = frame_number
-        previous_frame_time_epoch = frame_time_epoch
-        set_of_hashes.add(hash)
+        if hash in hash_to_pre_time_epochs_map:
+            duplicate_count += 1
+            for other_frame_time_epoch in hash_to_pre_time_epochs_map[hash]:
+                diff = abs(frame_time_epoch - other_frame_time_epoch)
+                assert diff > time_ms_to_ns(MIN_LATENCY_MS + MAX_LATENCY_MS), f'The pre packet capture contains duplicate packets close together ({time_ns_to_ms(diff)} ms)'
+        hash_to_pre_time_epochs_map[hash].append(frame_time_epoch)
         frame = (hash, frame_number, frame_time_epoch, ip_payload_length)
         frames.append(frame)
-    return frames
+        previous_frame_number = frame_number
+        previous_frame_time_epoch = frame_time_epoch
+
+    assert duplicate_count >= 0, f'duplicate_count is {duplicate_count}'
+    if duplicate_count > 0:
+        print(f'WARNING: {duplicate_count} pre packets were not unique', file=sys.stderr)
+    return frames, hash_to_pre_time_epochs_map
 
 
 def split_into_buckets(pre_info):
@@ -117,7 +135,7 @@ def split_into_buckets(pre_info):
     return buckets
 
 
-pre_info = validate_pre_packets(pre_packets)
+pre_info, hash_to_pre_time_epochs_map = validate_pre_packets(pre_packets)
 del(pre_packets)
 
 pre_buckets = split_into_buckets(pre_info)
@@ -137,6 +155,19 @@ for time, pre_bucket in pre_buckets.items():
     payload_length_sum_without_overhead = 0
     for (pre_hash, pre_frame_number, pre_frame_time_epoch, pre_ip_payload_length) in pre_bucket:
         packets = post_hash_to_frames_map[pre_hash]
+
+        def filter_post_packets_by_duplicate_pre_packets(post_packets):
+            if len(hash_to_pre_time_epochs_map[pre_hash]) <= 1:
+                return post_packets
+            new_packets = []
+            for post_packet in post_packets:
+                (_, post_frame_time_epoch, _) = post_packet
+                latency_ms = time_ns_to_ms(post_frame_time_epoch - pre_frame_time_epoch)
+                if MIN_LATENCY_MS <= latency_ms <= MAX_LATENCY_MS:
+                    new_packets.append(post_packet)
+            return new_packets
+        packets = filter_post_packets_by_duplicate_pre_packets(packets)
+
         number_of_packet_copies = len(packets)
         if number_of_packet_copies < 1:
             dropped_packets += 1

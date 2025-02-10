@@ -4,5 +4,6 @@
 let
   importOverlay = file: final: prev: (import file final prev);
 in [
+  (importOverlay ./icmptx)
   (importOverlay ./iperf3)
 ]

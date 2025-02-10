@@ -2,6 +2,9 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 { ... }: {
+  imports = [
+    ../modules/icmptx.nix
+  ];
   networking.firewall.enable = false;
   networking.nftables.enable = true;
   networking.useDHCP = false;
