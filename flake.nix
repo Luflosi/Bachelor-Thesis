@@ -42,6 +42,8 @@
           datatool
           cleveref
           biblatex
+          minted
+          upquote
           ;
       })
       biber

@@ -97,7 +97,7 @@ Goodput can be influenced by many factors including every piece of hardware in t
 related work: \textit{Promises and Potential of BBRv3} \cite{Promises-and-Potential-of-BBRv3}\todo{Also link \href{https://pam2024.cs.northwestern.edu/pdfs/paper-59.pdf}{the PDF} somehow}
 
 \section{Reproducibility in Network Measurement}
-\textit{Reproducibility} \cite{wiki:Reproducibility} underpins the scientific method.
+Reproducibility \cite{wiki:Reproducibility} underpins the scientific method.
 When a scientific study is reproducible, the findings of the study can be replicated by different researchers at any point in the future.
 
 Achieving reproducibility is not easy as there are many challenges.
@@ -113,7 +113,7 @@ It is not clear if successive experiments start from the same state since a prev
 This is a desired and important property.
 Stringent testing protocols and automation can bring a setup closer to idempotence or even reach it.
 One possibility is to reboot all systems after each experiment and roll their state back to a known state, for example using filesystem snapshots.
-
+\subsection{Nix}
 \label{Nix-explanation}
 Nix is a build system and package manager, which is inspired by functional programming principles.
 It treats build steps as functions with the inputs being the dependencies (including source code) and build commands (or -recipe).
@@ -136,8 +136,8 @@ By using a lock file, the software and configuration can be recreated exactly.
 NixOS uses Nix to build a single directory containing the entire operating system.
 The directory is immutable, but a regular operating system is expected to be able to keep state.
 For this reason, it also includes a so-called activation script, which essentially creates or changes a couple symlinks to point to files or directories in that directory.
-This includes /etc and all executable software available to users, which is stored in /run/current-system/sw/bin.
-NixOS can boot with just two directories: /boot and /nix \cite{Erase_your_darlings}.
+This includes \path{/etc} and all executable software available to users, which is stored in \path{/run/current-system/sw/bin}.
+NixOS can boot with just two directories: \path{/boot} and \path{/nix} \cite{Erase_your_darlings}.
 Everything else can be erased during a reboot to eliminate as much state as possible.
 One method of achieving this is using a tmpfs, which stores all data in RAM and thus looses the data when shutting down the machine.
 Another method is using ZFS or btrfs snapshots and rolling back to an empty snapshot while booting.
