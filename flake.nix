@@ -44,6 +44,7 @@
           biblatex
           minted
           upquote
+          csquotes
           ;
       })
       biber
