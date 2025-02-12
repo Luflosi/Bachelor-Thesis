@@ -178,6 +178,7 @@ for time, pre_bucket in pre_buckets.items():
             if first_arriving_copy_of_packet == None:
                 first_arriving_copy_of_packet = packet
                 continue
+            (_post_frame_number, post_frame_time_epoch, _post_ip_payload_length) = packet
             (_post_frame_number, post_first_frame_time_epoch, _post_ip_payload_length) = first_arriving_copy_of_packet
             if post_frame_time_epoch < post_first_frame_time_epoch:
                 first_arriving_copy_of_packet = packet
