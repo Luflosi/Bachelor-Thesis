@@ -21,11 +21,5 @@
 - Look at the PDF in `./result`
 
 
-## TODO:
-- Test various combinations of network interference and transport protocols
-- Try out [qperf](https://github.com/rbruenig/qperf)
-- Test performance in both directions
-
-
 ## License
 The license is the GNU GPLv3 (GPL-3.0-only).
