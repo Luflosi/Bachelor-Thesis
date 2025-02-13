@@ -7,24 +7,24 @@
 \todo{There must be some analysis on WireGuard}
 \todo{Split related work into separate chapter?}
 
-In this section, we will introduce the background necessary for executing this research project.
-Furthermore, we will review the related work to more clearly define the research gap, and leverage insights from that work alike.
-For that, we will first provide an overview of common censorship approaches.
-Subsequently, we will discuss various censorship evasion techniques.
-Finally, we will discuss related work in terms of censorship measurements and performance evaluation.
+In this section, we introduce the background necessary for executing this research project.
+Furthermore, we review the related work to more clearly define the research gap, and leverage insights from that work alike.
+For that, we first provide an overview of common censorship approaches.
+Subsequently, we discuss various censorship evasion techniques.
+Finally, we discuss related work in terms of censorship measurements and performance evaluation.
 
 \section{Network data transmission and MTU}
 Packet switched networks like the internet have a maximum packet size they can transport, called \textit{MTU} (Maximum Transmission Unit) \cite{wiki:Maximum_transmission_unit}.
 Every link between two subsequent routers may have a different MTU.
 The maximum size of a packet being transported along the path from one host to another is the minimum of the MTUs along the path.
 
-When trying to send an IPv4 packet which is larger than the MTU, the packet is either fragmented (split into multiple smaller pieces) or if the DF (don't fragment) flag is set, it is dropped and an ICMP Destination Unreachable (Datagram Too Big) message is sent back to the sender.
+When trying to send an IPv4 packet which is larger than the MTU, the packet is either fragmented (split into multiple smaller pieces) or if the DF (don't fragment) flag is set, it is dropped and an \textit{ICMP Destination Unreachable (Datagram Too Big)} message is sent back to the sender.
 IPv6 does not support fragmentation, so the packet is always dropped and an ICMP message sent in this case.
 
 The current MTU along a certain path can be determined using \textit{Path MTU discovery} \cite{wiki:Path_MTU_Discovery}.
 Unfortunately, some firewalls are configured to drop all ICMP packets for perceived security reasons, which breaks Path MTU discovery.
 The Path MTU may also change (up or down) over time, which Path MTU discovery cannot account for.
-In practice, the transport layer (protocol being transported as the IP payload) therefore needs to react to ICMP Datagram Too Big messages anyways, which means that Path MTU discovery is not required for this application.
+In practice, the transport layer (protocol being transported as the IP payload) therefore needs to react to \textit{ICMP Datagram Too Big} messages anyways, which means that Path MTU discovery is not required for this application.
 The link layer needs to be able to transport payloads of at least 68 bytes if it wants to allow transporting IPv4 packets.
 For IPv6 this value is 1280 bytes large.
 

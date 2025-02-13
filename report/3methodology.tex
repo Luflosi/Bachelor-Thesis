@@ -4,6 +4,8 @@
 \chapter{Methodology}
 \label{chap:methodology}
 
+In this chapter, we ...
+
 \section{Experimental design}
 \begin{itemize}
 	\item Was haben wir vor?
@@ -121,43 +123,68 @@ one less variable
 
 \section{Scenario Selection}
 \subsection{Protocols to test}
+
+
+
+To evaluate censorship evasion protocols, we selected a range of protocols representing different approaches and levels of sophistication.
+Our selection includes:
+
 \begin{itemize}
-  \item none, as a baseline
-  \item WireGuard
-  \item DNS tunnel (iodine)
-  \item ICMP tunnel (ICMPTX)
-  \item phantun
-  \item Various Tor Protocols
+  \item \noindent\textbf{None (Baseline):}
+    A baseline measurement with no protocol encapsulation provides a reference point against which the performance of the other protocols can be compared.
+    This allows us to quantify the overhead introduced by each protocol.
+
+  \item \noindent\textbf{WireGuard:}
+    \todo[inline]{\href{https://www.cs.wm.edu/~smherwig/readings/papers/17-ndss-wireguard.pdf}{cite}
+    }
+    WireGuard is a modern, fast, and secure VPN protocol that utilizes state-of-the-art cryptography.
+    It is known for its performance and ease of configuration, making it a popular choice for VPN applications.
+    We included WireGuard to assess the impact of a well-optimized VPN protocol on network performance under challenging conditions.
+
+  \item \noindent\textbf{DNS Tunnel (iodine):}
+    DNS tunneling is a technique that encapsulates data within DNS queries and responses, allowing communication to bypass some forms of censorship.
+    While less efficient than most other methods, it can be effective in bypassing certain types of firewalls that allow DNS traffic.
+    iodine is a widely used implementation of DNS tunneling.
+    We selected iodine to investigate the performance characteristics of this technique, particularly its susceptibility to latency and packet loss.
+
+  \item \noindent\textbf{ICMP Tunnel (ICMPTX):}
+    ICMP tunneling uses ICMP echo requests and replies to carry data.
+    ICMPTX is a common tool for ICMP tunneling.
+    We included ICMPTX to examine the performance of this approach, especially in the context of lossy or high-latency networks.
+
+  \item \noindent\textbf{Tor Pluggable Transports:}
+    Tor is an anonymity network that relies on a network of relays to anonymize traffic.
+    In places, where censors attempt to block access to Tor, users can use so-called \textit{Pluggable Transports} to circumvent the block.
+    There are a variety of such protocols, with the most common ones being obfs4, Snowflake, and meek.
+    We selected these specific Tor protocols because they are known to be effective against censorship in the real world.
 \end{itemize}
 
-\todo{provide reasoning why we chose these protocols specifically and describe them briefly}
 
-\subsection{Parameters to test}
+
 \begin{table}[tbh]
 	\centering
 	\footnotesize
-	\begin{tabular}{cccccc}
+	\begin{tabular}{ccccc}
 		\toprule
-		\textbf{Parameter} & \textbf{Loss} & \textbf{Delay} & \textbf{Jitter} & \textbf{Duplicate} & \textbf{MTU} \\ \midrule
+		\textbf{\begin{tabular}[c]{@{}c@{}}Loss\\ {[}\%{]}\end{tabular}} & \textbf{\begin{tabular}[c]{@{}c@{}}Delay\\ {[}ms{]}\end{tabular}} & \textbf{\begin{tabular}[c]{@{}c@{}}Jitter\\ {[}ms{]}\end{tabular}} & \textbf{\begin{tabular}[c]{@{}c@{}}Duplicate\\ {[}\%{]}\end{tabular}} & \textbf{\begin{tabular}[c]{@{}c@{}}IPv4 Payload\\ {[}Bytes{]}\end{tabular}} \\ \midrule
 		\rowcolor[HTML]{EFEFEF}
-		Unit               & \%            & ms             & ms              & \%                 & Bytes        \\
-		& 0             & 0              & 0               & 0                  & 1400         \\
+		0                                                                & 0                                                                 & 0                                                                  & 0                                                                     & 556                                                                         \\
+		\rowcolor[HTML]{FFFFFF}
+		0.1                                                              & 1                                                                 & 10                                                                 & 2                                                                     & 1260                                                                        \\
 		\rowcolor[HTML]{EFEFEF}
-		& 0.1           & 1              & 10              & 2                  &              \\
-		& 0.2           & 10             &                 & 100                &              \\
+		0.2                                                              & 10                                                                &                                                                    & 10                                                                    & 1400                                                                        \\
+		\rowcolor[HTML]{FFFFFF}
+		0.5                                                              & 50                                                                &                                                                    &                                                                       & 1480                                                                        \\
 		\rowcolor[HTML]{EFEFEF}
-		& 0.5           & 50             &                 &                    &              \\
-		& 1             & 100            &                 &                    &              \\
+		1                                                                & 100                                                               &                                                                    &                                                                       &                                                                             \\
+		\rowcolor[HTML]{FFFFFF}
+		5                                                                & 200                                                               &                                                                    &                                                                       &                                                                             \\
 		\rowcolor[HTML]{EFEFEF}
-		& 10            & 200            &                 &                    &              \\
-		& 50            & 1000           &                 &                    &              \\
-		\rowcolor[HTML]{EFEFEF}
-		& 100           &                &                 &                    &              \\ \bottomrule
+		10                                                               &                                                                   &                                                                    &                                                                       &                                                                             \\ \bottomrule
 	\end{tabular}
 	\caption{Sampling the Parameters}
 	\label{tab:parameters}
 \end{table}
-\todo[inline]{update table again}
 \todo[inline]{explain why these parameters}
 
 When running measurements where we keep all parameters constant and only vary one at a time, there are $8 + 6 + 1 + 2 = 17$ measurements per protocol.
@@ -206,5 +233,9 @@ We're capturing packets on a separate host to make sure the measurement does not
 
 \todo{refer to \href{https://support.telosalliance.com/article/smctkhp4p3-how-to-setup-switched-port-analyzer-on-cisco-switches}{Port mirroring on Cisco switch}}
 
+
+explain why we're not testing corrupt packets (difficult to correlate packets)
+
+send with constant 100MBit/s
 
 \cite{RFC7858}

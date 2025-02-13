@@ -8,9 +8,12 @@
 In this section, we describe the results obtained by performing our
 experiments.
 
-\todo{Neue research questions formulieren, die auch mit unserem Setup beantwortet werden können}
+
 \section{RQ1: How much packet size overhead does each protocol add?}
-can not be measured with our setup but is constant for WireGuard and ICMPTX
+While we aimed to quantify the precise packet size overhead introduced by each protocol, our experimental setup did not allow for direct measurement of this metric.
+However, it is important to note that the packet size overheads of many protocols are generally constant.
+This overhead is due to the protocol's header, which is added to the data payload.
+\todo[inline]{break down overhead of WireGuard and ICMPTX}
 
 \section{RQ2: How much does the MTU decrease by using each protocol?}
 if protocol does not support fragmentation, see above
@@ -23,8 +26,14 @@ cannot be measured with our measurement setup
 
 \section{RQ5: How much processing power and RAM does each protocol consume/require?}
 did not measure
+
 for userspace tunnel programs, can be measured using systemctl status
+
 Not sure how to measure RAM usage of WireGuard
+
+WireGuard used approximately \% of one CPU core
+
+determined by looking at the output ...
 
 
 graphen beschreiben (Welche Achsen gibt es, etc.)
@@ -43,6 +52,8 @@ single: axes:
 
 for looking at a specific measurement in detail:
 
+gives an overview of how consistent the measurement is
+
 latency: box plot for every bucket: time, latency
 
 packet counts: line with dot every bucket: time, counts
@@ -52,7 +63,7 @@ throughput: line with dot every bucket: time, throughput
 
 to be able to see the influence of a parameter, multiple measurements in one graph:
 
-\includegraphics[draft=false,width=0.4\textwidth]{figures/Graphs/todo.pdf}
+%\includegraphics[draft=false,width=0.4\textwidth]{figures/Graphs/commit/todo.pdf}
 
 The different measurements are always plotted on the x axis.
 
@@ -69,17 +80,22 @@ move to chapter methodology:
 one second buckets
 
 
-were unable to evaluate ICMPTX
-
-icmptx: sendto: No buffer space available, issue was mentioned previously \href{https://github.com/jakkarth/icmptx/issues/1}{todo}.
-Author proposed two workarounds but using either one or both at the same time did not fix the issue.
-issue seems to come from trying to send data faster than the underlying link can support.
-tunnel software should be able to handle this case by dropping packets instead of crashing.
+We were unable to evaluate ICMPTX.
+The program has a bug, where it crashes almost immediately after iperf3 starts sending data through the tunnel.
+It fails with the error message \texttt{sendto: No buffer space available}.
+The issue was mentioned previously \cite{icmptx-sendto-no-buffer-space-avaiable}.
+The maintainer proposed two workarounds but using either one alone or both at the same time did not resolve the issue.
+The problem seems to occur when trying to send data into the tunnel at a faster rate than the underlying link can support.
+Tunnel software should be able to handle this case by dropping packets instead of crashing.
 
 
 iodine
 
 only one packet can be in flight, so usable throughput depends on latency and is generally very low
+
+seems to not be true, since observed data rate was higher than expected
+
+perhaps only the case in one direction?
 
 Can not be measured reliably with our setup, would need improved setup, see figure
 
@@ -87,9 +103,22 @@ Can not be measured reliably with our setup, would need improved setup, see figu
 
 mostly see what we expected
 
-we measure exactly the latency we told the network emulator to simulate
+we measure exactly the latency, loss and duplication we told the network emulator to simulate
+
+measured throughput is influenced by number of dropped packets
+
 
 Tor pluggable transports like obfs4 and Snowflake
 meant for stream data like TCP, not UDP
 \todo[inline]{Verify this claim more thouroughly!}
+
+since we're only sending UDP packets, cannot be measured
+
+would need a different test setup with a connection oriented data stream to test
+
+instead of packet oriented
+
+or some kind of UDP over TCP tunnel
+
+this would also be influenced by congestion control algorithm
 
