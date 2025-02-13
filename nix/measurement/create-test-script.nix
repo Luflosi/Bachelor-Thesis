@@ -64,8 +64,6 @@ let
   iperfArgsStr = lib.concatStringsSep " " iperfArgs;
 
   pingBeforeIperf = if encapsulation == "none" then ''
-
-
   '' else if encapsulation == "WireGuard" then ''
     client.wait_until_succeeds("ping -c 1 fded:51e9:828f::3 >&2", timeout=${pingTimeoutStr})
     client.wait_until_succeeds("ping -c 1 192.168.20.3 >&2", timeout=${pingTimeoutStr})
@@ -75,7 +73,6 @@ let
   '' else throw "Unknown encapsulation";
 
   pingAfterIperf = if encapsulation == "none" then ''
-
   '' else if encapsulation == "WireGuard" then ''
     client.wait_until_succeeds("ping -c 1 192.168.20.3 >&2", timeout=${pingTimeoutStr})
   '' else if encapsulation == "icmptx" then ''
@@ -146,10 +143,10 @@ in writeText "test-script" (''
 
   client.wait_until_succeeds("ping -c 1 fd9d:c839:3e89::3 >&2", timeout=${pingTimeoutStr})
   client.wait_until_succeeds("ping -c 1 192.168.2.3 >&2", timeout=${pingTimeoutStr})
-  '' + pingBeforeIperf + ''
+  ${pingBeforeIperf}
   # TODO: test in the other direction as well
   client.succeed("iperf ${iperfArgsStr} >&2", timeout=${iperfTimeoutStr})
-  '' + pingAfterIperf + ''
+  ${pingAfterIperf}
   client.wait_until_succeeds("ping -c 1 192.168.2.3 >&2", timeout=${pingTimeoutStr})
 
   # TODO: find a better way to wait for wireshark to be done capturing
