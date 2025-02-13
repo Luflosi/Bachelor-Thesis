@@ -90,10 +90,12 @@
       linkAllOutputsOfPipeline = pipeline: pkgs.linkFarm "pipeline" (lib.mapAttrsToList (name: value: { inherit name; path = value; }) pipeline);
       parametersToString = p: "duration-${toString p.test_duration_s}s-${toString p.ip_payload_size}bytes-${p.encapsulation}-delay-${toString p.delay_time_ms}ms-jitter-${toString p.delay_jitter_ms}ms-${p.delay_distribution}-loss-${toString p.loss_per_mille}‰-${p.loss_correlation}-duplicate-${toString p.duplicate_per_mille}‰-${p.duplicate_correlation}-reorder-${toString p.reorder_per_mille}‰";
       measurements = pkgs.linkFarm "measurements" (lib.zipListsWith (parameters: intermediates: { name = parametersToString parameters; path = intermediates.measurement; }) test-matrix pipelines.intermediates);
+      all-statistics = pkgs.linkFarm "all-statistics" (lib.zipListsWith (parameters: intermediates: { name = parametersToString parameters; path = intermediates.statistic; }) test-matrix pipelines.intermediates);
+      all-parsed = pkgs.linkFarm "all-parsed" (lib.flatten (lib.zipListsWith (parameters: intermediates: [{ name = "pre-" + parametersToString parameters; path = intermediates.parsed-pre; } { name = "post-" + parametersToString parameters; path = intermediates.parsed-post; }]) test-matrix pipelines.intermediates));
     in (builtins.head defaultPipeline.intermediates) // {
       inherit (defaultPipeline) graphs;
       graphsMulti = pipelines.graphs;
-      inherit measurements;
+      inherit measurements all-statistics all-parsed;
       report = import ./report/build-document.nix {
         inherit lib pkgs;
         inherit (inputs) rfc-bib;
