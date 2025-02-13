@@ -59,7 +59,7 @@ A list of IP addresses to block can be assembled by using the DNS to resolve unw
 The downside of this relatively simple form of censorship is that multiple different websites may be hosted on one IP address and this technique would block all of them, even if the censor only intended to block one of them.
 
 In response to the circumvention of DNS restrictions, censors may also block the standard DNS port (UDP and TCP port 53).
-However, users adapt by utilizing non-standard ports [\href{https://forum.opnsense.org/index.php?topic=21106.0}{todo}] and encryption like DoT \cite{wiki:DNS_over_TLS} and DoH \cite{wiki:DNS_over_HTTPS}, making it difficult for censors to comprehensively block all potential avenues without causing significant collateral damage.
+However, users adapt by utilizing non-standard ports \cite{dns-nonstandard-port} and encryption like DoT \cite{wiki:DNS_over_TLS} and DoH \cite{wiki:DNS_over_HTTPS}, making it difficult for censors to comprehensively block all potential avenues without causing significant collateral damage.
 
 Censors escalate their efforts by targeting the IP addresses of known DNS servers.
 This causes some collateral damage if these IPs host other services as well.
@@ -77,11 +77,12 @@ By examining Host headers in HTTP or Server Name Indication (SNI) in HTTPS, they
 Users counter this with domain fronting \cite{wiki:Domain_fronting}, masking their requests behind legitimate domains to avoid detection and with Encrypted Client Hello, where the TLS handshake and thus also SNI is encrypted.
 As with DNS queries, users can also employ proxies, VPNs, Tor, and similar means to circumvent the censorship.
 
-\textit{Net neutrality} \cite{wiki:Net_neutrality} is technically very similar to censorship since it also requires inspecting packets and making decisions based on that.
+Without \textit{net neutrality} \cite{wiki:Net_neutrality}, many large internet service providers (ISPs) are inclined to treat portions of the traffic in special ways.
+This situation shares a strong technical resemblance with censorship because both involve inspecting data packets and making decisions based on their content or source, albeit for different purposes.
 
 As we saw, there are many possibilities of evading the censorship:
 
-\subsection{Censorship evasion}
+\subsection{Censorship evasion goals}
 Depending on the threat model and local laws, the goal can be to just work around the censorship itself.
 But since it may be illegal to circumvent the censorship in a country, it may also be desirable to avoid detection, which is much more difficult. \todo{this repeats the meaning of a sentence in the introduction}
 The goal of not letting the censor know that the censorship was circumvented is related to the concept of \textit{anonymity} \cite{wiki:Anonymity}.
@@ -100,12 +101,12 @@ related work: \textit{Promises and Potential of BBRv3} \cite{Promises-and-Potent
 Reproducibility \cite{wiki:Reproducibility} underpins the scientific method.
 When a scientific study is reproducible, the findings of the study can be replicated by different researchers at any point in the future.
 
-Achieving reproducibility is not easy as there are many challenges.
+Achieving reproducibility is not easy, as there are many challenges.
 One such challenge is that new versions of a software are released over time, which may behave differently than a previous version of the same software and could change the findings of the study.
 A specific piece of software may also not be compatible with other software if they were released at significantly different times.
 Special care needs to be taken to use the correct versions of all software (including dependencies) when trying to reproduce a study.
 This is not trivial with most Linux distributions and package managers.
-One way to resolve this problem is to distribute VM images with all the correct software installed along with the study but VM images require a lot of storage space and has other problems and inconveniences.
+One way to resolve this problem is to distribute VM images with all the correct software installed along with the study, but VM images require a lot of storage space and have other problems and inconveniences.
 
 Experimental systems also tend to accumulate state.
 It is not clear if successive experiments start from the same state since a previous experiment run may have left behind some state that now influences the results.
@@ -119,12 +120,12 @@ Nix is a build system and package manager, which is inspired by functional progr
 It treats build steps as functions with the inputs being the dependencies (including source code) and build commands (or -recipe).
 The outputs are the files produced by the build commands.
 They are stored under a unique location in the filesystem, which includes a hash of all inputs in its name.
-An output can never be changed after being created as outputs are immutable (read-only).
-Changing the build recipe or any other input causes a new output to be created with a new hash.
-Nix goes to great lengths to try to ensure that the build step is pure i.e., does not depend on inputs which were not declared.
-This seems to work out pretty well as over 90\% of all packages in the Nixpkgs repository are bitwise reproducible and over 99.7\% can be rebuilt \cite{malka:hal-04913007}.
-A package not being bitwise reproducible is usually caused by it embedding information such as dates, the Linux kernel version, OS version, environment variables such as the number of available cores or different kinds of randomness.
-In practice though, one does not usually recompile everything from source but rather uses the official binary cache.
+An output can never be changed after being created, as outputs are immutable (read-only).
+Changing the build recipe, or any other input, causes a new output to be created with a new hash.
+Nix goes to great lengths to try to ensure that the build step is pure, i.e., does not depend on inputs which were not declared.
+This seems to work out pretty well, as over 90\% of all packages in the Nixpkgs repository are bitwise reproducible and over 99.7\% can be rebuilt \cite{malka:hal-04913007}.
+A package not being bitwise reproducible is usually caused by it embedding information such as dates, the Linux kernel version, OS version, environment variables such as the number of available cores, or different kinds of randomness.
+In practice, though, one does not usually recompile everything from source but rather uses the official binary cache.
 This allows perfectly recreating our measurement setup, even if some packages are not perfectly reproducible.
 While Nix cannot guarantee reproducibility, it does help a lot since it makes it easier to not accidentally depend on anything which is not declared as an input.
 
@@ -135,7 +136,7 @@ A single file written in the Nix language can declare all software and configura
 By using a lock file, the software and configuration can be recreated exactly.
 NixOS uses Nix to build a single directory containing the entire operating system.
 The directory is immutable, but a regular operating system is expected to be able to keep state.
-For this reason, it also includes a so-called activation script, which essentially creates or changes a couple symlinks to point to files or directories in that directory.
+For this reason, it also includes a so-called activation script, which essentially creates or changes a couple symbolic links to point to files or directories in that directory.
 This includes \path{/etc} and all executable software available to users, which is stored in \path{/run/current-system/sw/bin}.
 NixOS can boot with just two directories: \path{/boot} and \path{/nix} \cite{Erase_your_darlings}.
 Everything else can be erased during a reboot to eliminate as much state as possible.
@@ -151,7 +152,7 @@ The setup is declared in the Nix language and specifies one or more NixOS VM(s) 
 The test script is written in Python and can start and stop the VMs and execute commands.
 
 Achieving reproducibility for performance measurements is especially tricky.
-Not only the software needs to be reproduced as closely as possible but also the hardware.
+Not only the software needs to be reproduced as closely as possible, but also the hardware.
 
-Ideally the exact same hardware is used but it may be difficult and expensive to aquire the exact same hardware.
-As an alternative, using hardware, which is similar enough may reproduce measurements close enough.
+Ideally, the exact same hardware is used, but it may be difficult and expensive to aquire the exact same hardware.
+As an alternative, employing similar hardware may yield sufficiently accurate measurements.

@@ -11,7 +11,7 @@
 	\item Was müssen wir dabei beachten?
 \end{itemize}
 We want to measure the overhead of encryption and censorship evasion protocols over lossy links.
-Therefore we need a measurement setup, which allows us to do so.
+Therefore, we need a measurement setup, which allows us to do so.
 It should offer repeatability and consistency.
 It should include a traffic generator which generates the simplest possible traffic pattern, a constant stream of data.
 The stream of data should only flow in one direction and should not attempt to do congestion control as we don't want to evaluate congestion control algorithms but 
@@ -42,20 +42,20 @@ There are a number of existing network simulators for simulating complex network
 Many of them focus on simulating mesh networks for testing routing protocols, for example Mesh Network Lab \cite{meshnet-lab}.
 Our network is relatively simple, while the complexity lies in the configuration of the hosts and automation.
 This is part of the reason why we chose the NixOS testing framework for our first prototypes.
-The other reason is that Nix has the properties mentioned in \ref{Nix-explanation}.
+The other reason is that Nix has the desirable properties mentioned in \ref{Nix-explanation}.
 It allows declararing the exact configuration of the hosts and the virtual network in code.
-All dependencies are pinned in a lock file and no outside dependencies are used so everything should still be reproducible in a decade or more without having to distribute gigabytes of VM or container images while still being able to easily modify any part of the system.
+All dependencies are pinned in a lock file and no outside dependencies are used, so everything should still be reproducible in a decade or more without having to distribute gigabytes of VM or container images while still being able to easily modify any part of the system.
 
-First we use the NixOS testing framework for prototyping and then transfer the setup to bare-metal hardware.
+First, we use the NixOS testing framework for prototyping, and then transfer the setup to bare-metal hardware.
 The NixOS testing framework launches several VMs with QEMU and sets up a virtual network switch.
-Using the NixOS testing framework we declare the configuration of all four hosts as well as the network topology in Nix code.
+Using the NixOS testing framework, we declare the configuration of all four hosts, as well as the network topology, in Nix code.
 We also specify a test script, which imperatively executes one command at a time.
-The script roughly executes these steps: start all hosts, wait for them to be ready, tell the router to emulate the network conditions we want, start the traffic generator, wait for it to be done and finally collect the packet captures \todo{put the steps into some sort of diagram?}.
+The script roughly executes these steps: start all hosts, wait for them to be ready, tell the router to emulate the network conditions we want, start the traffic generator, wait for it to be done, and finally collect the packet captures \todo{put the steps into some sort of diagram?}.
 We store the packet captures for later analysis.
 
-For real measurements we installed NixOS on PCs, which are centrally controlled with a custom measurement harness.
+For real measurements, we installed NixOS on PCs, which are centrally controlled with a custom measurement harness.
 It is designed to be compatible enough with the NixOS testing framework to work with the same test script.
-Nix is not really designed for this use case because it isolates the build steps in a sandbox with no network access and no access to SSH keys.
+Nix is not really designed for this use case, because it isolates the build steps in a sandbox with no network access and no access to SSH keys.
 Normally, Nix expects to manage all dependencies by itself to ensure purity but disabling the sandbox allows accessing things outside of the sandbox, which is impure.
 Having real hardware in the loop and not just a simulation of that hardware is inherently impure and requires disabling the sandbox.
 This allows using SSH to reach all the machines (and read the secret key) from within a nix build (nix derivation).
@@ -157,7 +157,11 @@ one less variable
 	\caption{Sampling the Parameters}
 	\label{tab:parameters}
 \end{table}
-explain why these parameters
+\todo[inline]{update table again}
+\todo[inline]{explain why these parameters}
+
+When running measurements where we keep all parameters constant and only vary one at a time, there are $8 + 6 + 1 + 2 = 17$ measurements per protocol.
+The lower execution time is bounded by the measurement duration, which is 5 minutes, so 17 measurements will take $17 * 5 m = 85 m = 1h25m$.
 
 
 
@@ -200,6 +204,7 @@ We're capturing packets on a separate host to make sure the measurement does not
 
 
 
+\todo{refer to \href{https://support.telosalliance.com/article/smctkhp4p3-how-to-setup-switched-port-analyzer-on-cisco-switches}{Port mirroring on Cisco switch}}
 
 
 \cite{RFC7858}
