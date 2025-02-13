@@ -46,6 +46,8 @@
 \setlength{\marginparwidth}{3cm}
 
 \usepackage[backend=biber,style=numeric,datamodel=archiving]{biblatex}
+\patchcmd{\bibsetup}{\interlinepenalty=5000}{\interlinepenalty=10000}{}{}
+\usepackage{xurl}
 
 \input{Macros.tex}
 

@@ -45,6 +45,7 @@
           minted
           upquote
           csquotes
+          xurl
           ;
       })
       biber
