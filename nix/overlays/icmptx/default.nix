@@ -14,6 +14,12 @@ final: prev: {
       hash = "sha256-4p84bn9YgrbMqfl65P3KASvWWYIO0rX5q3mlBJbOiUE=";
     };
 
+    /*prePatch = ''
+      substituteInPlace icmptx.c --replace-fail \
+        'const int mtu = 65536;' \
+        'const int mtu = 7000;'
+    '';*/
+
     installPhase = ''
       runHook preInstall
       install -Dm 755 icmptx "$out/bin/icmptx"

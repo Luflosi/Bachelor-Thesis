@@ -11,6 +11,7 @@
         "192.168.21.3/24"
       ];
     };
+    #linkConfig.MTUBytes = 65535;
   };
 
   services.icmptx.server = {
