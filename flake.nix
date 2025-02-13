@@ -62,7 +62,11 @@
         inherit system;
         overlays = import ./nix/overlays;
       };
-      testMatrixNoCacheID = lib.cartesianProduct (lib.importJSON ./test-matrix/parameters.json);
+      testMatrixNoCacheID = let
+        parameters = lib.importJSON ./test-matrix/parameters.json;
+        expanded = builtins.map lib.cartesianProduct parameters;
+        result = lib.flatten expanded;
+      in builtins.trace ("${toString (builtins.length result)} measurements in total") result;
       reruns = lib.importJSON ./test-matrix/reruns.json;
       parametersToCacheID = parameters: let
         checkRerun = acc: rerun: let

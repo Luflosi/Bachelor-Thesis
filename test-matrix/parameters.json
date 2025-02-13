@@ -1,14 +1,16 @@
-{
-    "platform": ["VM"],
-    "test_duration_s": [10],
-    "ip_payload_size": [1400],
-    "encapsulation": ["WireGuard"],
-    "delay_time_ms": [50],
-    "delay_jitter_ms": [10],
-    "delay_distribution": ["normal"],
-    "loss_per_mille": [5],
-    "loss_correlation": ["0%"],
-    "duplicate_per_mille": [2],
-    "duplicate_correlation": ["0%"],
-    "reorder_per_mille": [1]
-}
+[
+    {
+        "platform": ["VM"],
+        "test_duration_s": [10],
+        "ip_payload_size": [1400],
+        "encapsulation": ["WireGuard"],
+        "delay_time_ms": [50],
+        "delay_jitter_ms": [10],
+        "delay_distribution": ["normal"],
+        "loss_per_mille": [5],
+        "loss_correlation": ["0%"],
+        "duplicate_per_mille": [2],
+        "duplicate_correlation": ["0%"],
+        "reorder_per_mille": [1]
+    }
+]
