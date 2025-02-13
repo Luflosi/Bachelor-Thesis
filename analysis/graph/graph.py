@@ -139,16 +139,18 @@ def read_inputs(inputs):
                 dropped_ratio.append(dropped_ratio_from_single_measurement)
                 duplicate_ratio.append(duplicate_ratio_from_single_measurement)
                 del(dropped_ratio_from_single_measurement)
-                throughput_over_time_without_overhead.append(data['throughput']['without_overhead'])
-                tmp = data['throughput']['with_overhead']
-                if tmp != []:
-                    throughput_over_time_with_overhead.append(tmp)
+                without_overhead = data['throughput']['without_overhead']
+                throughput_over_time_without_overhead.append(without_overhead)
+                with_overhead = data['throughput']['with_overhead']
+                if with_overhead != []:
+                    throughput_over_time_with_overhead.append(with_overhead)
+                else:
+                    throughput_over_time_with_overhead.append(without_overhead)
             case _:
                 raise Exception("Invalid mode")
 
     plot = {
         'latencies': {},
-        'throughput': {},
     }
 
     match mode:
@@ -181,11 +183,15 @@ def read_inputs(inputs):
 
     match mode:
         case 'single':
+            plot['throughput'] = {}
             plot['throughput']['y_full'] = throughput_over_time_without_overhead
             plot['throughput']['y_dotted'] = throughput_over_time_with_overhead
         case 'multi':
-            plot['throughput']['y'] = throughput_over_time_without_overhead
-            assert throughput_over_time_with_overhead == []
+            plot['throughput_without'] = {}
+            plot['throughput_with'] = {}
+            plot['throughput_without']['y'] = throughput_over_time_without_overhead
+            if throughput_over_time_with_overhead != throughput_over_time_without_overhead:
+                plot['throughput_with']['y'] = throughput_over_time_with_overhead
         case _:
             raise Exception("Invalid mode")
 
@@ -277,23 +283,47 @@ match mode:
         raise Exception("Invalid mode")
 
 
-fig, ax = plt.subplots(figsize=figsize)
-ax.set_ylabel(f'Throughput ({metadata['units']['throughput']})')
 match mode:
     case 'single':
+        fig, ax = plt.subplots(figsize=figsize)
+        ax.set_ylabel(f'Throughput ({metadata['units']['throughput']})')
         ax.set_xlabel(f'Time ({metadata['units']['duration']})')
         if plot['throughput']['y_dotted'] != []:
             ax.plot(plot['x'], plot['throughput']['y_dotted'], dashes=[1, 3], dash_capstyle = 'round')
         ax.plot(plot['x'], plot['throughput']['y_full'])
+        ax.set_ylim(bottom=0)
+
+        if out != None:
+            plt.savefig(fname=os.path.join(out, 'throughput.svg'), transparent=False)
+        plt.show()
     case 'multi':
+        fig, ax = plt.subplots(figsize=figsize)
+        ax.set_ylabel(f'Throughput without overhead ({metadata['units']['throughput']})')
         ax.set_xlabel('Measurement run')
-        ax.violinplot(plot['throughput']['y'], positions=plot['x'],
+        ax.violinplot(plot['throughput_without']['y'], positions=plot['x'],
                       showextrema = True, showmedians = True, widths=1)
         ax.set_xticks(plot['x'])
+        ax.set_ylim(bottom=0)
+
+        if out != None:
+            if plot['throughput_with'] != {}:
+                filename = 'throughput_without.svg'
+            else:
+                filename = 'throughput.svg'
+            plt.savefig(fname=os.path.join(out, filename), transparent=False)
+        plt.show()
+
+        if plot['throughput_with'] != {}:
+            fig, ax = plt.subplots(figsize=figsize)
+            ax.set_ylabel(f'Throughput with overhead ({metadata['units']['throughput']})')
+            ax.set_xlabel('Measurement run')
+            ax.violinplot(plot['throughput_with']['y'], positions=plot['x'],
+                          showextrema = True, showmedians = True, widths=1)
+            ax.set_xticks(plot['x'])
+            ax.set_ylim(bottom=0)
+
+            if out != None:
+                plt.savefig(fname=os.path.join(out, 'throughput_with.svg'), transparent=False)
+            plt.show()
     case _:
         raise Exception("Invalid mode")
-ax.set_ylim(bottom=0)
-
-if out != None:
-    plt.savefig(fname=os.path.join(out, 'throughput.svg'), transparent=False)
-plt.show()
