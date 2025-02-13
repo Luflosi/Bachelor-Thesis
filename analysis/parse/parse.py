@@ -114,4 +114,4 @@ else:
     d = open(sys.stdout.fileno(), 'w', encoding='utf-8', closefd=False)
 
 with d as f:
-    json.dump(obj=packets, fp=f, allow_nan=False, separators=(',', ':'))
+    json.dump(obj=packets, fp=f, allow_nan=False, sort_keys=True, separators=(',', ':'))
