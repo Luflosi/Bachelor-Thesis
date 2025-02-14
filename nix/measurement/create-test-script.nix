@@ -192,7 +192,7 @@ in writeText "test-script" (''
   if configuration_revisions != {}:
     import json
     with open(logger.out_dir / 'configuration_revisions.json', 'w', encoding='utf-8') as f:
-      json.dump(obj=configuration_revisions, fp=f, allow_nan=False)
+      json.dump(obj=configuration_revisions, fp=f, allow_nan=False, sort_keys=True)
 
   # TODO: assert that the files are valid and have not been cut short
 '')
