@@ -1,2 +1,17 @@
 [
+    {
+        "cacheID": 1,
+        "platform": "PC",
+        "test_duration_s": 300,
+        "ip_payload_size": 1400,
+        "encapsulation": "none",
+        "delay_time_ms": 1,
+        "delay_jitter_ms": 0,
+        "delay_distribution": "normal",
+        "loss_per_mille": 0,
+        "loss_correlation": "0%",
+        "duplicate_per_mille": 0,
+        "duplicate_correlation": "0%",
+        "reorder_per_mille": 0
+    }
 ]
