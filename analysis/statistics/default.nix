@@ -12,7 +12,7 @@
 stdenvNoCC.mkDerivation {
   name = "statistics";
   realBuilder = lib.getExe python3;
-  args = [ ./statistics.py "--pre" "${pre}/pre.json" "--post" "${post}/post.json" "--overhead" (toString overhead) "--write-out-path" ];
+  args = [ ./statistics.py "--pre" pre "--post" post "--overhead" (toString overhead) "--write-out-path" ];
   strictDeps = true;
   __structuredAttrs = true;
 }

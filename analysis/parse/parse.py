@@ -38,10 +38,11 @@ if args.write_out_path:
 
 packets = []
 
+if args.metadata:
+    with open(args.metadata, 'r', encoding='utf-8') as f:
+        metadata = json.load(f)
 if args.remove_ends:
     assert args.metadata, 'CLI option --remove-ends requires --metadata'
-    with open(args.metadata, 'rb') as f:
-        metadata = json.load(f)
     test_duration_s = metadata['test_duration_s']
 
 with open(args.input, 'rb') as f:
@@ -109,6 +110,9 @@ with open(args.input, 'rb') as f:
 print(len(packets), 'packets', file=sys.stderr)
 
 if args.write_out_path:
+    if args.metadata:
+        with open(os.path.join(out, 'parameters.json'), 'w', encoding='utf-8') as f:
+            json.dump(obj=metadata, fp=f, allow_nan=False, sort_keys=True, separators=(',', ':'))
     d = open(os.path.join(out, args.write_out_path), 'w', encoding='utf-8')
 else:
     d = open(sys.stdout.fileno(), 'w', encoding='utf-8', closefd=False)

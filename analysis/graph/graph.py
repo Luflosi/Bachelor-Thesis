@@ -36,8 +36,10 @@ else:
 
 
 def read_input(input_file):
-    with open(input_file, 'r', encoding='utf-8') as f:
+    with open(os.path.join(input_file, 'statistics.json'), 'r', encoding='utf-8') as f:
         input = json.load(f)
+    with open(os.path.join(input_file, 'parameters.json'), 'r', encoding='utf-8') as f:
+        parameters = json.load(f)
 
     metadata = {
         'duration': input['duration'],
@@ -77,12 +79,15 @@ def read_input(input_file):
     assert sorted(set(data['labels'])) == sorted(data['labels']), f'The labels are not unique: {data['labels']}'
     assert data['throughput']['with_overhead'] == [] or len(data['throughput']['with_overhead']) == len(data['throughput']['without_overhead']), 'The two throughputs have inconsistent lengths'
 
-    return metadata, data
+    return metadata, data, parameters
 
 
 def read_inputs(inputs):
     data_list = []
     metadata = None
+    prev_parameters = None
+    differing_parameters = set()
+    parameters_per_input = []
     duration = None
     unit_latency = None
     unit_duration = None
@@ -96,7 +101,18 @@ def read_inputs(inputs):
     throughput_over_time_without_overhead = []
 
     for input_file in inputs:
-        metadata, data = read_input(input_file)
+        metadata, data, parameters = read_input(input_file)
+
+        if prev_parameters != None:
+            assert parameters.keys() == prev_parameters.keys(), f'{parameters.keys()} != {prev_parameters.keys()}'
+            for key, value in parameters.items():
+                if key == 'cacheID':
+                    continue
+                if value != prev_parameters[key]:
+                    differing_parameters.add(key)
+        prev_parameters = parameters
+        parameters_per_input.append(parameters)
+
         if duration == None:
             duration = metadata['duration']
         assert duration == metadata['duration'], f'{duration} != {metadata['duration']}'
@@ -156,12 +172,48 @@ def read_inputs(inputs):
     match mode:
         case 'single':
             plot['x'] = time
+            plot['x_labels'] = labels
         case 'multi':
             plot['x'] = [x for x in range(nr_of_measurements)]
-            plot['x_labels'] = [f'{x:.0f}' for x in range(nr_of_measurements)]
+            if len(differing_parameters) != 1:
+                print(f'WARNING: Multiple parameters are different between graphs: {differing_parameters}', file=sys.stderr)
+                plot['x_labels'] = [f'{x:.0f}' for x in range(nr_of_measurements)]
+            else:
+                (differing_parameter,) = differing_parameters
+                plot['x_labels'] = [parameters[differing_parameter] for parameters in parameters_per_input]
+
+                def parameter_name_to_human_readable(parameter):
+                    match parameter:
+                        case 'platform':
+                            return 'Platform'
+                        case 'test_duration_s':
+                            return 'Test duration (s)'
+                        case 'ip_payload_size':
+                            return 'IP payload size (Bytes)'
+                        case 'encapsulation':
+                            return 'Encapsulation'
+                        case 'delay_time_ms':
+                            return 'Delay time (ms)'
+                        case 'delay_jitter_ms':
+                            return 'Delay jitter (ms)'
+                        case 'delay_distribution':
+                            return 'Delay distribution'
+                        case 'loss_per_mille':
+                            return 'Loss (‰)'
+                        case 'loss_correlation':
+                            return 'Loss correlation'
+                        case 'duplicate_per_mille':
+                            return 'Duplicate (‰)'
+                        case 'duplicate_correlation':
+                            return 'Duplicate correlation'
+                        case 'reorder_per_mille':
+                            return 'Reorder (‰)'
+                        case _:
+                            raise Exception("Invalid parameter name")
+
+                plot['x_label'] = parameter_name_to_human_readable(differing_parameter)
         case _:
             raise Exception("Invalid mode")
-    plot['x_labels'] = labels
 
     plot['latencies']['y'] = latencies
 
@@ -226,10 +278,10 @@ match mode:
                    capprops={"color": "C0", "linewidth": 1.5})
         ax.set_xticks(plot['x'], labels=plot['x_labels'])
     case 'multi':
-        ax.set_xlabel('Measurement run')
+        ax.set_xlabel(plot['x_label'])
         ax.violinplot(plot['latencies']['y'], positions=plot['x'],
                       showextrema = True, showmedians = True, widths=1)
-        ax.set_xticks(plot['x'])
+        ax.set_xticks(plot['x'], labels=plot['x_labels'])
     case _:
         raise Exception("Invalid mode")
 ax.set_ylim(bottom=0)
@@ -257,11 +309,11 @@ match mode:
         plt.show()
     case 'multi':
         fig, ax = plt.subplots(figsize=figsize)
-        ax.set_xlabel('Measurement run')
+        ax.set_xlabel(plot['x_label'])
         ax.set_ylabel('Dropped')
         ax.violinplot(plot['dropped_ratio']['y'], positions=plot['x'],
                       showextrema = True, showmedians = True, widths=1)
-        ax.set_xticks(plot['x'])
+        ax.set_xticks(plot['x'], labels=plot['x_labels'])
         ax.set_ylim(bottom=0)
         ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=1))
         if out != None:
@@ -269,11 +321,11 @@ match mode:
         plt.show()
 
         fig, ax = plt.subplots(figsize=figsize)
-        ax.set_xlabel('Measurement run')
+        ax.set_xlabel(plot['x_label'])
         ax.set_ylabel('Duplicated')
         ax.violinplot(plot['duplicate_ratio']['y'], positions=plot['x'],
                       showextrema = True, showmedians = True, widths=1)
-        ax.set_xticks(plot['x'])
+        ax.set_xticks(plot['x'], labels=plot['x_labels'])
         ax.set_ylim(bottom=0)
         ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=1))
         if out != None:
@@ -299,10 +351,10 @@ match mode:
     case 'multi':
         fig, ax = plt.subplots(figsize=figsize)
         ax.set_ylabel(f'Throughput without overhead ({metadata['units']['throughput']})')
-        ax.set_xlabel('Measurement run')
+        ax.set_xlabel(plot['x_label'])
         ax.violinplot(plot['throughput_without']['y'], positions=plot['x'],
                       showextrema = True, showmedians = True, widths=1)
-        ax.set_xticks(plot['x'])
+        ax.set_xticks(plot['x'], labels=plot['x_labels'])
         ax.set_ylim(bottom=0)
 
         if out != None:
@@ -316,10 +368,10 @@ match mode:
         if plot['throughput_with'] != {}:
             fig, ax = plt.subplots(figsize=figsize)
             ax.set_ylabel(f'Throughput with overhead ({metadata['units']['throughput']})')
-            ax.set_xlabel('Measurement run')
+            ax.set_xlabel(plot['x_label'])
             ax.violinplot(plot['throughput_with']['y'], positions=plot['x'],
                           showextrema = True, showmedians = True, widths=1)
-            ax.set_xticks(plot['x'])
+            ax.set_xticks(plot['x'], labels=plot['x_labels'])
             ax.set_ylim(bottom=0)
 
             if out != None:

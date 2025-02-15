@@ -9,12 +9,11 @@
 }:
 let
   python = python3.withPackages (python-pkgs: (import ./python-deps.nix python-pkgs));
-  inputs = builtins.map (dir: "${dir}/statistics.json") statistics;
 in
 stdenvNoCC.mkDerivation {
   name = "graph";
   realBuilder = lib.getExe python;
-  args = [ ./graph.py "--inputs" ] ++ inputs ++ [ "--write-out-path" ];
+  args = [ ./graph.py "--inputs" ] ++ statistics ++ [ "--write-out-path" ];
   strictDeps = true;
   __structuredAttrs = true;
 }

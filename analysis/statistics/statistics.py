@@ -54,8 +54,17 @@ parser.add_argument('-o', '--write-out-path',
 
 args = parser.parse_args()
 
-post_packets = read_json_file(args.post)
-pre_packets = read_json_file(args.pre)
+post_packets = read_json_file(os.path.join(args.post, 'post.json'))
+pre_packets = read_json_file(os.path.join(args.pre, 'pre.json'))
+
+def read_metadata():
+    post_metadata = read_json_file(os.path.join(args.post, 'parameters.json'))
+    pre_metadata = read_json_file(os.path.join(args.pre, 'parameters.json'))
+    assert post_metadata == pre_metadata, f'pre and post metadata differs: {pre_metadata} != {post_metadata}'
+    return pre_metadata
+
+metadata = read_metadata()
+
 overhead = int(args.overhead)
 out = None
 if args.write_out_path:
@@ -222,6 +231,8 @@ data = {
 }
 
 if out != None:
+    with open(os.path.join(out, 'parameters.json'), 'w', encoding='utf-8') as f:
+        json.dump(obj=metadata, fp=f, allow_nan=False, sort_keys=True, separators=(',', ':'))
     d = open(os.path.join(out, 'statistics.json'), 'w', encoding='utf-8')
 else:
     d = open(sys.stdout.fileno(), 'w', encoding='utf-8', closefd=False)
