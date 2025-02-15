@@ -262,6 +262,7 @@ if args.write_out_path:
 
 plt.style.use('_mpl-gallery')
 plt.rcParams.update({'figure.autolayout': True})
+plt.rcParams.update({'font.size': 22})
 
 
 fig, ax = plt.subplots(figsize=figsize)
