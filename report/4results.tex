@@ -16,7 +16,7 @@ This overhead is due to the protocol's header, which is added to the data payloa
 \todo[inline]{break down overhead of WireGuard and ICMPTX}
 
 \section{RQ2: How much does the MTU decrease by using each protocol?}
-if protocol does not support fragmentation, see above
+For protocols that do not support fragmentation by themselves, the MTU decrease is directly related to the protocol's overhead.
 
 \section{RQ3: How much additional latency does each protocol add?}
 cannot be measured with our measurement setup
