@@ -351,7 +351,10 @@ match mode:
         plt.show()
     case 'multi':
         fig, ax = plt.subplots(figsize=figsize)
-        ax.set_ylabel(f'Throughput without overhead ({metadata['units']['throughput']})')
+        if plot['throughput_with'] != {}:
+            ax.set_ylabel(f'Throughput without overhead ({metadata['units']['throughput']})')
+        else:
+            ax.set_ylabel(f'Throughput ({metadata['units']['throughput']})')
         ax.set_xlabel(plot['x_label'])
         ax.violinplot(plot['throughput_without']['y'], positions=plot['x'],
                       showextrema = True, showmedians = True, widths=1)
