@@ -319,6 +319,47 @@
 	              },
 	archivedate = {2025-01-14},
 }
+@article{Btrfs,
+	author = {Rodeh, Ohad and Bacik, Josef and Mason, Chris},
+	title = {BTRFS: The Linux B-Tree Filesystem},
+	year = {2013},
+	issue_date = {August 2013},
+	publisher = {Association for Computing Machinery},
+	address = {New York, NY, USA},
+	volume = {9},
+	number = {3},
+	issn = {1553-3077},
+	url = {https://doi.org/10.1145/2501620.2501623},
+	doi = {10.1145/2501620.2501623},
+	abstract = {BTRFS is a Linux filesystem that has been adopted as the default
+	            filesystem in some popular versions of Linux. It is based on
+	            copy-on-write, allowing for efficient snapshots and clones. It
+	            uses B-trees as its main on-disk data structure. The design goal
+	            is to work well for many use cases and workloads. To this end,
+	            much effort has been directed to maintaining even performance as
+	            the filesystem ages, rather than trying to support a particular
+	            narrow benchmark use-case.Linux filesystems are installed on
+	            smartphones as well as enterprise servers. This entails
+	            challenges on many different fronts.---Scalability. The
+	            filesystem must scale in many dimensions: disk space, memory, and
+	            CPUs.---Data integrity. Losing data is not an option, and much
+	            effort is expended to safeguard the content. This includes
+	            checksums, metadata duplication, and RAID support built into the
+	            filesystem.---Disk diversity. The system should work well with
+	            SSDs and hard disks. It is also expected to be able to use an
+	            array of different sized disks, which poses challenges to the
+	            RAID and striping mechanisms.This article describes the core
+	            ideas, data structures, and algorithms of this filesystem. It
+	            sheds light on the challenges posed by defragmentation in the
+	            presence of snapshots, and the tradeoffs required to maintain
+	            even performance in the face of a wide spectrum of workloads.},
+	journal = {ACM Trans. Storage},
+	month = aug,
+	articleno = {9},
+	numpages = {32},
+	keywords = {B-trees, RAID, concurrency, copy-on-write, filesystem, shadowing
+	            , snapshots},
+}
 @misc{nixos-anywhere,
 	author = "{Numtide}",
 	title = "nixos-anywhere",
@@ -394,6 +435,30 @@
 	              https://web.archive.org/web/20250116185519/https://github.com/NixOS/nixpkgs/blob/master/nixos/lib/test-driver/src/test_driver/vlan.py#L43
 	              },
 	archivedate = {2025-01-16},
+}
+@misc{cisco-span-tutorial,
+	author = {Bryan Jones},
+	title = {How to setup Switched Port Analyzer (SPAN) on Cisco switches},
+	year = {2022},
+	month = mar,
+	url = {
+	       https://support.telosalliance.com/article/smctkhp4p3-how-to-setup-switched-port-analyzer-on-cisco-switches
+	       },
+	archiveurl = {
+	              https://web.archive.org/web/20240917183407/https://support.telosalliance.com/article/smctkhp4p3-how-to-setup-switched-port-analyzer-on-cisco-switches
+	              },
+	archivedate = {2024-09-17},
+}
+@misc{cisco-switch-hardware-installation-guide,
+	author = {Cisco},
+	title = {Catalyst 3560-C and 2960-C Switch Hardware Installation Guide},
+	url = {
+	       https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst2960c_3560c/hardware/installation/guide/2960c_3560c_hig/higoverview.html
+	       },
+	archiveurl = {
+	              https://web.archive.org/web/20170518025844/https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst2960c_3560c/hardware/installation/guide/2960c_3560c_hig/higoverview.html
+	              },
+	archivedate = {2017-05-18},
 }
 @misc{icmptx-sendto-no-buffer-space-avaiable,
 	author = {Klaus Thomas},

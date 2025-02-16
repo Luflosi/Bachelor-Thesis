@@ -8,7 +8,7 @@
 In this section, we describe the results obtained by performing our
 experiments.
 
-
+\todo[inline]{Move the following into the Discussuion section}
 \section{RQ1: How much packet size overhead does each protocol add?}
 While we aimed to quantify the precise packet size overhead introduced by each protocol, our experimental setup did not allow for direct measurement of this metric.
 However, it is important to note that the packet size overheads of many protocols are generally constant.
@@ -19,21 +19,30 @@ This overhead is due to the protocol's header, which is added to the data payloa
 For protocols that do not support fragmentation by themselves, the MTU decrease is directly related to the protocol's overhead.
 
 \section{RQ3: How much additional latency does each protocol add?}
-cannot be measured with our measurement setup
+Unfortunately, the measurement setup was not designed correctly to accurately capture the additional latency introduced by each protocol.
+Measuring additional latency introduced by a protocol requires observing the packets before they enter the tunnel and after they exit it.
+The additional latency introduced by the protocol can then be analyzed by measuring how long each packet takes on average and subtracting the latency when no protocol is being used.
+See \cref{fig:optimal_network_schematic} for a setup, which would be up to the task.
+While we acknowledge the importance of latency as a performance metric, we are unable to reliably quantify it within the constraints of our current experimental design.
 
 \section{RQ4: Do any protocols introduce additional packet loss?}
-cannot be measured with our measurement setup
+Similarly to latency measurements, our setup was not equipped to reliably measure packet loss introduced by the protocols themselves.
+
+
 
 \section{RQ5: How much processing power and RAM does each protocol consume/require?}
 did not measure
 
 for userspace tunnel programs, can be measured using systemctl status
 
-Not sure how to measure RAM usage of WireGuard
+We are not aware of a good method of measuring the RAM usage of WireGuard.
+
+We determine the CPU usage of WireGuard by looking at the output of \texttt{...} during a measurement.
+
+The CPU usage is fairly constant over time and on both sides of the tunnel.
 
 WireGuard used approximately \% of one CPU core
 
-determined by looking at the output ...
 
 
 graphen beschreiben (Welche Achsen gibt es, etc.)
@@ -68,6 +77,10 @@ to be able to see the influence of a parameter, multiple measurements in one gra
 	\includegraphics[draft=false,width=0.9\textwidth]{figures/Graphs/graph-1-mtu/latencies.pdf}
 	\caption{Latencies for varying payload sizes}\label{fix:graph-1-mtu-latencies}
 \end{figure}
+Latency stays pretty much constant, with different packet sizes
+
+only the tail latency is increasing drastically, which is unexpected.
+
 \begin{figure}[tbh]
 	\centering
 	\includegraphics[draft=false,width=0.9\textwidth]{figures/Graphs/graph-1-mtu/throughput.pdf}
@@ -131,3 +144,7 @@ or some kind of UDP over TCP tunnel
 
 this would also be influenced by congestion control algorithm
 
+
+Rather than only a handful of combinations of parameters, as described in \cref{chap:methodology}, we tested many more.
+In the beginning we even tested the cartesian product of all parameters.
+This fact combined with several slightly different versions of our test setup, lead us to collect about 5 TB of packet captures, which compress to a little more than half of that using the zstd compression algorithm in Btrfs.

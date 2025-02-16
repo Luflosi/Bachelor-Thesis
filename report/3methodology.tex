@@ -4,59 +4,67 @@
 \chapter{Methodology}
 \label{chap:methodology}
 
-In this chapter, we ...
+In this chapter, we describe our test setup and measurement methodology.
 
 \section{Experimental design}
-\begin{itemize}
-	\item Was haben wir vor?
-	\item Wie können wir das erreichen?
-	\item Was müssen wir dabei beachten?
-\end{itemize}
 We want to measure the overhead of encryption and censorship evasion protocols over lossy links.
 Therefore, we need a measurement setup, which allows us to do so.
 It should offer repeatability and consistency.
 It should include a traffic generator which generates the simplest possible traffic pattern, a constant stream of data.
-The stream of data should only flow in one direction and should not attempt to do congestion control as we don't want to evaluate congestion control algorithms but 
+The stream of data should only flow in one direction.
+The traffic generator should not attempt to do congestion control as we don't want our results to be influenced by the particular congestion control algorithm being used.
 The setup should allow simulating different network conditions.
-The data traffic should flow from the traffic generator, be encoded differently by the censorship protocol, pass through the network emulator and finally be decoded by the censorship protocol.
-capture all packets in their original form so we can tweak the analysis later without rerunning all tests again
-analyze packet captures later (post-experiment analysis)
-need to be careful with synchronization of timestamps between different points
+The data traffic should flow from the traffic generator, be obfuscated and/or encrypted by the censorship evasion protocol, pass through the network emulator and finally be de-obfuscated and/or decrypted by the censorship evasion protocol.
+All packets should be recorded in their original form with accurate (enough) time stamps.
+If packets are captured (recorded) on multiple systems, special care needs to be taken to synchronize thir clocks precisely.
+Otherwise calculating accurate time deltas as a packet traverses a path practically impossible.
+The packets can be analyzed later (post-experiment analysis) and the analysis pipeline can be iterated on without rerunning all experiments.
 It should also be easy to add new protocols and experiment with the setup both for us and for future researchers wishing to tweak the setup or test more protocols.
 
 \section{Testbed}
-\begin{itemize}
-  \item Was haben wir zusammengesteckt (Figure)
-  \item Warum Hardware und nicht virtuell?
-  \item Warum Nix?
-\end{itemize}
 \begin{figure}[tbh]
 	\centering
 	\includegraphics[draft=false,width=0.4\textwidth]{figures/Network schematic/actual/setup.pdf}
-	\caption{Our Network Setup}\label{fig:actual_network_schematic}
+	\caption{Our Network Setup}
+	\label{fig:actual_network_schematic}
 \end{figure}
 \begin{figure}[tbh]
 	\centering
 	\includegraphics[draft=false,width=0.7\textwidth]{figures/Network schematic/optimal/setup.pdf}
-	\caption{Improved Network Setup}\label{fig:optimal_network_schematic}
+	\caption{Improved Network Setup}
+	\label{fig:optimal_network_schematic}
 \end{figure}
+
+As can be seen in \cref{fig:actual_network_schematic}, our setup consists of four hosts.
+The \textit{Client} runs iperf3 as a traffic generator in UDP mode and also the censorship evasion client software.
+The \textit{Router} routes packets between the Client and the Server and emulates different network conditions, such as packet loss.
+The \textit{Server} runs an iperf3 server instance and the censorship evasion server software.
+The \textit{Logger} records all traffic seen on the link from the Client to the Router and from the Router to the Server.
+We're capturing packets on a separate host to make sure the measurement does not influence the rest of the test setup, e.g. through higher CPU utilization of a host.
+By creating all packet captures on a single host, we also remove the need for precise clock synchronization.
+
 There are a number of existing network simulators for simulating complex network setups with routers, switches, etc. \cite{network-simulators-list}.
 Many of them focus on simulating mesh networks for testing routing protocols, for example Mesh Network Lab \cite{meshnet-lab}.
 Our network is relatively simple, while the complexity lies in the configuration of the hosts and automation.
 This is part of the reason why we chose the NixOS testing framework for our first prototypes.
-The other reason is that Nix has the desirable properties mentioned in \ref{Nix-explanation}.
+The other reason is that Nix has the desirable properties mentioned in \cref{Nix-explanation}.
 It allows declararing the exact configuration of the hosts and the virtual network in code.
-All dependencies are pinned in a lock file and no outside dependencies are used, so everything should still be reproducible in a decade or more without having to distribute gigabytes of VM or container images while still being able to easily modify any part of the system.
+All dependencies are pinned in a lock file and no outside dependencies are used, so everything should still be reproducible in a decade or more without having to distribute gigabytes of VM or container images and while still being able to easily modify any part of the system.
 
 First, we use the NixOS testing framework for prototyping, and then transfer the setup to bare-metal hardware.
 The NixOS testing framework launches several VMs with QEMU and sets up a virtual network switch.
 Using the NixOS testing framework, we declare the configuration of all four hosts, as well as the network topology, in Nix code.
 We also specify a test script, which imperatively executes one command at a time.
-The script roughly executes these steps: start all hosts, wait for them to be ready, tell the router to emulate the network conditions we want, start the traffic generator, wait for it to be done, and finally collect the packet captures \todo{put the steps into some sort of diagram?}.
+The script roughly executes these steps: start all hosts, wait for them to be ready, tell the router to emulate the network conditions we want, start the traffic generator, wait for it to be done, and finally collect the packet captures.
+Different network conditions can be emulated using Linux's network emulator\cite{man8:tc-netem}.
 We store the packet captures for later analysis.
 
-For real measurements, we installed NixOS on PCs, which are centrally controlled with a custom measurement harness.
-It is designed to be compatible enough with the NixOS testing framework to work with the same test script.
+Since the virtualization may influence our results in unexpected ways, especially since all VMs are running on the same host and the network is only simulated, we opted to perform our actual measurements on bare metal hardware.
+While it is definitely possible to build a reliable benchmarking setup using virtual machines, a virtual network switch and virtual networking cables, using bare metal hardware eliminates the virtualisation as a variable in our measurements.
+For that, we installed NixOS on PCs, which are centrally controlled with a custom measurement harness.
+\textit{nixos-anywhere} \cite{nixos-anywhere} is used to quickly and reproducibly install the operating system on all machines.
+nixos-anywhere uses \textit{disko} \cite{disko} to partition and format the disks in a declarative way.
+Our custom measurement harness is designed to be compatible enough with the NixOS testing framework to work with the same test script.
 Nix is not really designed for this use case, because it isolates the build steps in a sandbox with no network access and no access to SSH keys.
 Normally, Nix expects to manage all dependencies by itself to ensure purity but disabling the sandbox allows accessing things outside of the sandbox, which is impure.
 Having real hardware in the loop and not just a simulation of that hardware is inherently impure and requires disabling the sandbox.
@@ -66,36 +74,31 @@ When running the setup, the operator needs to make sure that the real world matc
 This includes having an SSH secret key in the right location on the filesystem of the host controlling the tests, that the four machines are booted and allow access using the above key, that the operating systems running on the machines are configured perfectly by running the correct configuration and that the network is configured correctly, including the configuration of the switch.
 
 Despite Nix not really being designed for this particular use-case, we can still take advantage of all other Nix features.
-We can use Nix as a simple templating engine to build the test script with the right parameters embedded inside and then execute it.
-Changing parts of the analysis pipeline only affects later parts of it. \todo{elaborate with two more sentences}
-It also allows using the same test script for the VM tests and the hardware tests, which makes experimentation much easier.
-We can use Nix to take care of storing all packet traces and the build logs.
+We can use it as a simple templating engine to build the test script with the right parameters embedded inside and then execute it.
+Modifying any part of the pipeline ensures that only the modified and subsequent stages are rerun.
+This eliminates the need for manually selecting which parts of the pipeline to run, a process that can be both tedious and error-prone, or rerunning the entire pipeline every time, which is time-consuming.
+Furthermore, building our setup in this way allows using the same test script and data analysis pipeline for the VM tests and the hardware tests, which makes experimentation much easier.
+We can use Nix to take care of storing all packet captures and the build logs.
 But if Nix were to get in the way after running the measurements, the data can still be easily copied out of the Nix store.
 This can be done by specifying the measurements which should be exported in \path{test-matrix/parameters.json} and then running \mintinline{shell}{nix build .#measurements}.
-
-store results in Nix store for easy processing by the pipeline
-downside: have to be careful to not modify the test script, otherwise tests will be run again, could also be seen as a positive to prevent modifications that "should" not influence the results but actually do.
-positive side: when modifying any part of the pipeline, only the modified and later parts will be rerun, no need to manually run only the appropriate parts of the pipeline, which is tedious and error-prone or rerun the entire pipeline every time, which is time consuming.
-
+The reason why we want to store the packet captures in the Nix store is for easy processing by the data analysis pipeline.
+However, one potential downside of using Nix for this purpose is that care must be taken not to modify the test script or any other dependencies, as doing so would trigger the tests to run again.
+This can also be seen as a positive feature, as it helps prevent modifications that are believed to not influence the results but actually do so.
 
 In the VM test setup, the virtual switch is configured to behave like a \textit{hub} \cite{wiki:Ethernet_hub} \cite{NixOS-VM-test-Hub}, which makes it easy to capture the packets on both VLANs.
 On real hardware with a real switch, this is not quite as trivial.
-To replicate this setup with real hardware, we use Cisco's Switched Port Analyzer (SPAN), also known as port mirroring.
+To replicate this setup with real hardware, we use Cisco's Switched Port Analyzer (SPAN), also known as port mirroring \cite{cisco-span-tutorial}.
 Since enabling SPAN disables our ability to transmit packets from that interface for management purposes, we use a USB to Ethernet adapter for the management interface.
-Switch has 100MBit/s and 1GBit/s ports
-three PCs connected to 100MBit/s, limiting bandwidth therefore 100MBit/s, thanks to full duplex on the link between router and switch
-monitor port of logger connected to 1GBit/s port to keep up with 200MBit/s maximum data rate
-iperf send with 100MBit/s
-Switch has 100MBit/s and 1GBit/s ports
-three PCs connected to 100MBit/s, limiting bandwidth therefore 100MBit/s, thanks to full duplex on the link between router and switch
-monitor port of logger connected to 1GBit/s port to keep up with 200MBit/s maximum data rate
-iperf send with 100MBit/s
-first vm setup for experimentation
-then real hardware to eliminate variables
-while it is possible to build a reliable benchmarking setup using virtual machines, ...
-one less variable
+The switch has several 100MBit/s and 1GBit/s Ethernet ports.
+The client, router and logger are connected to 100MBit/s ports, therefore limiting the bandwidth to 100MBit/s.
+During a measurement, data almost exclusively flows in one direction (apart from a small amount of iperf3 status information).
+Therefore, the router being connected to the switch with 100MBit/s full duplex is sufficient.
+To record the data, we use port mirroring to copy the data being transfered on the port of the router, to the logger.
+Since this can result in a maximum data rate of 200MBit/s, the monitor port of the logger is connected to a 1GBit/s switch port in order to keep up with the data rate.
+iperf3 is configured to send at a rate of 100MBit/s, since transferring data at a faster rate is not possible anyways.
 
 \subsection{Hardware used}
+Detailed hardware information can be found in \cref{tab:hardware}.
 \begin{table}[tbh]
 	\centering
 	\footnotesize
@@ -103,28 +106,32 @@ one less variable
 		\toprule
 		\textbf{Category} & \textbf{Details}                                                                                       \\ \midrule
 		\rowcolor[HTML]{EFEFEF}
-		Switch            & Catalyst 6500 Series Switch (TBD)                                                                      \\ \midrule
+		Switch            & Cisco Catalyst 2960C-8PC-L                                                                             \\
+		& 8 10/100BASE-T PoE ports                                                                               \\
+		\rowcolor[HTML]{EFEFEF}
+		& \begin{tabular}[c]{@{}l@{}}2 dual-purpose ports\\ (10/100/1000BASE-T copper and SFP) \cite{cisco-switch-hardware-installation-guide}\end{tabular}      \\
+		& Cisco IOS Release 15.2(7)E8                                                                            \\ \midrule
+		\rowcolor[HTML]{EFEFEF}
 		PCs               & DELL OptiPlex 7070 Micro                                                                               \\
-		\rowcolor[HTML]{EFEFEF}
 		& INTEL® CORE™ i5-9600 (6 cores, 3.1GHz)                                                                 \\
+		\rowcolor[HTML]{EFEFEF}
 		& \begin{tabular}[c]{@{}l@{}}16GB RAM\\ One 2666 MHz DDR4 SODIMM module,\\ HMA82GS6JJR8N-VK\end{tabular} \\
-		\rowcolor[HTML]{EFEFEF}
 		& 512GB NVME SSD                                                                                         \\ \midrule
+		\rowcolor[HTML]{EFEFEF}
 		SBCs              & Orange Pi Zero3                                                                                        \\
-		\rowcolor[HTML]{EFEFEF}
 		& Allwinner H618 Cortex-A53 (4 cores, 1.5GHz)                                                            \\
-		& 2GB RAM                                                                                                \\
 		\rowcolor[HTML]{EFEFEF}
+		& 2GB RAM                                                                                                \\
 		& 32GB microSD card                                                                                      \\ \bottomrule
 	\end{tabular}
 	\caption{Hardware used}
 	\label{tab:hardware}
 \end{table}
 
+
+
 \section{Scenario Selection}
 \subsection{Protocols to test}
-
-
 
 To evaluate censorship evasion protocols, we selected a range of protocols representing different approaches and levels of sophistication.
 Our selection includes:
@@ -169,15 +176,12 @@ Our selection includes:
 		\textbf{\begin{tabular}[c]{@{}c@{}}Loss\\ {[}\%{]}\end{tabular}} & \textbf{\begin{tabular}[c]{@{}c@{}}Delay\\ {[}ms{]}\end{tabular}} & \textbf{\begin{tabular}[c]{@{}c@{}}Jitter\\ {[}ms{]}\end{tabular}} & \textbf{\begin{tabular}[c]{@{}c@{}}Duplicate\\ {[}\%{]}\end{tabular}} & \textbf{\begin{tabular}[c]{@{}c@{}}IPv4 Payload\\ {[}Bytes{]}\end{tabular}} \\ \midrule
 		\rowcolor[HTML]{EFEFEF}
 		0                                                                & 0                                                                 & 0                                                                  & 0                                                                     & 556                                                                         \\
-		\rowcolor[HTML]{FFFFFF}
-		0.1                                                              & 1                                                                 & 10                                                                 & 2                                                                     & 1260                                                                        \\
+		0.1                                                              & 1                                                                 & 10                                                                 & 1                                                                     & 1260                                                                        \\
 		\rowcolor[HTML]{EFEFEF}
 		0.2                                                              & 10                                                                &                                                                    & 10                                                                    & 1400                                                                        \\
-		\rowcolor[HTML]{FFFFFF}
 		0.5                                                              & 50                                                                &                                                                    &                                                                       & 1480                                                                        \\
 		\rowcolor[HTML]{EFEFEF}
 		1                                                                & 100                                                               &                                                                    &                                                                       &                                                                             \\
-		\rowcolor[HTML]{FFFFFF}
 		5                                                                & 200                                                               &                                                                    &                                                                       &                                                                             \\
 		\rowcolor[HTML]{EFEFEF}
 		10                                                               &                                                                   &                                                                    &                                                                       &                                                                             \\ \bottomrule
@@ -213,28 +217,25 @@ The Maximum Transmission Unit (MTU) defines the largest size of a packet that ca
 We varied the IPv4 payload size to simulate the impact of different MTUs on the performance of each protocol.
 A range of MTU values was chosen to simulate different network configurations and to evaluate the impact of fragmentation (or lack thereof) on performance.
 
-
-When running measurements where we keep all parameters constant and only vary one at a time, there are $8 + 6 + 1 + 2 = 17$ measurements per protocol.
-The lower execution time is bounded by the measurement duration, which is 5 minutes, so 17 measurements will take $17 * 5 m = 85 m = 1h25m$.
-
-
-In an attempt to save space...
-The \textit{.pcap} \cite{wiki:Pcap} files only compress well if the data is not encrypted or otherwise scrambled.
-The files could either be explicitly compressed with a compression tool like zstd or the compression could be done at the filesystem level, e.g. with \textit{OpenZFS} \cite{OpenZFS}. \todo{Btrfs}
+While Linux's network emulator also supports corrupting packets in addition to all of the above, we do not use this functionality.
+\todo[inline]{explain why we're not testing corrupt packets (difficult to correlate packets)}
+We measure latency by correlating ... \todo[inline]{continue}
 
 
-Since we're only interested in measuring what happens during the actual test and not in the connection setup and teardown of iperf3, we use heuristics
-The connection setup and teardown of iperf3 should not be part of the analysis, hence a heuristic is employed to ignore this part of the packet capture.
-To find the start of the test, we find the first packet which is larger than a threshhold.
-To find the end of the test, we find the last packet which is larger than a threshhold and also ignore all packets that are sent after the duration of the test is over.
+When running measurements where we keep all parameters constant and only vary one at a time, there are $7 + 5 + 2 + 3 = 17$ measurements per protocol.
+The execution time is bounded by the measurement duration, which is 5 minutes, so 17 measurements will take at least $17 * 5 m = 85 m = 1h25m$.
 
-\todo{go through presentation and extract the info here}
+In order to save some space when storing the packet captures (\path{.pcap} files \cite{wiki:Pcap}), compression can be used to reduce the storage requirements.
+The \path{.pcap} files only compress well if the data is not encrypted or otherwise scrambled too much.
+The files could either be explicitly compressed with a file compression tool like zstd or the compression could be done at the filesystem level, e.g. with \textit{OpenZFS} \cite{OpenZFS} and Btrfs \cite{Btrfs}.
 
-\textit{nixos-anywhere} \cite{nixos-anywhere} is used to quickly and reproducibly install the operating system on all machines.
-nixos-anywhere uses \textit{disko} \cite{disko} to partition and format the disks.
+Since we're only interested in measuring what happens during the actual test and not in the connection setup and teardown of iperf3, we employ heuristics to ignore this part of the packet capture.
+To find the start of the test, we find the first packet which is larger than a threshhold (400 bytes).
+To find the end of the test, we find the last packet which is larger than a threshhold (400 bytes) and also ignore all packets that are sent after the duration of the test is over.
 
 
-\todo{Define pre and post to mean before and after the router}
+\todo[inline]{Define pre and post to mean before and after the router}
+\todo[inline]{convert the following to full sentences in a coherent text}
 
 Data analysis pipeline:
 \begin{itemize}
@@ -245,19 +246,3 @@ Data analysis pipeline:
   \item Graphs are drawn using \textit{Matplotlib} \cite{Matplotlib} (done in \path{analysis/graph/graph.py})
   \item \todo{for gaining insights, for example while comparing two different scenarios, it's helpful to plot data from multiple measurements in one plot. This still needs to be implemented.}
 \end{itemize}
-
-
-\todo{explain why we're capturing packets on a separate host.}
-We're capturing packets on a separate host to make sure the measurement does not influence the rest of the test setup, e.g. through higher CPU utilization of a host.
-\todo{also talk about avoiding the need for clock synchronization}
-
-
-
-\todo{refer to \href{https://support.telosalliance.com/article/smctkhp4p3-how-to-setup-switched-port-analyzer-on-cisco-switches}{Port mirroring on Cisco switch}}
-
-
-explain why we're not testing corrupt packets (difficult to correlate packets)
-
-send with constant 100MBit/s
-
-\cite{RFC7858}

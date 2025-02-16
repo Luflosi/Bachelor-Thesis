@@ -19,7 +19,7 @@ Every link between two subsequent routers may have a different MTU.
 The maximum size of a packet being transported along the path from one host to another is the minimum of the MTUs along the path.
 
 When trying to send an IPv4 packet which is larger than the MTU, the packet is either fragmented (split into multiple smaller pieces) or if the DF (don't fragment) flag is set, it is dropped and an \textit{ICMP Destination Unreachable (Datagram Too Big)} message is sent back to the sender.
-IPv6 does not support fragmentation by routers \cite{rfc2460}, so the packet is always dropped and an ICMP message sent in this case.
+IPv6 does not support fragmentation by routers \cite{RFC2460}, so the packet is always dropped and an ICMP message sent in this case.
 
 The current MTU along a certain path can be determined using \textit{Path MTU discovery} \cite{wiki:Path_MTU_Discovery}.
 Unfortunately, some firewalls are configured to drop all ICMP packets for perceived security reasons, which breaks Path MTU discovery.
