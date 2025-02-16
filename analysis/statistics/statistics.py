@@ -213,7 +213,7 @@ for time, pre_bucket in pre_buckets.items():
         'throughput_without_overhead': throughput_without_overhead,
         'latencies': latencies,
     }
-    if throughput_with_overhead != throughput_without_overhead:
+    if overhead != 0:
         statistics['throughput_with_overhead'] = throughput_with_overhead
     time_series.append(statistics)
 

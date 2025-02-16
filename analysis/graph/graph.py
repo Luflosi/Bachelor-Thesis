@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 
 import os
+import sys
 import json
 import argparse
 import numpy as np
@@ -77,7 +78,7 @@ def read_input(input_file):
             data['throughput']['with_overhead'].append(data_point['throughput_with_overhead'])
 
     assert sorted(set(data['labels'])) == sorted(data['labels']), f'The labels are not unique: {data['labels']}'
-    assert data['throughput']['with_overhead'] == [] or len(data['throughput']['with_overhead']) == len(data['throughput']['without_overhead']), 'The two throughputs have inconsistent lengths'
+    assert data['throughput']['with_overhead'] == [] or len(data['throughput']['with_overhead']) == len(data['throughput']['without_overhead']), f'The two throughputs have inconsistent lengths, {len(data['throughput']['with_overhead'])} != {len(data['throughput']['without_overhead'])}'
 
     return metadata, data, parameters
 
@@ -131,6 +132,16 @@ def read_inputs(inputs):
         if labels == None:
             labels = data['labels']
         assert labels == data['labels'], f'{labels} != {data['labels']}'
+
+        def check_for_empty_buckets(counts):
+            empty_buckets_count = 0
+            for count in counts:
+                if count == 0:
+                    empty_buckets_count += 1
+            if empty_buckets_count > 0:
+                print(f'WARNING: {empty_buckets_count} buckets without packets', file=sys.stderr)
+        check_for_empty_buckets(data['counts']['packets'])
+
         match mode:
             case 'single':
                 # Grouped into seconds
@@ -150,8 +161,14 @@ def read_inputs(inputs):
                 dropped_ratio_from_single_measurement = []
                 duplicate_ratio_from_single_measurement = []
                 for count, dropped, duplicate in zip(data['counts']['packets'], data['counts']['dropped'], data['counts']['duplicate']):
-                    dropped_ratio_from_single_measurement.append(dropped / count)
-                    duplicate_ratio_from_single_measurement.append(duplicate / count)
+
+                    def custom_div(n, d):
+                        if d != 0:
+                            return n / d
+                        return 0
+
+                    dropped_ratio_from_single_measurement.append(custom_div(dropped, count))
+                    duplicate_ratio_from_single_measurement.append(custom_div(duplicate, count))
                 dropped_ratio.append(dropped_ratio_from_single_measurement)
                 duplicate_ratio.append(duplicate_ratio_from_single_measurement)
                 del(dropped_ratio_from_single_measurement)
