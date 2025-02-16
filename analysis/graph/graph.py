@@ -146,9 +146,15 @@ def read_inputs(inputs):
             case 'single':
                 # Grouped into seconds
                 latencies = data['latencies']
-                counts_packets = data['counts']['packets']
-                counts_dropped = data['counts']['dropped']
-                counts_duplicate = data['counts']['duplicate']
+                counts_packets_per_time = []
+                for packets in data['counts']['packets']:
+                    counts_packets_per_time.append(packets / duration)
+                counts_dropped_per_time = []
+                for dropped in data['counts']['dropped']:
+                    counts_dropped_per_time.append(dropped / duration)
+                counts_duplicate_per_time = []
+                for duplicate in data['counts']['duplicate']:
+                    counts_duplicate_per_time.append(duplicate / duration)
                 throughput_over_time_with_overhead = data['throughput']['with_overhead']
                 throughput_over_time_without_overhead = data['throughput']['without_overhead']
             case 'multi':
@@ -237,8 +243,8 @@ def read_inputs(inputs):
     match mode:
         case 'single':
             plot['counts'] = {
-                'y1': np.vstack([counts_packets, counts_dropped]),
-                'y2': counts_duplicate,
+                'y1': np.vstack([counts_packets_per_time, counts_dropped_per_time]),
+                'y2': counts_duplicate_per_time,
             }
         case 'multi':
             plot['dropped_ratio'] = {
@@ -312,13 +318,13 @@ match mode:
     case 'single':
         fig, ax = plt.subplots(figsize=figsize)
         ax.set_xlabel(f'Time ({metadata['units']['duration']})')
-        ax.set_ylabel('Arrived/Dropped')
+        ax.set_ylabel(f'Arrived/{metadata['units']['duration']} and Dropped/{metadata['units']['duration']}')
         ax.stackplot(plot['x'], plot['counts']['y1'])
         ax.set_ylim(bottom=0)
         ax2 = ax.twinx() # Instantiate a second Axes that shares the same x-axis
         ax2.yaxis.grid(False)
         ax2_color = 'red'
-        ax2.set_ylabel('Duplicated', color=ax2_color)
+        ax2.set_ylabel(f'Duplicated/{metadata['units']['duration']}', color=ax2_color)
         ax2.plot(plot['x'], plot['counts']['y2'], color=ax2_color)
         ax2.tick_params(axis='y', labelcolor=ax2_color)
         ax2.set_ylim(bottom=0)
