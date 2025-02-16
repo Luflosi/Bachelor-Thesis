@@ -8,7 +8,7 @@
 
 {
   "none" = 0;
-  "WireGuard" = 8 + 32 + 20; # UDP + WireGuard + IPv4
-  "icmptx" = 8 + 20; # ICMP + IPv4
+  "WireGuard" = 20 + 8 + 32; # IPv4 + UDP + WireGuard
+  "icmptx" = 20 + 8; # IPv4 + ICMP
   "iodine" = 1; # TODO
 }
