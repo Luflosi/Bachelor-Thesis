@@ -367,7 +367,7 @@ match mode:
         if plot['throughput']['y_dotted'] != []:
             ax.plot(plot['x'], plot['throughput']['y_dotted'], dashes=[1, 3], dash_capstyle = 'round')
         ax.plot(plot['x'], plot['throughput']['y_full'])
-        ax.set_ylim(bottom=0)
+        ax.set_ylim(bottom=0, top=100)
 
         if out != None:
             plt.savefig(fname=os.path.join(out, 'throughput.svg'), transparent=False)
