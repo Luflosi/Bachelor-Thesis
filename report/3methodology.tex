@@ -89,13 +89,13 @@ In the VM test setup, the virtual switch is configured to behave like a \textit{
 On real hardware with a real switch, this is not quite as trivial.
 To replicate this setup with real hardware, we use Cisco's Switched Port Analyzer (SPAN), also known as port mirroring \cite{cisco-span-tutorial}.
 Since enabling SPAN disables our ability to transmit packets from that interface for management purposes, we use a USB to Ethernet adapter for the management interface.
-The switch has several 100MBit/s and 1GBit/s Ethernet ports.
-The client, router and logger are connected to 100MBit/s ports, therefore limiting the bandwidth to 100MBit/s.
+The switch has several 100Mbit/s and 1Gbit/s Ethernet ports.
+The client, router and logger are connected to 100Mbit/s ports, therefore limiting the bandwidth to 100Mbit/s.
 During a measurement, data almost exclusively flows in one direction (apart from a small amount of iperf3 status information).
-Therefore, the router being connected to the switch with 100MBit/s full duplex is sufficient.
+Therefore, the router being connected to the switch with 100Mbit/s full duplex is sufficient.
 To record the data, we use port mirroring to copy the data being transfered on the port of the router, to the logger.
-Since this can result in a maximum data rate of 200MBit/s, the monitor port of the logger is connected to a 1GBit/s switch port in order to keep up with the data rate.
-iperf3 is configured to send at a rate of 100MBit/s, since transferring data at a faster rate is not possible anyways.
+Since this can result in a maximum data rate of 200Mbit/s, the monitor port of the logger is connected to a 1Gbit/s switch port in order to keep up with the data rate.
+iperf3 is configured to send at a rate of 100Mbit/s, since transferring data at a faster rate is not possible anyways.
 
 \subsection{Hardware used}
 Detailed hardware information can be found in \cref{tab:hardware}.

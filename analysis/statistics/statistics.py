@@ -225,7 +225,7 @@ data = {
     'units': {
         'duration': 's',
         'latency': 'ms',
-        'throughput': 'MBit/s',
+        'throughput': 'Mbit/s',
     },
     'time_series': time_series,
 }
