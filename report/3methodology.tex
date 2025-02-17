@@ -4,7 +4,10 @@
 \chapter{Methodology}
 \label{chap:methodology}
 
-In this chapter, we describe our test setup and measurement methodology.
+This chapter details the methodology employed to evaluate the performance of various censorship evasion protocols under realistic network conditions.
+We describe our experimental design, emphasizing the requirements.
+The chapter then outlines the testbed setup, including the transition from a virtualized environment using the NixOS testing framework to a real-world hardware implementation.
+Finally, we discuss the rationale behind our protocol selection, the specific network parameters varied during testing, and the data analysis pipeline used to process the collected packet captures, providing a comprehensive overview of our experimental approach.
 
 \section{Experimental design}
 We want to measure the overhead of encryption and censorship evasion protocols over lossy links.
@@ -78,7 +81,7 @@ We can use it as a simple templating engine to build the test script with the ri
 Modifying any part of the pipeline ensures that only the modified and subsequent stages are rerun.
 This eliminates the need for manually selecting which parts of the pipeline to run, a process that can be both tedious and error-prone, or rerunning the entire pipeline every time, which is time-consuming.
 Furthermore, building our setup in this way allows using the same test script and data analysis pipeline for the VM tests and the hardware tests, which makes experimentation much easier.
-We can use Nix to take care of storing all packet captures and the build logs.
+We use Nix to take care of storing all packet captures and the build logs.
 But if Nix were to get in the way after running the measurements, the data can still be easily copied out of the Nix store.
 This can be done by specifying the measurements which should be exported in \path{test-matrix/parameters.json} and then running \mintinline{shell}{nix build .#measurements}.
 The reason why we want to store the packet captures in the Nix store is for easy processing by the data analysis pipeline.
@@ -246,3 +249,7 @@ Data analysis pipeline:
   \item Graphs are drawn using \textit{Matplotlib} \cite{Matplotlib} (done in \path{analysis/graph/graph.py})
   \item \todo{for gaining insights, for example while comparing two different scenarios, it's helpful to plot data from multiple measurements in one plot. This still needs to be implemented.}
 \end{itemize}
+
+\todo[inline]{describe one second buckets}
+\todo[inline]{Aufschreiben, warum erfordert Analysesetup, dass Pakete einzigartig sind? Beschreiben, wie man es verbessern könnte?}
+\todo[inline]{describe in which direction the data is flowing}

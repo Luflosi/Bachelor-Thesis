@@ -4,14 +4,54 @@
 \chapter{Discussion}
 \label{chap:discussion}
 \todo{Forschungsfragen beantworten, bemerkenswerte Dinge aufschreiben}
-In this chapter, we ...
+Having presented the results of our experiments, this chapter delves into a comprehensive discussion of their meaning and implications.
+We explore the impact of network impairments on protocol effectiveness and discuss the implications for the design of robust censorship evasion protocols.
+Finally, we acknowledge the limitations of our study, outlining potential areas for improvement and future research.
+
+
+
+
+\section{RQ1: How much packet size overhead does each protocol add?}
+While we aimed to quantify the precise packet size overhead introduced by each protocol, our experimental setup did not allow for direct measurement of this metric.
+However, it is important to note that the packet size overheads of many protocols are generally constant.
+This overhead is due to the protocol's header, which is added to the data payload.
+\todo[inline]{break down overhead of WireGuard and ICMPTX}
+
+\section{RQ2: How much does the MTU decrease by using each protocol?}
+For protocols that do not support fragmentation by themselves, the MTU decrease is directly related to the protocol's overhead.
+
+\section{RQ3: How much additional latency does each protocol add?}
+Unfortunately, the measurement setup was not designed correctly to accurately capture the additional latency introduced by each protocol.
+Measuring additional latency introduced by a protocol requires observing the packets before they enter the tunnel and after they exit it.
+The additional latency introduced by the protocol can then be analyzed by measuring how long each packet takes on average and subtracting the latency when no protocol is being used.
+See \cref{fig:optimal_network_schematic} for a setup, which would be up to the task.
+While we acknowledge the importance of latency as a performance metric, we are unable to reliably quantify it within the constraints of our current experimental design.
+
+\section{RQ4: Do any protocols introduce additional packet loss?}
+Similarly to latency measurements, our setup was not equipped to reliably measure packet loss introduced by the protocols themselves.
+
+
+
+\section{RQ5: How much processing power and RAM does each protocol consume/require?}
+did not measure
+
+for userspace tunnel programs, can be measured using systemctl status
+
+We are not aware of a good method of measuring the RAM usage of WireGuard.
+
+We determine the CPU usage of WireGuard by looking at the output of \texttt{...} during a measurement.
+
+The CPU usage is fairly constant over time and on both sides of the tunnel.
+
+WireGuard used approximately \% of one CPU core
+
 
 \section{Limitations}
 \todo{was haben wir nicht gut gemacht?}
 
 measure in both directions to check if protocols behave symmetrically
 
-test iodine
+properly test iodine
 
 test obfs4
 
@@ -42,3 +82,9 @@ That way, can actually create some graphs and have to test way less.
 \todo[inline]{describe measurement failure scenario like in email}
 
 Connect router(s) to switch using two physical interfaces instead of one physical one with multiple VLANS to avoid running into bottlenecks when data is transferred in both directions with a total bandwidth higher than simplex can support
+
+re-implement interactive test driver, since it is very useful for debugging, should not be too difficult
+
+reboot all hosts before a test
+
+Try \href{https://code.gerade.org/hans/}{Hans}

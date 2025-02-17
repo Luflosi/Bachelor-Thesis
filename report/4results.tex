@@ -5,146 +5,140 @@
 \label{chap:results}
 \todo{beschreiben, was man sieht, Messungen irgendwie anordnen, innerhalb Sektion mit anderem vergleichen, z.B. MTU. zuerst nach Protokollen, dann Parameter}
 
-In this section, we describe the results obtained by performing our
-experiments.
-
-\todo[inline]{Move the following into the Discussuion section}
-\section{RQ1: How much packet size overhead does each protocol add?}
-While we aimed to quantify the precise packet size overhead introduced by each protocol, our experimental setup did not allow for direct measurement of this metric.
-However, it is important to note that the packet size overheads of many protocols are generally constant.
-This overhead is due to the protocol's header, which is added to the data payload.
-\todo[inline]{break down overhead of WireGuard and ICMPTX}
-
-\section{RQ2: How much does the MTU decrease by using each protocol?}
-For protocols that do not support fragmentation by themselves, the MTU decrease is directly related to the protocol's overhead.
-
-\section{RQ3: How much additional latency does each protocol add?}
-Unfortunately, the measurement setup was not designed correctly to accurately capture the additional latency introduced by each protocol.
-Measuring additional latency introduced by a protocol requires observing the packets before they enter the tunnel and after they exit it.
-The additional latency introduced by the protocol can then be analyzed by measuring how long each packet takes on average and subtracting the latency when no protocol is being used.
-See \cref{fig:optimal_network_schematic} for a setup, which would be up to the task.
-While we acknowledge the importance of latency as a performance metric, we are unable to reliably quantify it within the constraints of our current experimental design.
-
-\section{RQ4: Do any protocols introduce additional packet loss?}
-Similarly to latency measurements, our setup was not equipped to reliably measure packet loss introduced by the protocols themselves.
+This chapter presents the results obtained from our experiments.
+We analyze the impact of the censorship evasion protocols on key network metrics relevant to their practical deployment and effectiveness.
+Specifically, we examine the protocols' influence on packet size and transmission efficiency, considering factors such as overhead and maximum transmission unit.
+We also investigate the resource utilization of each protocol, including processing power and memory consumption.
+The results are organized to provide a comprehensive analysis of the protocols' performance characteristics, ultimately providing insights into their suitability for real-world censorship circumvention scenarios.
 
 
+\section{Evaluation of Selected Protocols: Implementation and Challenges}
+Running iperf3 with no protocol and with WireGuard was fairly painless.
+The same was not true for the other protocols.
 
-\section{RQ5: How much processing power and RAM does each protocol consume/require?}
-did not measure
-
-for userspace tunnel programs, can be measured using systemctl status
-
-We are not aware of a good method of measuring the RAM usage of WireGuard.
-
-We determine the CPU usage of WireGuard by looking at the output of \texttt{...} during a measurement.
-
-The CPU usage is fairly constant over time and on both sides of the tunnel.
-
-WireGuard used approximately \% of one CPU core
-
-
-
-graphen beschreiben (Welche Achsen gibt es, etc.)
-was sieht man?
-warum sieht man das was man sieht?
-
-
-graphs:
-latency
-packet counts
-throughput
-
-single or multi
-
-single: axes:
-
-for looking at a specific measurement in detail:
-
-gives an overview of how consistent the measurement is
-
-latency: box plot for every bucket: time, latency
-
-packet counts: line with dot every bucket: time, counts
-
-throughput: line with dot every bucket: time, throughput
-
-
-to be able to see the influence of a parameter, multiple measurements in one graph:
-
-\begin{figure}[tbh]
-	\centering
-	\includegraphics[draft=false,width=0.9\textwidth]{figures/Graphs/graph-1-mtu/latencies.pdf}
-	\caption{Latencies for varying payload sizes}\label{fix:graph-1-mtu-latencies}
-\end{figure}
-Latency stays pretty much constant, with different packet sizes
-
-only the tail latency is increasing drastically, which is unexpected.
-
-\begin{figure}[tbh]
-	\centering
-	\includegraphics[draft=false,width=0.9\textwidth]{figures/Graphs/graph-1-mtu/throughput.pdf}
-	\caption{Throughput for varying payload sizes}\label{fix:graph-1-mtu-throughput}
-\end{figure}
-
-The different measurements are always plotted on the x axis.
-
-latency: violin plot: measurement, latency
-
-packet duplicate: violin plot: measurement, ratio duplicate to total sent
-
-packet dropped: violin plot: measurement, ratio dropped to total sent
-
-throughput (with and without overhead): violin plot: measurement, throughput
-
-
-move to chapter methodology:
-one second buckets
-
-
-We were unable to evaluate ICMPTX.
+We were unable to evaluate \textbf{ICMPTX}.
 The program has a bug, where it crashes almost immediately after iperf3 starts sending data through the tunnel.
 It fails with the error message \texttt{sendto: No buffer space available}.
 The issue was mentioned previously \cite{icmptx-sendto-no-buffer-space-avaiable}.
 The maintainer proposed two workarounds but using either one alone or both at the same time did not resolve the issue.
+The code of our attempts at workarounds can be found in commit \texttt{d96d541f8b81ae5a9c68804785d35f9cb8eafe0b}.
 The problem seems to occur when trying to send data into the tunnel at a faster rate than the underlying link can support.
 Tunnel software should be able to handle this case by dropping packets instead of crashing.
+All other tunnel protocols we tested handled this case gracefully.
+We did not find this problem while experimenting with VMs since the VMs are connected using a virtual 1Gbit/s network, while iperf3 is configured to only send data at a rate of 100Mbit/s.
+Even with overhead caused by ICMP and other headers, the data rate does not come close to the 1Gbit/s supported by the virtual network, so the situation described above does not occur.
+
+The theoretical throughput of \textbf{iodine} is limited by its design, which allows only one packet to be in flight at a time \cite{iodine-README}.
+This suggests that the achievable throughput is directly dependent on the network latency and should be generally low.
+The authors claim a maximum downstream bandwidth of 1 Mbit/s \cite{iodine-homepage}.
+However, our observed data rates were much higher than initially expected (see \cref{fig:graph-3-iodine-constant-throughput}), indicating that this limitation may no longer apply.
+It may also apply only to one direction of the communication but we did not test this.
+Reliable measurement of directional throughput would require an improved setup [refer to figure/section describing improved setup].
+iodine was very flaky in our testing, with its connection frequently breaking and the throughput dropping to zero.
+After a minute the client exits with \texttt{iodine: No downstream data received in 60 seconds, shutting down.}.
+There are no other error messages on the client or server.
+This can even happen when we do not introduce any artificial loss, delay or duplicate packets (tested with an IP payload size of 1260 bytes).
+systemd subsequently restarts the process and a new connection is established.
+We acknowledge that trying to send 100Mbit/s of data through a DNS tunnel is unrealistic when iodine only keeps one packet in flight at a time and claims a maximum downstream bandwidth of 1 Mbit/s.
+But this should only result in severe packet loss and not cause the tunnel connection to break.
+In \cref{fig:graph-2-iodine-dropout-packets} all data transfer stops shortly after the start of the test and then resumes after about eight seconds.
+\begin{figure}[tbh]
+	\centering
+	\includegraphics[draft=false,width=0.9\textwidth]{figures/Graphs/graph-2-iodine-dropout/packet_counts_all.pdf}
+	\caption{Number of packets per second, iodine, 1260 IPv4 payload size, 0.1\% loss}
+	\label{fig:graph-2-iodine-dropout-packets}
+\end{figure}
+
+\begin{figure}[tbh]
+	\centering
+	\includegraphics[draft=false,width=0.9\textwidth]{figures/Graphs/graph-3-iodine-constant-throughput/throughput.pdf}
+	\caption{Throughput with overhead, iodine, 1400 IPv4 payload size, 0.1\% loss}
+	\label{fig:graph-3-iodine-constant-throughput}
+\end{figure}
 
 
-iodine
-
-only one packet can be in flight, so usable throughput depends on latency and is generally very low
-
-seems to not be true, since observed data rate was higher than expected
-
-perhaps only the case in one direction?
-
-Can not be measured reliably with our setup, would need improved setup, see figure
-
-
-
-mostly see what we expected
-
-we measure exactly the latency, loss and duplication we told the network emulator to simulate
-
-measured throughput is influenced by number of dropped packets
-
-
-Tor pluggable transports like obfs4 and Snowflake
-meant for stream data like TCP, not UDP
+\textbf{Tor Pluggable Transports}, such as obfs4 and Snowflake, are primarily designed for stream-oriented data, typically using TCP.
 \todo[inline]{Verify this claim more thouroughly!}
-
-since we're only sending UDP packets, cannot be measured
-
-would need a different test setup with a connection oriented data stream to test
-
-instead of packet oriented
-
-or some kind of UDP over TCP tunnel
-
-this would also be influenced by congestion control algorithm
+Because our tests use UDP packets, we are unable to evaluate the performance of these protocols under their intended operating conditions.
+A different test setup employing a connection-oriented data stream (TCP) would be necessary for a more accurate assessment.
+However, the congestion control algorithm may then influence the results.
+Alternatively, using a UDP-over-TCP tunnel might also work.
 
 
-Rather than only a handful of combinations of parameters, as described in \cref{chap:methodology}, we tested many more.
+\todo[inline]{show single measurement with throughput being fairly constant over time}
+
+
+\todo[inline]{remove notes:}
+graphen beschreiben (Welche Achsen gibt es, etc.)
+was sieht man?
+warum sieht man das was man sieht?
+
+\subsection{Graphs}
+\subsubsection{Single Measurement Graphs (Detailed View):}
+These graphs provide a detailed view of a single measurement, allowing us to assess its consistency over time.
+Each graph is plotted against time, divided into one second buckets.
+An example can be found in \todo{cref example}.
+
+\noindent\textbf{Latency:} A box plot is used to show the distribution of latency within each time bucket.
+This visualization helps identify not only the average latency but also the range and variability (including outliers or "tail latency") within each bucket.
+
+\noindent\textbf{Packet Counts:} A stackplot shows how many packets were sent and how many of them arrived at the other side of the router.
+A line graph shows the number of duplicated packets.
+This allows us to track packet counts over time and identify any fluctuations or drops.
+
+\noindent\textbf{Throughput:} A line graph shows the throughput achieved in each time bucket.
+This graph helps visualize the consistency of throughput over the duration of the measurement.
+\todo[inline]{also show distribution of packet sizes}
+
+
+\subsubsection{Multi-Measurement Graphs (Parameter Influence):}
+These graphs compare multiple measurements to visualize the influence of a specific parameter.
+The x-axis represents the different measurement runs (each varying a parameter of interest), and the y-axis represents the corresponding metric.
+All graphs, except for the latency, use the data from the buckets above to show a distribution of values rather than e.g. only the mean value.
+An example of this type of graph can be seen in \cref{fig:graph-1-mtu-throughput}.
+
+\noindent\textbf{Latency:} A violin plot displays the distribution of latency across all measurement runs.
+This visualization combines the features of a box plot (showing median, quartiles, and outliers) with a kernel density estimation (showing the shape of the distribution).
+This helps us compare the overall latency distribution across different parameter values.
+
+\noindent\textbf{Packet Duplicate Ratio:} A violin plot shows the ratio of duplicate packets to the total number of packets sent for each measurement run.
+This visualization allows us to assess how the duplication rate changes with different parameter values.
+
+\noindent\textbf{Packet Drop Ratio:} A violin plot displays the ratio of dropped packets to the total number of packets sent for each measurement run.
+This helps us understand how packet loss is affected by the varied parameter.
+
+\noindent\textbf{Throughput (with and without overhead):} Two violin plots are used to show throughput, one including overhead added by the protocol and the other excluding it.
+This comparison helps visualize the overhead introduced by the protocol and how it affects the effective throughput.
+
+\begin{figure}[tbh]
+	\centering
+	\includegraphics[draft=false,width=0.9\textwidth]{figures/Graphs/graph-1-mtu/latencies.pdf}
+	\caption{Latencies for varying payload sizes without any tunnel protocol and all other parameters set to zero}
+	\label{fig:graph-1-mtu-latencies}
+\end{figure}
+
+Notably, we observed that latency remained largely constant with varying packet sizes, except for a drastic increase in tail latency, which was an unexpected finding.
+
+\todo{rerender fig:graph-1-mtu-throughput with Mbit instead of MBit}
+\begin{figure}[tbh]
+	\centering
+	\includegraphics[draft=false,width=0.9\textwidth]{figures/Graphs/graph-1-mtu/throughput.pdf}
+	\caption{Throughput for varying payload sizes without any tunnel protocol and all other parameters set to zero}
+	\label{fig:graph-1-mtu-throughput}
+\end{figure}
+
+
+\todo[inline]{graphs for every parameter}
+
+
+
+General Observations:
+
+For the majority of protocols tested, the observed latency, packet loss, and duplication closely matched the values configured in the network emulator (tc-netem).
+The measured throughput was predictably influenced by the number and size of transmitted and dropped packets.
+
+
+
+Rather than only a handful of combinations of parameters, as described in \cref{chap:methodology}, we tested many more for experimentation.
 In the beginning we even tested the cartesian product of all parameters.
 This fact combined with several slightly different versions of our test setup, lead us to collect about 5 TB of packet captures, which compress to a little more than half of that using the zstd compression algorithm in Btrfs.
