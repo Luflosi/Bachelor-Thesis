@@ -3,7 +3,7 @@
 
 \chapter{Discussion}
 \label{chap:discussion}
-\todo{Forschungsfragen beantworten, bemerkenswerte Dinge aufschreiben}
+\todo[inline]{Forschungsfragen beantworten, bemerkenswerte Dinge aufschreiben}
 Having presented the results of our experiments, this chapter delves into a comprehensive discussion of their meaning and implications.
 We explore the impact of network impairments on protocol effectiveness and discuss the implications for the design of robust censorship evasion protocols.
 Finally, we acknowledge the limitations of our study, outlining potential areas for improvement and future research.
@@ -24,7 +24,7 @@ For protocols that do not support fragmentation by themselves, the MTU decrease 
 Unfortunately, the measurement setup was not designed correctly to accurately capture the additional latency introduced by each protocol.
 Measuring additional latency introduced by a protocol requires observing the packets before they enter the tunnel and after they exit it.
 The additional latency introduced by the protocol can then be analyzed by measuring how long each packet takes on average and subtracting the latency when no protocol is being used.
-See \cref{fig:optimal_network_schematic} for a setup, which would be up to the task.
+See \Cref{fig:optimal_network_schematic} for a setup, which would be up to the task.
 While we acknowledge the importance of latency as a performance metric, we are unable to reliably quantify it within the constraints of our current experimental design.
 
 \section{RQ4: Do any protocols introduce additional packet loss?}
@@ -47,44 +47,63 @@ WireGuard used approximately \% of one CPU core
 
 
 \section{Limitations}
-\todo{was haben wir nicht gut gemacht?}
+In reflecting on our work, we identify several areas where improvements could be made.
 
-measure in both directions to check if protocols behave symmetrically
+First of all, we should have recognized a fatal flaw in our measurement methodology much sooner.
+The following scenario illustrates this flaw well:\\
+Let's suppose we were testing a fictitious tunnel protocol, which splits all tackets sent into the tunnel into two fragments, wraps them in its own header and sends them onwards separately.
+The protocol does not implement its own retransmission machanism.
+Only when both halves reach the other side of the tunnel, can the original packet be reassembled.
+If every second packet were to get lost, then no packet could ever be reassembled at the receiver.
+But our setup can not measure this behaviour, since we only record packets when they are wrapped in the tunnel protocol and before they are unpacked and reassembled.
+Our setup would measure a packet loss of 50\%, while 100\% would be the correct value.
+The throughput would similarly be measured incorrectly.
+\Cref{fig:optimal_network_schematic} shows an improved setup capable of correctly measuring this behaviour.
+It allows recording the packets also before they enter the tunnel and after they exit it.
 
-properly test iodine
+In particular, this would have allowed us to properly evaluate the overhead of iodine, which depends on the particular DNS record type the program chose at runtime.
 
-test obfs4
+Early on, we evaluated the cartesian product of all parameters, which leads to an explosion of different combinations, which take a long time to measure.
+We did this before deciding how to analyze and compare these many different combinations.
+To mitigate this, we focus on isolating variables during testing—keeping all parameters constant except for the one being measured—to create meaningful graphs and reduce the number of required tests drastically.
 
-use IPv6
+Additionally, while we use iperf3 for our measurements, its requirement for both an initial UDP handshake and a TCP control connection brings several problems.
+iperf3 fails to start the measurement when a critical UDP packet is lost and does not attempt to re-send it.
+A pull request to improve this situation in iperf3 has existed for several years but it has not been merged yet \cite{iperf-udp-connect-retry}.
+For our testing we apply this patch to make connection establishment reliable.
+The initial handshake may also delay the start of the test, especially under high latency and high loss conditions.
+In addition to that, the persistent TCP connection adds a very small amount of extra traffic, which is not under our control.
+For our purposes it would be better to use a different traffic generator, which just sends random UDP packets, without any connection setup or control connection.
 
-use something other than iperf3, which does not require an initial handshake
+Another limitation is that we only used IPv4 since we need a common baseline but not all protocols support transporting IPv6 (iodine in particular).
+We need to address this gap to ensure comprehensive evaluation across different network configurations.
 
-also try using a connection oriented protocol like TCP instead of UDP to see the influence of the congestion control protocol.
+Furthermore, we only transfer data in one direction and do not test protocols in both directions for ensuring their behavior is symmetric.
+This is especially relevant for iodine, where we know with certainty that its bandwidth is asymmetric.
 
-test the tor transport? \todo{read some more about this transport protocol}
+The packet queue in the router is not large enough, leading to dropped packets when trying to introduce a delay of 200 ms or longer.
+Increasing the buffer size would resolve this limitation.
 
-Try out \href{https://github.com/rbruenig/qperf}{qperf}?
+The router in our setup is connected to a 100Mbit/s port of the switch using a single ethernet cable and two VLANs.
+Both the client and the server are theoretically able to send and receive at full speed at the same time (each device 200Mbit/s in total) thanks to full-duplex.
+But the router is effectively limited to half-duplex speeds as it has to send all data it receives back over the same link.
+This presents an unintended bottleneck if data flows in both directions at the client and server at a fast enough rate.
+While we attempted to avoid this situation by telling iperf3 to only send data in one direction, a small amount of data is still exchanged in both directions by iperf3's control connection, by our own control connection coordinating the test and by background noise like ARP messages.
+To solve this limitation, the router could either be connected to a 1Gbit/s port of the switch or we could use two physical cables and interfaces instead of two VLANs.
 
-netboot hardware
+We also did not test the influence of reducing the maximum bandwidth in the router.
 
-make queues in router bigger to allow for longer delays
+Furthermore, preventing state from previous tests from influencing future ones is important.
+While we acknowledge that one of the most reliable ways of achieving this goal is to restart all systems between tests, this was not done due to time constraints and the added complexity of rebooting all hosts and waiting for them to be reachable, fully booted, and settled.
+Netbooting all hosts goes one step further as without persistent storage, there are very few places left for state to accumulate.
 
-unit tests for analysis scripts
+Some unit tests for our data analysis scripts would have been nice to have and would have likely found at least one particular bug.
 
-vary maximum bandwidth
+Finally, while modifying the NixOS test driver to scale to thousands of tests without running out of memory and with an evaluation time proportional to the number of protocols instead of the number of tests, we copied some parts of the driver from Nixpkgs.
+We did however not copy the code that allows controlling the test interactively, which would have enhanced debuggability by not requiring a full rerun of the test after each change.
+Adressing this limitation should be relatively simple.
 
-Change IPv4 payload size depending on protocol to accurately simulate a lower MTU
 
-don't test all combinations of all protocols.
-Instead, keep everything constant and only change one variable.
-That way, can actually create some graphs and have to test way less.
-
-\todo[inline]{describe measurement failure scenario like in email}
-
-Connect router(s) to switch using two physical interfaces instead of one physical one with multiple VLANS to avoid running into bottlenecks when data is transferred in both directions with a total bandwidth higher than simplex can support
-
-re-implement interactive test driver, since it is very useful for debugging, should not be too difficult
-
-reboot all hosts before a test
-
-Try \href{https://code.gerade.org/hans/}{Hans}
+%%% Local Variables:
+%%% TeX-master: "thesis"
+%%% End:

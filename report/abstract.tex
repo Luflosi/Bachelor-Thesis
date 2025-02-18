@@ -1,7 +1,18 @@
 % SPDX-FileCopyrightText: 2024 Lukas Zirpel <thesis+lukas@zirpel.de>
 % SPDX-License-Identifier: GPL-3.0-only
 
-Very nice thesis. \todo{Write an abstract.}
+Censorship evasion tools are crucial for maintaining access to information in censored environments.
+This thesis evaluates the overhead of several popular censorship circumvention protocols under realistic network conditions, examining their impact on key network metrics relevant to their practical deployment and effectiveness.
+We employ a rigorous methodology, combining virtualized prototyping with real-world hardware testing.
+Our setup allows for experiments in reproducible environments and controlled network impairment simulation.
+Our experiments analyze the behavior of WireGuard, DNS tunneling (iodine), ICMP tunneling (ICMPTX), and Tor pluggable transports (obfs4, Snowflake) under controlled network impairments, varying parameters such as packet loss, latency, jitter, and MTU.
+We present results on packet overhead, throughput, and resource utilization (CPU and RAM consumption), revealing the performance trade-offs inherent in each protocol.
+We also investigate the impact of these protocols on the Maximum Transmission Unit (MTU) and discuss its implications for network performance.
+Despite encountering implementation challenges with ICMPTX and iodine, our rigorous methodology, combining virtualized and real-world testing, allows for a detailed analysis of several key censorship circumvention protocols.
+Future work will build upon this foundation, addressing the limitations encountered and expanding the scope of protocol evaluation.
+
+\todo[inline]{add keywords}
+
 
 %%% Local Variables:
 %%% TeX-master: "thesis"

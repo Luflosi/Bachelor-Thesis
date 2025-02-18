@@ -38,7 +38,7 @@ It should also be easy to add new protocols and experiment with the setup both f
 	\label{fig:optimal_network_schematic}
 \end{figure}
 
-As can be seen in \cref{fig:actual_network_schematic}, our setup consists of four hosts.
+As can be seen in \Cref{fig:actual_network_schematic}, our setup consists of four hosts.
 The \textit{Client} runs iperf3 as a traffic generator in UDP mode and also the censorship evasion client software.
 The \textit{Router} routes packets between the Client and the Server and emulates different network conditions, such as packet loss.
 The \textit{Server} runs an iperf3 server instance and the censorship evasion server software.
@@ -50,7 +50,7 @@ There are a number of existing network simulators for simulating complex network
 Many of them focus on simulating mesh networks for testing routing protocols, for example Mesh Network Lab \cite{meshnet-lab}.
 Our network is relatively simple, while the complexity lies in the configuration of the hosts and automation.
 This is part of the reason why we chose the NixOS testing framework for our first prototypes.
-The other reason is that Nix has the desirable properties mentioned in \cref{Nix-explanation}.
+The other reason is that Nix has the desirable properties mentioned in \Cref{Nix-explanation}.
 It allows declararing the exact configuration of the hosts and the virtual network in code.
 All dependencies are pinned in a lock file and no outside dependencies are used, so everything should still be reproducible in a decade or more without having to distribute gigabytes of VM or container images and while still being able to easily modify any part of the system.
 
@@ -60,7 +60,9 @@ Using the NixOS testing framework, we declare the configuration of all four host
 We also specify a test script, which imperatively executes one command at a time.
 The script roughly executes these steps: start all hosts, wait for them to be ready, tell the router to emulate the network conditions we want, start the traffic generator, wait for it to be done, and finally collect the packet captures.
 Different network conditions can be emulated using Linux's network emulator\cite{man8:tc-netem}.
-We store the packet captures for later analysis.
+iperf3 is run with the \texttt{-R} flag to simulate a download from the point of the client \cite{man:iperf3}.
+We call the packets flowing from the server to the router \textit{pre} and the ones after the router \textit{post}.
+All packet captures are stored for later analysis.
 
 Since the virtualization may influence our results in unexpected ways, especially since all VMs are running on the same host and the network is only simulated, we opted to perform our actual measurements on bare metal hardware.
 While it is definitely possible to build a reliable benchmarking setup using virtual machines, a virtual network switch and virtual networking cables, using bare metal hardware eliminates the virtualisation as a variable in our measurements.
@@ -101,7 +103,7 @@ Since this can result in a maximum data rate of 200Mbit/s, the monitor port of t
 iperf3 is configured to send at a rate of 100Mbit/s, since transferring data at a faster rate is not possible anyways.
 
 \subsection{Hardware used}
-Detailed hardware information can be found in \cref{tab:hardware}.
+Detailed hardware information can be found in \Cref{tab:hardware}.
 \begin{table}[tbh]
 	\centering
 	\footnotesize
@@ -136,7 +138,7 @@ Detailed hardware information can be found in \cref{tab:hardware}.
 \section{Scenario Selection}
 \subsection{Protocols to test}
 
-To evaluate censorship evasion protocols, we selected a range of protocols representing different approaches and levels of sophistication.
+To evaluate censorship evasion protocols, we select a range of protocols representing different approaches and levels of sophistication.
 Our selection includes:
 
 \begin{itemize}
@@ -149,24 +151,24 @@ Our selection includes:
     }
     WireGuard is a modern, fast, and secure VPN protocol that utilizes state-of-the-art cryptography.
     It is known for its performance and ease of configuration, making it a popular choice for VPN applications.
-    We included WireGuard to assess the impact of a well-optimized VPN protocol on network performance under challenging conditions.
+    We include WireGuard to assess the impact of a well-optimized VPN protocol on network performance under challenging conditions.
 
   \item \noindent\textbf{DNS Tunnel (iodine):}
     DNS tunneling is a technique that encapsulates data within DNS queries and responses, allowing communication to bypass some forms of censorship.
     While less efficient than most other methods, it can be effective in bypassing certain types of firewalls that allow DNS traffic.
     iodine is a widely used implementation of DNS tunneling.
-    We selected iodine to investigate the performance characteristics of this technique, particularly its susceptibility to latency and packet loss.
+    We select iodine to investigate the performance characteristics of this technique, particularly its susceptibility to latency and packet loss.
 
   \item \noindent\textbf{ICMP Tunnel (ICMPTX):}
     ICMP tunneling uses ICMP echo requests and replies to carry data.
     ICMPTX is a common tool for ICMP tunneling.
-    We included ICMPTX to examine the performance of this approach, especially in the context of lossy or high-latency networks.
+    We include ICMPTX to examine the performance of this approach, especially in the context of lossy or high-latency networks.
 
   \item \noindent\textbf{Tor Pluggable Transports:}
     Tor is an anonymity network that relies on a network of relays to anonymize traffic.
     In places, where censors attempt to block access to Tor, users can use so-called \textit{Pluggable Transports} to circumvent the block.
     There are a variety of such protocols, with the most common ones being obfs4, Snowflake, and meek.
-    We selected these specific Tor protocols because they are known to be effective against censorship in the real world.
+    We select these specific Tor protocols because they are known to be effective against censorship in the real world.
 \end{itemize}
 
 
@@ -220,13 +222,24 @@ The Maximum Transmission Unit (MTU) defines the largest size of a packet that ca
 We varied the IPv4 payload size to simulate the impact of different MTUs on the performance of each protocol.
 A range of MTU values was chosen to simulate different network configurations and to evaluate the impact of fragmentation (or lack thereof) on performance.
 
-While Linux's network emulator also supports corrupting packets in addition to all of the above, we do not use this functionality.
-\todo[inline]{explain why we're not testing corrupt packets (difficult to correlate packets)}
-We measure latency by correlating ... \todo[inline]{continue}
-
-
 When running measurements where we keep all parameters constant and only vary one at a time, there are $7 + 5 + 2 + 3 = 17$ measurements per protocol.
 The execution time is bounded by the measurement duration, which is 5 minutes, so 17 measurements will take at least $17 * 5 m = 85 m = 1h25m$.
+
+Since many link layer protocols employ error detection and correction algorithms, it is not common for packets to become corrupt in the real world but some protocols may still behave in unexpected ways.
+While Linux's network emulator also supports corrupting packets in addition to all of the above parameters, we do not use this functionality.
+The reason for this is described below.
+For measuring the latency, loss, and duplication, we first calculate a hash of the IP payload of all packets before and after the router.
+If we assume that all pre packets are unique then we can simply match pre and post packets based on their hash.
+If a pre packet has the same hash as a post packet, then it is the same packet.
+This way, we can determine if a packet was dropped, duplicated or simply forwarded normally.
+We can also measure the latency for each packet.
+If the router were to corrupt a packet, then this approach would no longer work.
+The assumption that pre packets are unique seems to hold in practice, when not using any tunnel protocol, as iperf3 uses a monotonically increasing counter in each packet.
+The assumption does however not hold when using a tunnel protocol which fragments packets into smaller fragments.
+This is because with high probability, not many bits of the iperf3 counter value change from one packet to the next, resulting in only one fragment being different.
+Since there is an upper bound to the latency we simulate, it is sufficient for packets to be unique within a certain time window.
+But in order to be robust against duplicate pre packets being sent almost at the same time, a better algorithm needs to be developed.
+One approach could be to match each post hash to its closest (in time) matching pre hash.
 
 In order to save some space when storing the packet captures (\path{.pcap} files \cite{wiki:Pcap}), compression can be used to reduce the storage requirements.
 The \path{.pcap} files only compress well if the data is not encrypted or otherwise scrambled too much.
@@ -234,10 +247,9 @@ The files could either be explicitly compressed with a file compression tool lik
 
 Since we're only interested in measuring what happens during the actual test and not in the connection setup and teardown of iperf3, we employ heuristics to ignore this part of the packet capture.
 To find the start of the test, we find the first packet which is larger than a threshhold (400 bytes).
-To find the end of the test, we find the last packet which is larger than a threshhold (400 bytes) and also ignore all packets that are sent after the duration of the test is over.
+To find the end of the test, we find the last packet which is larger than the same threshhold and also ignore all packets which are sent after the duration of the test is over.
 
 
-\todo[inline]{Define pre and post to mean before and after the router}
 \todo[inline]{convert the following to full sentences in a coherent text}
 
 Data analysis pipeline:
@@ -253,3 +265,8 @@ Data analysis pipeline:
 \todo[inline]{describe one second buckets}
 \todo[inline]{Aufschreiben, warum erfordert Analysesetup, dass Pakete einzigartig sind? Beschreiben, wie man es verbessern könnte?}
 \todo[inline]{describe in which direction the data is flowing}
+
+
+%%% Local Variables:
+%%% TeX-master: "thesis"
+%%% End:

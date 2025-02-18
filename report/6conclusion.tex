@@ -17,5 +17,27 @@ we feel that measurement setup ...
 
 \section{Future Work}
 more protocols
+
 better setup
+
+use IPv6
+
 Test changing network conditions (good to bad or vice versa)
+
+vary maximum bandwidth
+
+To gain deeper insights into real-world network behavior, we should also test using connection-oriented protocols like TCP or QUIC to evaluate the impact of congestion control mechanisms.
+
+In our testing, we kept the size of the payload inside the tunnel protocol constant.
+Keeping the packet size outside of the tunnel constant simulates a fixed MTU much more accurately and is thus ...
+
+test obfs4
+
+test the tor transport? \todo{read some more about this transport protocol}
+
+Try IP over DNS implementations other than ICMPTX, such as \href{https://code.gerade.org/hans/}{Hans}.
+
+
+%%% Local Variables:
+%%% TeX-master: "thesis"
+%%% End:
