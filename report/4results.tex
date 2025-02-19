@@ -31,7 +31,7 @@ Even with overhead caused by ICMP and other headers, the data rate does not come
 The theoretical throughput of \textbf{iodine} is limited by its design, which allows only one packet to be in flight at a time \cite{iodine-README}.
 This suggests that the achievable throughput is directly dependent on the network latency and should be generally low.
 The authors claim a maximum downstream bandwidth of 1 Mbit/s \cite{iodine-homepage}.
-However, our observed data rates were much higher than initially expected (see \Cref{fig:graph-3-iodine-constant-throughput}), indicating that this limitation may no longer apply.
+However, our observed data rates were much higher than initially expected (see \Cref{fig:graph-5-iodine-constant-throughput}), indicating that this limitation may no longer apply.
 It may also apply only to one direction of the communication but we did not test this.
 Reliable measurement of directional throughput would require an improved setup [refer to figure/section describing improved setup].
 iodine was very flaky in our testing, with its connection frequently breaking and the throughput dropping to zero.
@@ -58,11 +58,21 @@ In \Cref{fig:graph-2-iodine-dropout-packets} all data transfer stops shortly aft
 
 
 \textbf{Tor Pluggable Transports}, such as obfs4 and Snowflake, are primarily designed for stream-oriented data, typically using TCP.
-\todo[inline]{Verify this claim more thouroughly!}
+\todo[inline]{Verify this claim more thoroughly!}
 Because our tests use UDP packets, we are unable to evaluate the performance of these protocols under their intended operating conditions.
 A different test setup employing a connection-oriented data stream (TCP) would be necessary for a more accurate assessment.
 However, the congestion control algorithm may then influence the results.
 Alternatively, using a UDP-over-TCP tunnel might also work.
+
+
+General Observations:
+
+For the majority of protocols tested, the observed latency, packet loss, and duplication closely matched the values configured in the network emulator (tc-netem).
+The measured throughput was predictably influenced by the number and size of transmitted and dropped packets.
+
+We measure a small percentage (~0.001\%) of packets which seem to have a negative latency.
+The biggest time difference is in the single digit millisecond range.
+We are not sure what causes this but it indicates that our packet time stamps are slightly noisy with the most extreme outliers being off by several milliseconds.
 
 
 \todo[inline]{show single measurement with throughput being fairly constant over time}
@@ -75,9 +85,10 @@ warum sieht man das was man sieht?
 
 \subsection{Graphs}
 \subsubsection{Single Measurement Graphs (Detailed View):}
+\label{sect:graphs-single}
 These graphs provide a detailed view of a single measurement, allowing us to assess its consistency over time.
 Each graph is plotted against time, divided into one second buckets.
-An example can be found in \Cref{fig:graph-3-iodine-constant-throughput}.
+An example can be found in \Cref{fig:graph-5-iodine-constant-throughput}.
 
 \noindent\textbf{Latency:} A box plot is used to show the distribution of latency within each time bucket.
 This visualization helps identify not only the average latency but also the range and variability (including outliers or "tail latency") within each bucket.
@@ -92,7 +103,23 @@ This graph helps visualize the consistency of throughput over the duration of th
 
 
 \subsubsection{Multi-Measurement Graphs (Parameter Influence):}
+\label{sect:graphs-multi}
 These graphs compare multiple measurements to visualize the influence of a specific parameter.
+
+\begin{figure}[tbh]
+	\centering
+	\includegraphics[draft=false,width=0.9\textwidth]{figures/Graphs/graph-4-mtu/latencies.pdf}
+	\caption{Latencies for varying payload sizes without any tunnel protocol and all other parameters set to zero}
+	\label{fig:graph-4-mtu-latencies}
+\end{figure}
+
+\begin{figure}[tbh]
+	\centering
+	\includegraphics[draft=false,width=0.9\textwidth]{figures/Graphs/graph-4-mtu/throughput.pdf}
+	\caption{Throughput for varying payload sizes without any tunnel protocol and all other parameters set to zero}
+	\label{fig:graph-4-mtu-throughput}
+\end{figure}
+
 The x-axis represents the different measurement runs (each varying a parameter of interest), and the y-axis represents the corresponding metric.
 All graphs, except for the latency, use the data from the buckets above to show a distribution of values rather than e.g. only the mean value.
 An example of this type of graph can be seen in \Cref{fig:graph-4-mtu-throughput}.
@@ -110,32 +137,11 @@ This helps us understand how packet loss is affected by the varied parameter.
 \noindent\textbf{Throughput (with and without overhead):} Two violin plots are used to show throughput, one including overhead added by the protocol and the other excluding it.
 This comparison helps visualize the overhead introduced by the protocol and how it affects the effective throughput.
 
-\begin{figure}[tbh]
-	\centering
-	\includegraphics[draft=false,width=0.9\textwidth]{figures/Graphs/graph-4-mtu/latencies.pdf}
-	\caption{Latencies for varying payload sizes without any tunnel protocol and all other parameters set to zero}
-	\label{fig:graph-4-mtu-latencies}
-\end{figure}
-
 Notably, we observed that latency remained largely constant with varying packet sizes, except for a drastic increase in tail latency, which was an unexpected finding.
 
-\todo{rerender fig:graph-4-mtu-throughput with Mbit instead of MBit}
-\begin{figure}[tbh]
-	\centering
-	\includegraphics[draft=false,width=0.9\textwidth]{figures/Graphs/graph-4-mtu/throughput.pdf}
-	\caption{Throughput for varying payload sizes without any tunnel protocol and all other parameters set to zero}
-	\label{fig:graph-4-mtu-throughput}
-\end{figure}
 
 
 \todo[inline]{graphs for every parameter}
-
-
-
-General Observations:
-
-For the majority of protocols tested, the observed latency, packet loss, and duplication closely matched the values configured in the network emulator (tc-netem).
-The measured throughput was predictably influenced by the number and size of transmitted and dropped packets.
 
 
 

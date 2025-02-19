@@ -102,6 +102,12 @@ To record the data, we use port mirroring to copy the data being transfered on t
 Since this can result in a maximum data rate of 200Mbit/s, the monitor port of the logger is connected to a 1Gbit/s switch port in order to keep up with the data rate.
 iperf3 is configured to send at a rate of 100Mbit/s, since transferring data at a faster rate is not possible anyways.
 
+An important consideration for real-world deployment of censorship circumvention tools is their resource consumption.
+While we aimed to quantify both processing power and RAM requirements, direct measurement of RAM usage for WireGuard proved challenging, as there seems to be no simple and reliable way of measuring the RAM usage of a Linux kernel module.
+We determine the CPU usage of WireGuard in a somewhat ad hoc way by looking at the output of \mintinline{shell}{ps aux | grep wg-crypt | grep root | awk '{total+=$3;} END{print total;}'} during a measurement with no network impairments.
+The CPU usage of the other tunnel protocols is determined in a similar way.
+For userspace programs running in systemd units, the RAM usage can be assessed using \mintinline{shell}{systemctl status}.
+
 \subsection{Hardware used}
 Detailed hardware information can be found in \Cref{tab:hardware}.
 \begin{table}[tbh]
@@ -121,13 +127,7 @@ Detailed hardware information can be found in \Cref{tab:hardware}.
 		& INTEL® CORE™ i5-9600 (6 cores, 3.1GHz)                                                                 \\
 		\rowcolor[HTML]{EFEFEF}
 		& \begin{tabular}[c]{@{}l@{}}16GB RAM\\ One 2666 MHz DDR4 SODIMM module,\\ HMA82GS6JJR8N-VK\end{tabular} \\
-		& 512GB NVME SSD                                                                                         \\ \midrule
-		\rowcolor[HTML]{EFEFEF}
-		SBCs              & Orange Pi Zero3                                                                                        \\
-		& Allwinner H618 Cortex-A53 (4 cores, 1.5GHz)                                                            \\
-		\rowcolor[HTML]{EFEFEF}
-		& 2GB RAM                                                                                                \\
-		& 32GB microSD card                                                                                      \\ \bottomrule
+		& 512GB NVME SSD                                                                                         \\ \bottomrule
 	\end{tabular}
 	\caption{Hardware used}
 	\label{tab:hardware}
@@ -147,9 +147,7 @@ Our selection includes:
     This allows us to quantify the overhead introduced by each protocol.
 
   \item \noindent\textbf{WireGuard:}
-    \todo[inline]{\href{https://www.cs.wm.edu/~smherwig/readings/papers/17-ndss-wireguard.pdf}{cite}
-    }
-    WireGuard is a modern, fast, and secure VPN protocol that utilizes state-of-the-art cryptography.
+    WireGuard is a modern, fast, and secure VPN protocol that utilizes state-of-the-art cryptography \cite{donenfeld2017wireguard}.
     It is known for its performance and ease of configuration, making it a popular choice for VPN applications.
     We include WireGuard to assess the impact of a well-optimized VPN protocol on network performance under challenging conditions.
 
@@ -227,44 +225,58 @@ The execution time is bounded by the measurement duration, which is 5 minutes, s
 
 Since many link layer protocols employ error detection and correction algorithms, it is not common for packets to become corrupt in the real world but some protocols may still behave in unexpected ways.
 While Linux's network emulator also supports corrupting packets in addition to all of the above parameters, we do not use this functionality.
-The reason for this is described below.
-For measuring the latency, loss, and duplication, we first calculate a hash of the IP payload of all packets before and after the router.
-If we assume that all pre packets are unique then we can simply match pre and post packets based on their hash.
-If a pre packet has the same hash as a post packet, then it is the same packet.
-This way, we can determine if a packet was dropped, duplicated or simply forwarded normally.
-We can also measure the latency for each packet.
-If the router were to corrupt a packet, then this approach would no longer work.
-The assumption that pre packets are unique seems to hold in practice, when not using any tunnel protocol, as iperf3 uses a monotonically increasing counter in each packet.
-The assumption does however not hold when using a tunnel protocol which fragments packets into smaller fragments.
-This is because with high probability, not many bits of the iperf3 counter value change from one packet to the next, resulting in only one fragment being different.
-Since there is an upper bound to the latency we simulate, it is sufficient for packets to be unique within a certain time window.
-But in order to be robust against duplicate pre packets being sent almost at the same time, a better algorithm needs to be developed.
-One approach could be to match each post hash to its closest (in time) matching pre hash.
+The reason for this is described in \Cref{sect:data-analysis-pipeline}.
 
 In order to save some space when storing the packet captures (\path{.pcap} files \cite{wiki:Pcap}), compression can be used to reduce the storage requirements.
 The \path{.pcap} files only compress well if the data is not encrypted or otherwise scrambled too much.
-The files could either be explicitly compressed with a file compression tool like zstd or the compression could be done at the filesystem level, e.g. with \textit{OpenZFS} \cite{OpenZFS} and Btrfs \cite{Btrfs}.
+The files could either be explicitly compressed with a file compression tool like zstd or the compression could be done at the filesystem level, e.g., with OpenZFS \cite{OpenZFS} and Btrfs \cite{Btrfs}.
+We opt for the latter approach due to its simplicity and transparent operation.
 
 Since we're only interested in measuring what happens during the actual test and not in the connection setup and teardown of iperf3, we employ heuristics to ignore this part of the packet capture.
-To find the start of the test, we find the first packet which is larger than a threshhold (400 bytes).
-To find the end of the test, we find the last packet which is larger than the same threshhold and also ignore all packets which are sent after the duration of the test is over.
+To find the start of the test, we find the first packet which is larger than a threshold (400 bytes).
+To find the end of the test, we find the last packet which is larger than the same threshold and also ignore all packets which are sent after the duration of the test is over.
 
 
-\todo[inline]{convert the following to full sentences in a coherent text}
+\section{Data analysis pipeline}
+\label{sect:data-analysis-pipeline}
+First we run our measurement setup with a particular set of parameters.
+All packets before (pre) and after (post) the router are recorded and stored in \path{.pcap} files.
 
-Data analysis pipeline:
-\begin{itemize}
-  \item run the measurement setup
-  \item capture packets before and after the router and store them in .pcap files
-  \item for each packet, extract the timestamp and compute the size and \textit{BLAKE3} \cite{wiki:BLAKE3} hash of the IP payload and write the information into a \textit{JSON} \cite{wiki:JSON} file (done in \path{analysis/parse/parse.py})
-  \item for each packet captured before the router, find the same packet after the router (done in \path{analysis/statistics/statistics.py}). If we assume, that all packets are unique and that the router does not modify packets, then we can match up the unique hash of each packet before the router to some number of packets after the router. If no matching packet can be found after flowing through the router, it means that the packet was dropped. If more than one packet matches, it means that it was duplicated. If exactly one packet matches, it was routed without duplication or being dropped. For meaningful statistics, we group the data into short chunks (buckets) (1s) and compute bandwidth and packet counts over that bucket. The latency introduced by the router can be measured by computing the difference between the timestamps of each packet before the router and the first corresponding packet after the router. Dropped packets are ignored and for duplicated packets only the first arriving packet is counted. Throughput can be measured by summing up the IP payload \todo{should we measure at a different layer?} and dividing it by the time duration of the bucket. Dropped packets are ignored and packets which were duplicated count only once. The timestamp, dropped, duplicated and normal packet counts, throughput and a list of the latency of each packet are stored per bucket and written to a JSON file.
-  \item Graphs are drawn using \textit{Matplotlib} \cite{Matplotlib} (done in \path{analysis/graph/graph.py})
-  \item \todo{for gaining insights, for example while comparing two different scenarios, it's helpful to plot data from multiple measurements in one plot. This still needs to be implemented.}
-\end{itemize}
+For all packets, we extract the timestamp and size and compute the BLAKE3 \cite{BLAKE3} hash of the IP payload and write the information into a JSON \cite{RFC8259} file (done in \path{analysis/parse/parse.py}).
 
-\todo[inline]{describe one second buckets}
-\todo[inline]{Aufschreiben, warum erfordert Analysesetup, dass Pakete einzigartig sind? Beschreiben, wie man es verbessern könnte?}
-\todo[inline]{describe in which direction the data is flowing}
+Next, for each pre packet, we find the same packet post the router (done in \path{analysis/statistics/statistics.py}).
+If we assume that all pre packets are unique and that the router does not modify packets, then we can simply match pre and post packets based on their hash.
+If a pre packet has the same hash as a post packet, then it is the same packet.
+This way, we can determine if a packet was dropped, duplicated or simply forwarded normally.
+If no matching post packet matches for a particular pre packet, it means that the packet was lost (dropped).
+If more than one packet matches, it was duplicated.
+If exactly one packet matches, it was routed successfully without duplication.
+If the router were to corrupt a packet, then this approach would no longer work.
+The assumption that pre packets are unique seems to hold in practice, when not using any tunnel protocol, as iperf3 uses a monotonically increasing counter in each packet.
+The assumption does however not hold when using a tunnel protocol which fragments packets into smaller fragments.
+This is because with high probability, not many bits of the iperf3 counter value change from one packet to the next, resulting in a high probability of only one fragment being different.
+Since there is an upper bound to the latency we simulate, it is sufficient for packets to be unique within a certain time window.
+But in order to be robust against duplicate pre packets being sent almost at the same time, a better algorithm needs to be developed.
+One approach could be to match each post hash to its closest (in time) matching pre hash.
+For meaningful statistics over time, we group the data into short chunks (buckets) of one second each and compute bandwidth and packet counts over that bucket.
+The latency introduced by the router can be measured by computing the difference between the timestamps of each pre packet and the first corresponding post packet.
+For our latency statistic, dropped packets are ignored and for duplicated packets only the first arriving packet is counted.
+Throughput can be measured by summing up the IP payload size in every bucket and dividing it by the time duration of the bucket.
+This meaurement of throughput includes the overhead of the tunnel protocol.
+If the overhead is fixed and known for a given tunnel protocol, we can compute the goodput (actually useful throughput inside the tunnel), by simply subtracting the overhead from the packet size before computing the throughput.
+For our throughput statistic, dropped packets don't count and packets which were duplicated count only once.
+The output of this analysis step is a JSON file with the following contents:
+For each bucket, we store the center timestamp of the bucket, packet counts (dropped, duplicated and normal), throughput and a the latency of each packet.
+
+Finally, we render graphs from the data using Matplotlib \cite{Matplotlib} (done in \path{analysis/graph/graph.py}).
+For looking at the metrics from one particular measurement over the course of the measurement, we create several graphs.
+See \Cref{sect:graphs-single} for a detailed description of the graphs themselves and an example graph.
+Since we're usually more interested in observing how certain metrics differ between measurements with different parameters, we implemented the ability to show multiple measurement runs in one graph.
+
+Showing all metrics over time for all different measurements would become too confusing as many lines overlap, making the graph too visually busy.
+Instead, we remove the time component and show violin plots of the metrics.
+For that, we first collect all the buckets into one and then render the data into graphs.
+See \Cref{sect:graphs-multi} for a detailed description of the graphs themselves and an example graph.
 
 
 %%% Local Variables:

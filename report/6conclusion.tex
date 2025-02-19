@@ -16,26 +16,59 @@ while we were not able to ...
 we feel that measurement setup ...
 
 \section{Future Work}
-more protocols
+Building upon the findings and limitations of our research (\Cref{chap:discussion}), this section outlines several promising avenues for future investigation.
+These directions aim to expand the scope of our analysis, improve the accuracy of our measurements, and provide more comprehensive insights into the effectiveness of censorship circumvention techniques.
 
-better setup
+\noindent\textbf{Improved Experimental Setup:}
+While our setup allows for controlled network impairment simulation, limitations were encountered in accurately measuring certain metrics, such as protocol-induced packet loss.
+Future work could focus on developing an improved experimental (\Cref{fig:optimal_network_schematic}) setup that addresses these limitations.
 
-use IPv6
+\noindent\textbf{Expanded Protocol Evaluation:}
+The current study evaluates a selection of commonly used censorship circumvention protocols.
+Future research could expand this evaluation to include a wider range of protocols, such as I2P or Shadowsocks.
+Alternative implementations of e.g. the IP over ICMP concept (e.g., Hans \cite{hans}) may also be worth looking at.
+This would provide a more comprehensive understanding of the performance landscape and identify potential strengths and weaknesses of different approaches.
 
-Test changing network conditions (good to bad or vice versa)
+\noindent\textbf{Bandwidth Limit:}
+Although we varied parameters such as latency and packet loss, we did not reduce the available bandwidth below what the hardware could provide.
+Future research could explore introducing an artificial bottleneck to simulate lower-bandwidth conditions.
 
-vary maximum bandwidth
+\noindent\textbf{Connection Oriented Protocols:}
+Our experiments primarily utilize unidirectional UDP traffic as the foundation for our analysis.
+However, future research could benefit from exploring the impact of connection-oriented protocols such as TCP and QUIC.
+These protocols are widely used in real-world internet applications, which makes their inclusion potentially more relevant for practical insights.
+It is important to note that most TCP implementations are sensitive to packet reordering, a factor that could influence performance evaluations.
+Additionally, assessing the role of congestion control mechanisms within these protocols could provide valuable perspectives on how they operate under different network conditions.
 
-To gain deeper insights into real-world network behavior, we should also test using connection-oriented protocols like TCP or QUIC to evaluate the impact of congestion control mechanisms.
+\noindent\textbf{IPv6:}
+In our experiments, we exclusively utilized IPv4, both inside and outside of the tunnels.
+ICMPTX lacks support for ICMPv6, which means it does not work over IPv6 outside of the tunnel.
+Additionally, iodine does not support IPv6 within the tunnel.
+These limitations make it more challenging to compare all protocols in an IPv6 environment.
+Nonetheless, future research could still explore this aspect further.
 
-In our testing, we kept the size of the payload inside the tunnel protocol constant.
-Keeping the packet size outside of the tunnel constant simulates a fixed MTU much more accurately and is thus ...
+\noindent\textbf{Constant MTU Instead of Constant Payload Size:}
+In our experiments, we maintain a consistent payload size within the tunnel protocol for different protocols.
+Keeping the packet size outside the tunnel constant instead, simulates a fixed Maximum Transmission Unit (MTU).
+This method provides an alternative way to conduct such experiments.
+We suggest that future research could adopt this latter approach—controlling external packet size to simulate a fixed MTU—as a potential improvement over the current methodology.
+This alternative method offers a different perspective on how network parameters can be managed in experimental settings, potentially leading to more accurate or insightful results.
 
-test obfs4
+\noindent\textbf{Dynamic Network Conditions:}
+This research primarily focuses on evaluating protocols under static network impairment conditions.
+Future studies could investigate the performance of these protocols under dynamic network conditions, where impairments change over time.
+Simulating transitions between different network states (e.g., from low latency to high latency, or from low packet loss to high packet loss) would provide valuable insights into the adaptability and resilience of the protocols in real-world scenarios.
+This could involve developing test scenarios that simulate gradual or abrupt changes in network parameters, mimicking the fluctuating conditions often encountered in mobile or wireless networks.
 
-test the tor transport? \todo{read some more about this transport protocol}
+\noindent\textbf{Security Analysis:}
+While this study focuses on performance, security is a critical aspect of censorship circumvention.
+Future work could include a  in-depth security analysis of the evaluated protocols, examining their resistance to various attack vectors and potential vulnerabilities.
+This could involve a code review.
 
-Try IP over DNS implementations other than ICMPTX, such as \href{https://code.gerade.org/hans/}{Hans}.
+\noindent\textbf{User Studies:}
+Ultimately, the effectiveness of censorship circumvention tools depends on their usability and user experience.
+Future research could involve conducting user studies to evaluate the practicality and user-friendliness of the evaluated protocols in real-world settings.
+This could provide valuable feedback for improving the design and implementation of these tools.
 
 
 %%% Local Variables:

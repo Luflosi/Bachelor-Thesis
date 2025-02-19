@@ -95,7 +95,7 @@ Network throughput is a measure of how much data can be transmitted over a given
 Every communication protocol has a certain overhead, including tunnel protocols, reducing the maximum possible useful network throughput called goodput.
 Goodput can be influenced by many factors including every piece of hardware in the chain from one end of the communication to the other, protocol overhead, retransmissions due to packet loss and many more.
 
-related work: \textit{Promises and Potential of BBRv3} \cite{Promises-and-Potential-of-BBRv3}\todo{Also link \href{https://pam2024.cs.northwestern.edu/pdfs/paper-59.pdf}{the PDF} somehow}
+The authors of \textit{Promises and Potential of BBRv3} utilize a measurement setup somewhat similar to ours to evaluate BBRv3 \cite{Promises-and-Potential-of-BBRv3}.
 
 \section{Reproducibility in Network Measurement}
 Reproducibility \cite{wiki:Reproducibility} underpins the scientific method.
@@ -129,10 +129,13 @@ In practice, though, one does not usually recompile everything from source but r
 This allows perfectly recreating our measurement setup, even if some packages are not perfectly reproducible.
 While Nix cannot guarantee reproducibility, it does help a lot since it makes it easier to not accidentally depend on anything which is not declared as an input.
 
-\todo{write about Nix language (functional, lazy, etc.)}
+The Nix language (aka. Nixlang) is the domain-specific language (DSL) used by Nix.
+\blockquote[\cite{nixlang}]{The Nix language is designed for conveniently creating and composing derivations – precise descriptions of how contents of existing files are used to derive new files. It is a domain-specific, purely functional, lazily evaluated, dynamically typed programming language.}
+
+\blockquote[\cite{nixlang}]{Nixpkgs [is] the largest, most up-to-date software distribution in the world, and written in the Nix language.}
 
 NixOS is a Linux distribution built on Nix.
-A single file written in the Nix language can declare all software and configuration of the system.
+A single file written in the Nix language can fully declare all software and configuration of the system.
 By using a lock file, the software and configuration can be recreated exactly.
 NixOS uses Nix to build a single directory containing the entire operating system.
 The directory is immutable, but a regular operating system is expected to be able to keep state.

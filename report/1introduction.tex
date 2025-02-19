@@ -17,15 +17,28 @@ Censored internet connections are also commonly found in public spaces like coff
 
 
 The \textit{Open Observatory of Network Interference (OONI)} \cite{OONI} project measures internet censorship.
-Censorship in the real world can be done in many different ways:
+Internet censorship in the real world is constantly evolving and can be done in many different ways:
 \begin{itemize}
-  \item TODO: Zensur sieht in der Realität anders aus
-  \item Passively analyzing the data traffic and sending TCP RST packets to terminate unwanted TCP connections
-  \item Filtering DNS queries and return useless responses for unwanted domains
-  \item Drop all packets to certain IP addresses
-  \item \todo{add more items and add structure with sub-items}
+	\item \noindent\textbf{DNS Blocking:} Preventing resolution of specific domain names by returning NXDOMAIN or other error responses.
+	\item \noindent\textbf{DNS Spoofing/Hijacking:} Redirecting requests for specific domains to different IP addresses, often a "block page".
+	\item \noindent\textbf{Static IP Blocking:} Blocking access to specific IP addresses associated with censored content.
+	\item \noindent\textbf{Dynamic IP Blocking:} Blocking IP addresses based on real-time analysis of traffic.
+	\item \noindent\textbf{Keyword Filtering:} Blocking access to URLs containing specific keywords.
+	\item \noindent\textbf{URL Blacklisting:} Maintaining lists of blocked URLs.
+	\item \noindent\textbf{TCP Reset Injection:} Injecting TCP RST packets to terminate connections to blocked servers. This is a common and relatively simple technique.
+	\item \noindent\textbf{Blocking or throttling specific protocols} (e.g., VoIP, peer-to-peer file sharing).
+	\item \noindent\textbf{Connection Blocking/Dropping:} Dropping all packets to or from specific IP addresses or ports.
+	\item \noindent\textbf{Traffic Shaping/Throttling:} Slowing down or prioritizing certain types of traffic to make access to censored content difficult or unusable.
+	\item \noindent\textbf{Packet Injection/Manipulation:} Modifying or injecting packets to disrupt communication.
+	\item \noindent\textbf{Content Replacement:} Replacing censored content with a "block page" or other message.
+	\item \noindent\textbf{HTML Injection:} Injecting malicious code into web pages to redirect users or track their activity.
+	\item \noindent\textbf{Complete Disconnection:} In extreme cases, completely disconnecting internet access in specific regions or during certain events.
 \end{itemize}
-These types of censorship can be circumvented in a variety of ways, e.g. fake TCP RST packets sent by unsophisticated firewalls can often be differentiated from the real ones and then simply ignored\todo{reference project to circumvent the Russian firewall}.
+All of these censorship techniques have different tradeoffs in terms of false positive rate, false negative rate, ease of circumvention, and computational cost.
+
+These types of censorship can be circumvented in a variety of ways.
+Fake TCP RST packets sent by unsophisticated firewalls for example can often be differentiated from the real ones and then simply ignored \cite{GoodbyeDPI-passive}.
+Several more of these censorship techniques can be defeated simply by encrypting the connection as they rely on inspecting the content, e.g., are looking for keywords.
 More sophisticated firewalls can be circumvented by tunneling.
 
 Running these protocols on phones or other mobile devices also constrains the available CPU and RAM resources.
