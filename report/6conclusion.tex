@@ -10,10 +10,14 @@ This thesis examines the overhead of various protocols designed to bypass censor
 We present the results of experiments conducted under realistic network conditions.
 This chapter synthesizes our findings, and identifies areas for future research to enhance these techniques.
 
+While we are not able to fully evaluate all of the intended protocols, most notably ICMPTX and Tor pluggable transports, due to implementation challenges and the unsuitability of UDP traffic for the latter, we feel that our measurement setup and methodology provide a valuable foundation for future studies.
+The rigorous approach we employ, combining virtualized prototyping with real-world hardware testing, allows for reproducible experiment environments and controlled network impairment simulation.
+This framework can be readily adapted to evaluate a broader range of censorship evasion techniques and explore more complex network scenarios.
 
-while we were not able to ...
 
-we feel that measurement setup ...
+RAM usage of all the protocols we avaluated was quite low.
+It was low enough to comfortably run these protocols on embedded devices or old mobile phones.
+
 
 \section{Future Work}
 Building upon the findings and limitations of our research (\Cref{chap:discussion}), this section outlines several promising avenues for future investigation.
@@ -26,11 +30,11 @@ Future work could focus on developing an improved experimental (\Cref{fig:optima
 \noindent\textbf{Expanded Protocol Evaluation:}
 The current study evaluates a selection of commonly used censorship circumvention protocols.
 Future research could expand this evaluation to include a wider range of protocols, such as I2P or Shadowsocks.
-Alternative implementations of e.g. the IP over ICMP concept (e.g., Hans \cite{hans}) may also be worth looking at.
+Alternative implementations of e.g., the IP over ICMP concept (e.g., Hans \cite{hans}) may also be worth looking at.
 This would provide a more comprehensive understanding of the performance landscape and identify potential strengths and weaknesses of different approaches.
 
 \noindent\textbf{Bandwidth Limit:}
-Although we varied parameters such as latency and packet loss, we did not reduce the available bandwidth below what the hardware could provide.
+Although we vary parameters such as latency and packet loss, we do not reduce the available bandwidth below what the hardware could provide.
 Future research could explore introducing an artificial bottleneck to simulate lower-bandwidth conditions.
 
 \noindent\textbf{Connection Oriented Protocols:}
@@ -41,7 +45,7 @@ It is important to note that most TCP implementations are sensitive to packet re
 Additionally, assessing the role of congestion control mechanisms within these protocols could provide valuable perspectives on how they operate under different network conditions.
 
 \noindent\textbf{IPv6:}
-In our experiments, we exclusively utilized IPv4, both inside and outside of the tunnels.
+In our experiments, we exclusively utilize IPv4, both inside and outside of the tunnels.
 ICMPTX lacks support for ICMPv6, which means it does not work over IPv6 outside of the tunnel.
 Additionally, iodine does not support IPv6 within the tunnel.
 These limitations make it more challenging to compare all protocols in an IPv6 environment.

@@ -9,46 +9,54 @@ We explore the impact of network impairments on protocol effectiveness and discu
 Finally, we acknowledge the limitations of our study, outlining potential areas for improvement and future research.
 
 
-
-
 \section{RQ1: How much packet size overhead does each protocol add?}
 While we aimed to quantify the precise packet size overhead introduced by each protocol, our experimental setup did not allow for direct measurement of this metric.
 However, it is important to note that the packet size overheads of many protocols are generally constant.
-This overhead is due to the protocol's header, which is added to the data payload.
+This overhead is due to the protocol’s header, which is added to the data payload.
 
-When WireGuard is being transported over IPv4, its overhead breaks down as follows: The IPv4 header adds 20 bytes of overhead (when no IPv4 options are used), UDP another eight and the WireGuard header itself 32 bytes, for a total of 60 bytes of overhead.
+When WireGuard is being transported over IPv4, its overhead breaks down as follows: The IPv4 header adds 20 bytes of overhead (when no IPv4 options are used), UDP another 8 bytes, and the WireGuard header itself 32 bytes, for a total of 60 bytes of overhead.
 
 ICMPTX only supports ICMPv4, so its overhead consists of the IPv4 header (20 bytes) and the ICMP header (8 bytes) \cite{RFC0792} for a total of 28 bytes per packet.
 
-\todo[inline]{talk about iodine}
-\todo[inline]{Discuss fragmentation at the IP layer}
+Iodine's overhead is more complex and depends on the specific DNS record type, the direction of data transfer, and other factors, such as how many fragments iodine creates.
+When it detects that the \texttt{NULL} record type is not filtered, it uses this type by default.
+For IPv4 and sending data from the server to the client, the overhead breaks down as follows:
+20 bytes for the IPv4 header, 8 bytes for the UDP header, 12 bytes for the DNS header, and a varying amout of overhead from iodine itself, depending depending on several factors as written above.
+The exact overhead is not documented and reading the source code is required for gaining a detailed and accurate understanding of the overhead all combinations of packet sizes and DNS record types.
+In our testing with IPv4 packets of 1130 bytes, the packet size outside of the tunnel increased to 1177 bytes, for a total overhead of $1177 - 1130 = 47$ bytes.
+
+
 
 \section{RQ2: How much does the MTU decrease by using each protocol?}
 For protocols that do not support fragmentation by themselves, the theoretical MTU decrease is directly related to the protocol's overhead.
 
-We start with an MTU of 1500 without any tunnel protocols.
+We start with an MTU of 1500 bytes without any tunnel protocols.
 
-When WireGuard is being transported over IPv4, its overhead is 60 bytes, as calculated above, so the maximum possible MTU without fragmenting any IP packets is $1500 - 60 = 1440$.
-An IPv6 header (without extension headers) is 20 bytes larger than an IPv4 header, so if WireGuard is being transported over IPv6, the MTU is reduced to 1420.
+When WireGuard is being transported over IPv4, its overhead is 60 bytes, as calculated above, so the maximum possible MTU without fragmenting any IP packets is $1500 - 60 = 1440$ bytes.
+An IPv6 header (without extension headers) is 20 bytes larger than an IPv4 header, so if WireGuard is being transported over IPv6, the MTU is reduced to 1420 bytes.
 This seems to be the default MTU systemd-networkd uses for WireGuard interfaces to allow it being transported over either IPv4 or IPv6 without changing the MTU.
 
-The default MTU of ICMPTX is 1500 because this is the default MTU of tun interfaces on Linux and ICMPTX neither changes the value by itself or tells the user to change it.
-This choice will result in IPv4 packets being fragmented if packets are sent into the tunnel with a size larger than $1500 - 28 = 1472$.
+The default MTU of ICMPTX is 1500 bytes because this is the default MTU of tun interfaces on Linux and ICMPTX neither changes the value by itself or tells the user to change it.
+This choice will result in IPv4 packets being fragmented if packets are sent into the tunnel with a size larger than $1500 - 28 = 1472$ bytes.
 
-iodine uses an MTU of 1130 by default for its tunnel interface.
+iodine uses an MTU of 1130 bytes by default for its tunnel interface.
 This is out of spec for transporting IPv6 packets:
 \blockquote[\cite{RFC8200}]{IPv6 requires that every link in the Internet have an MTU of 1280 octets or greater.
 This is known as the IPv6 minimum link MTU.
 On any link that cannot convey a 1280-octet packet in one piece, link-specific fragmentation and reassembly must be provided at a layer below IPv6.}
 
+It is possible to increase the MTU of the tunnel interface to above the path MTU outside of the tunnel minus the tunnel overhead.
+In this case, the payload data combined with the tunnel overhead becomes too large to be transported over the network and the IP packet needs to be fragmented.
+This results in less than optimal performance but may be desired in specific situations, such as when bridging layer 2 networks.
 
 
 \section{RQ3: How much additional latency does each protocol add?}
 Unfortunately, the measurement setup was not designed correctly to accurately capture the additional latency introduced by each protocol.
-Measuring additional latency introduced by a protocol requires observing the packets before they enter the tunnel and after they exit it.
+Measuring this requires observing the packets before they enter the tunnel and after they exit it.
 The additional latency introduced by the protocol can then be analyzed by measuring how long each packet takes on average and subtracting the latency when no protocol is being used.
 See \Cref{fig:optimal_network_schematic} for a setup, which would be up to the task.
 While we acknowledge the importance of latency as a performance metric, we are unable to reliably quantify it within the constraints of our current experimental design.
+
 
 \section{RQ4: Do any protocols introduce additional packet loss?}
 Similarly to latency measurements, our setup is not equipped to reliably measure packet loss introduced by the protocols themselves.
@@ -59,27 +67,27 @@ Our observations indicate that WireGuard's CPU usage remains mostly constant ove
 During our tests, WireGuard consumed approximately 4\% on the sending side (server) and 10\% CPU on the receiving side (client).
 
 We were unable to measure the CPU utilization of ICMPTX due to it crashing.
-It used up to 2.3M of memory before doing so.
+It used up to 2.3 MB of memory before doing so, both on the client and the server.
 
-iodine used 100\% of the CPU on the sending side and 35\% on the receiving side, while the RAM usage was 1.7M on both sides.
+iodine used 100\% of the CPU on the sending side and 35\% on the receiving side, while the highest observed RAM usage was 1.7 MB on both sides.
 
 
 \section{Limitations}
 In reflecting on our work, we identify several areas where improvements could be made.
 
-First and foremost, we should have recognized a fatal flaw in our measurement methodology much sooner.
+First and foremost, we recognize a fatal flaw in our measurement methodology.
 The following scenario illustrates this flaw well:\\
-Let's suppose we were testing a fictitious tunnel protocol, which splits all tackets sent into the tunnel into two fragments, wraps them in its own header and sends them onwards separately.
-The protocol does not implement its own retransmission machanism.
-Only when both halves reach the other side of the tunnel, can the original packet be reassembled.
-If every second packet were to get lost, then no packet could ever be reassembled at the receiver.
-But our setup can not measure this behaviour, since we only record packets when they are wrapped in the tunnel protocol and before they are unpacked and reassembled.
-Our setup would measure a packet loss of 50\%, while 100\% would be the correct value.
-The throughput would similarly be measured incorrectly.
-\Cref{fig:optimal_network_schematic} shows an improved setup capable of correctly measuring this behaviour.
+Let's suppose we are testing a fictitious tunnel protocol, which splits all packets sent into the tunnel into two fragments, wraps them in its own header, and sends them onwards separately.
+The protocol does not implement its own retransmission mechanism.
+Only when both halves reach the other side of the tunnel can the original packet be reassembled.
+If every second packet gets lost, then no packet can ever be reassembled at the receiver.
+But our setup cannot measure this behavior since we only record packets when they are wrapped in the tunnel protocol and before they are unpacked and reassembled.
+Our setup measures a packet loss of 50\%, while 100\% is the correct value.
+The throughput is similarly measured incorrectly.
+\Cref{fig:optimal_network_schematic} shows an improved setup capable of correctly measuring this behavior.
 It allows recording the packets also before they enter the tunnel and after they exit it.
 
-In particular, this would have allowed us to properly evaluate the overhead of iodine, which depends on the particular DNS record type the program chose at runtime.
+In particular, this allows us to properly evaluate the overhead of iodine, which depends on the particular DNS record type the program chooses at runtime.
 
 Early on, we evaluated the cartesian product of all parameters, which leads to an explosion of different combinations, which take a long time to measure.
 We did this before deciding how to analyze and compare these many different combinations.
@@ -93,7 +101,7 @@ The initial handshake may also delay the start of the test, especially under hig
 In addition to that, the persistent TCP connection adds a very small amount of extra traffic, which is not under our control.
 For our purposes it would be better to use a different traffic generator, which just sends random UDP packets, without any connection setup or control connection.
 
-Another limitation is that we only used IPv4 since we need a common baseline but not all protocols support transporting IPv6 (iodine in particular).
+Another limitation is that we only use IPv4 since we need a common baseline but not all protocols support transporting IPv6 (iodine in particular).
 We need to address this gap to ensure comprehensive evaluation across different network configurations.
 
 Furthermore, we only transfer data in one direction and do not test protocols in both directions for ensuring their behavior is symmetric.
@@ -106,20 +114,21 @@ The router in our setup is connected to a 100Mbit/s port of the switch using a s
 Both the client and the server are theoretically able to send and receive at full speed at the same time (each device 200Mbit/s in total) thanks to full-duplex.
 But the router is effectively limited to half-duplex speeds as it has to send all data it receives back over the same link.
 This presents an unintended bottleneck if data flows in both directions at the client and server at a fast enough rate.
-While we attempted to avoid this situation by telling iperf3 to only send data in one direction, a small amount of data is still exchanged in both directions by iperf3's control connection, by our own control connection coordinating the test and by background noise like ARP messages.
+While we attempt to avoid this situation by telling iperf3 to only send data in one direction, a small amount of data is still exchanged in both directions by iperf3's control connection, by our own control connection coordinating the test and by background noise like ARP messages.
 To solve this limitation, the router could either be connected to a 1Gbit/s port of the switch or we could use two physical cables and interfaces instead of two VLANs.
 
 We also did not test the influence of reducing the maximum bandwidth in the router.
 
 Furthermore, preventing state from previous tests from influencing future ones is important.
-While we acknowledge that one of the most reliable ways of achieving this goal is to restart all systems between tests, this was not done due to time constraints and the added complexity of rebooting all hosts and waiting for them to be reachable, fully booted, and settled.
+While we acknowledge that one of the most reliable ways of achieving this goal is to restart all systems between tests, we don't do this due to time constraints and the added complexity of rebooting all hosts and waiting for them to be reachable, fully booted, and settled.
 Netbooting all hosts goes one step further as without persistent storage, there are very few places left for state to accumulate.
 
 Some unit tests for our data analysis scripts would have been nice to have and would have likely found at least one particular bug.
 
-Finally, while modifying the NixOS test driver to scale to thousands of tests without running out of memory and with an evaluation time proportional to the number of protocols instead of the number of tests, we copied some parts of the driver from Nixpkgs.
+Finally, while modifying the NixOS test driver to scale to thousands of tests without running out of memory and with an evaluation time proportional to the number of protocols instead of the number of tests, we copy some parts of the driver from Nixpkgs.
 We did however not copy the code that allows controlling the test interactively, which would have enhanced debuggability by not requiring a full rerun of the test after each change.
 Adressing this limitation should be relatively simple.
+\todo[inline]{try to write a couple more sentences so this sentence is not alone on a page}
 
 
 %%% Local Variables:

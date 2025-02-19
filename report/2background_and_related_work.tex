@@ -4,9 +4,6 @@
 \chapter{Background and Related Work}
 \label{chap:background}
 
-\todo{There must be some analysis on WireGuard}
-\todo{Split related work into separate chapter?}
-
 In this section, we introduce the background necessary for executing this research project.
 Furthermore, we review the related work to more clearly define the research gap, and leverage insights from that work alike.
 For that, we first provide an overview of common censorship approaches.
@@ -14,17 +11,17 @@ Subsequently, we discuss various censorship evasion techniques.
 Finally, we discuss related work in terms of censorship measurements and performance evaluation.
 
 \section{Network data transmission and MTU}
-Packet switched networks like the internet have a maximum packet size they can transport, called \textit{MTU} (Maximum Transmission Unit) \cite{wiki:Maximum_transmission_unit}.
+Packet switched networks like the internet have a maximum packet size they can transport, called MTU (Maximum Transmission Unit) \cite{RFC0791}.
 Every link between two subsequent routers may have a different MTU.
 The maximum size of a packet being transported along the path from one host to another is the minimum of the MTUs along the path.
 
-When trying to send an IPv4 packet which is larger than the MTU, the packet is either fragmented (split into multiple smaller pieces) or if the DF (don't fragment) flag is set, it is dropped and an \textit{ICMP Destination Unreachable (Datagram Too Big)} message is sent back to the sender.
-IPv6 does not support fragmentation by routers \cite{RFC2460}, so the packet is always dropped and an ICMP message sent in this case.
+When trying to send an IPv4 packet which is larger than the MTU, the packet is either fragmented (split into multiple smaller pieces) or if the DF (don't fragment) flag is set, it is dropped and an ICMP Destination Unreachable (Datagram Too Big) message is sent back to the sender.
+IPv6 does not support fragmentation by routers \cite{RFC8200}, so the packet is always dropped and an ICMP message sent in this case.
 
-The current MTU along a certain path can be determined using \textit{Path MTU discovery} \cite{wiki:Path_MTU_Discovery}.
+The current MTU along a certain path can be determined using Path MTU discovery \cite{RFC1191}.
 Unfortunately, some firewalls are configured to drop all ICMP packets for perceived security reasons, which breaks Path MTU discovery.
 The Path MTU may also change (up or down) over time, which Path MTU discovery cannot account for.
-In practice, the transport layer (protocol being transported as the IP payload) therefore needs to react to \textit{ICMP Datagram Too Big} messages anyways, which means that Path MTU discovery is not required for this application.
+In practice, the transport layer (protocol being transported as the IP payload) therefore needs to react to ICMP Datagram Too Big messages anyways, which means that Path MTU discovery is not required for this application.
 The link layer needs to be able to transport payloads of at least 68 bytes if it wants to allow transporting IPv4 packets.
 For IPv6 this value is 1280 bytes large.
 
@@ -35,23 +32,20 @@ To avoid fragmentation, the inner MTU should equate to (or be less than) the out
 
 
 \section{Censorship}
-\textit{Censorship} \cite{wiki:Censorship} is the suppression of information that is deemed objectionable, dangerous or "inconvenient" by governments or institutions.
-\todo{cite \cite{wiki:Internet_censorship}}
+Censorship \cite{wiki:Censorship} is the suppression of information that is deemed objectionable, dangerous or "inconvenient" by governments or institutions.
 
 \subsection{Preventing content access}
-\todo{explain content access}
-
-Since the Internet gained increasing relevance for information exchange in the general public, entities have investigated methods to inhibit information retrieval.[x]
-From a technical perspective, censorship is not necessarily different than any other form of analyzing and preventing traffic flows, i.e., firewalling and deep packet inspection. [x]
-The core difference is that for censorship, a state level actor determines semantically which network connections need to be prevented, i.e., based on the information or type of service that could be transported over the connection.[x]
+Since the Internet gained increasing relevance for information exchange in the general public, entities have investigated methods to inhibit information retrieval \cite{Internet_censorship} by preventing certain "undesirable" content from being accessed.
+From a technical perspective, censorship is not necessarily different than any other form of analyzing and preventing traffic flows, i.e., firewalling and deep packet inspection.
+The core difference is that for censorship, a state level actor determines semantically which network connections need to be prevented, i.e., based on the information or type of service that could be transported over the connection.
 
 The most simple version of censorship interferes with service discovery.
-Here, the cannonical example are DNS blocklists.[x]
+Here, the cannonical example are DNS blocklists.
 For DNS blocking, authorities communicate either FQDNs in the DNS, or full zones, which should not be discoverable by clients.
 The DNS operator is then instructed to prevent correct IP lookups of the associated resource records.
-Regularly, operators are also asked to, instead, redirect users trying to access these resources to, e.g., an informational page.
+Often, they are also asked to redirect users attempting to access these resources to, for example, an informational page.
 
-However, blocking by DNS operators can be easily circumvented [x] by seeking alternative DNS resolvers.
+However, blocking by DNS operators can be easily circumvented by seeking alternative DNS resolvers.
 
 Since DNS blocking can be easily circumvented, censors now often also resort to network layer interference.
 One of the simplest form is IP address blocking.
@@ -59,7 +53,7 @@ A list of IP addresses to block can be assembled by using the DNS to resolve unw
 The downside of this relatively simple form of censorship is that multiple different websites may be hosted on one IP address and this technique would block all of them, even if the censor only intended to block one of them.
 
 In response to the circumvention of DNS restrictions, censors may also block the standard DNS port (UDP and TCP port 53).
-However, users adapt by utilizing non-standard ports \cite{dns-nonstandard-port} and encryption like DoT \cite{wiki:DNS_over_TLS} and DoH \cite{wiki:DNS_over_HTTPS}, making it difficult for censors to comprehensively block all potential avenues without causing significant collateral damage.
+However, users adapt by utilizing non-standard ports \cite{dns-nonstandard-port} and encryption like DoT \cite{RFC7858} and DoH \cite{RFC8484}, making it difficult for censors to comprehensively block all potential avenues without causing significant collateral damage.
 
 Censors escalate their efforts by targeting the IP addresses of known DNS servers.
 This causes some collateral damage if these IPs host other services as well.
@@ -74,21 +68,20 @@ Users respond by using encryption and developing sophisticated obfuscation metho
 
 Censors resort to deep packet inspection (DPI) techniques to identify specific websites from HTTP and HTTPS traffic.
 By examining Host headers in HTTP or Server Name Indication (SNI) in HTTPS, they can block access to targeted domains.
-Users counter this with domain fronting \cite{wiki:Domain_fronting}, masking their requests behind legitimate domains to avoid detection and with Encrypted Client Hello, where the TLS handshake and thus also SNI is encrypted.
+Users counter this with domain fronting \cite{Domain_fronting}, masking their requests behind legitimate domains to avoid detection and with Encrypted Client Hello, where the TLS handshake and thus also SNI is encrypted.
 As with DNS queries, users can also employ proxies, VPNs, Tor, and similar means to circumvent the censorship.
 
-Without \textit{net neutrality} \cite{wiki:Net_neutrality}, many large internet service providers (ISPs) are inclined to treat portions of the traffic in special ways.
+Without net neutrality, many large internet service providers (ISPs) are inclined to treat portions of the traffic in special ways \cite{Net_neutrality}.
 This situation shares a strong technical resemblance with censorship because both involve inspecting data packets and making decisions based on their content or source, albeit for different purposes.
 
 As we saw, there are many possibilities of evading the censorship:
 
 \subsection{Censorship evasion goals}
 Depending on the threat model and local laws, the goal can be to just work around the censorship itself.
-But since it may be illegal to circumvent the censorship in a country, it may also be desirable to avoid detection, which is much more difficult. \todo{this repeats the meaning of a sentence in the introduction}
-The goal of not letting the censor know that the censorship was circumvented is related to the concept of \textit{anonymity} \cite{wiki:Anonymity}.
+But since it may be illegal to circumvent the censorship in a country, it may also be desirable to avoid detection, which is much more difficult \cite{Censorship-Circumvention-Tools-Review}.
+The goal of not letting the censor know that the censorship was circumvented is related to the concept of anonymity \cite{wiki:Anonymity}.
 The latter hides the identity of a person, while the former hides that circumvention is happening.
 With anonymity the adversaries may be various parties trying to identify the user, while censorship evasion specifically targets the censor's detection mechanisms.
-\todo{cite \cite{wiki:Internet_censorship_circumvention}}
 
 \section{Network Throughput Performance Measurements}
 Network throughput is a measure of how much data can be transmitted over a given communication channel per time.
@@ -97,9 +90,11 @@ Goodput can be influenced by many factors including every piece of hardware in t
 
 The authors of \textit{Promises and Potential of BBRv3} utilize a measurement setup somewhat similar to ours to evaluate BBRv3 \cite{Promises-and-Potential-of-BBRv3}.
 
+A previous study measured the performance and resource utilization of WireGuard and compared it to OpenVPN \cite{mackey2020performance}.
+
 \section{Reproducibility in Network Measurement}
-Reproducibility \cite{wiki:Reproducibility} underpins the scientific method.
-When a scientific study is reproducible, the findings of the study can be replicated by different researchers at any point in the future.
+Reproducibility underpins the scientific method.
+When a scientific study is reproducible, the findings of the study can be replicated by different researchers at any point in the future \cite{Replication}.
 
 Achieving reproducibility is not easy, as there are many challenges.
 One such challenge is that new versions of a software are released over time, which may behave differently than a previous version of the same software and could change the findings of the study.
@@ -110,7 +105,7 @@ One way to resolve this problem is to distribute VM images with all the correct 
 
 Experimental systems also tend to accumulate state.
 It is not clear if successive experiments start from the same state since a previous experiment run may have left behind some state that now influences the results.
-\textit{Idempotence} \cite{wiki:Idempotence} in the context of running a computer science experiment refers to the experiment having the same outcome when running it multiple times in succession.
+Idempotence \cite{Idempotence} in the context of running a computer science experiment refers to the experiment having the same outcome when running it multiple times in succession.
 This is a desired and important property.
 Stringent testing protocols and automation can bring a setup closer to idempotence or even reach it.
 One possibility is to reboot all systems after each experiment and roll their state back to a known state, for example using filesystem snapshots.

@@ -13,7 +13,7 @@ The results are organized to provide a comprehensive analysis of the protocols' 
 
 
 \section{Evaluation of Selected Protocols: Implementation and Challenges}
-Running iperf3 with no protocol and with WireGuard was fairly painless.
+Running iperf3 with no protocol and with WireGuard worked out of the box.
 The same was not true for the other protocols.
 
 We were unable to evaluate \textbf{ICMPTX}.
@@ -31,9 +31,10 @@ Even with overhead caused by ICMP and other headers, the data rate does not come
 The theoretical throughput of \textbf{iodine} is limited by its design, which allows only one packet to be in flight at a time \cite{iodine-README}.
 This suggests that the achievable throughput is directly dependent on the network latency and should be generally low.
 The authors claim a maximum downstream bandwidth of 1 Mbit/s \cite{iodine-homepage}.
-However, our observed data rates were much higher than initially expected (see \Cref{fig:graph-5-iodine-constant-throughput}), indicating that this limitation may no longer apply.
+However, our observed data rates are much higher than initially expected (see \Cref{fig:graph-5-iodine-constant-throughput}), indicating that this limitation may no longer apply.
+We confirm this theory by looking at the stream of packets with Wireshark.
 It may also apply only to one direction of the communication but we did not test this.
-Reliable measurement of directional throughput would require an improved setup [refer to figure/section describing improved setup].
+Reliable measurement of directional throughput would require an improved setup, see \Cref{fig:optimal_network_schematic}.
 iodine was very flaky in our testing, with its connection frequently breaking and the throughput dropping to zero.
 After a minute the client exits with \texttt{iodine: No downstream data received in 60 seconds, shutting down.}.
 There are no other error messages on the client or server.
@@ -65,10 +66,9 @@ However, the congestion control algorithm may then influence the results.
 Alternatively, using a UDP-over-TCP tunnel might also work.
 
 
-General Observations:
-
+\noindent\textbf{General Observations:}
 For the majority of protocols tested, the observed latency, packet loss, and duplication closely matched the values configured in the network emulator (tc-netem).
-The measured throughput was predictably influenced by the number and size of transmitted and dropped packets.
+The measured throughput is predictably influenced by the number and size of transmitted and dropped packets.
 
 We measure a small percentage (~0.001\%) of packets which seem to have a negative latency.
 The biggest time difference is in the single digit millisecond range.
@@ -83,7 +83,7 @@ graphen beschreiben (Welche Achsen gibt es, etc.)
 was sieht man?
 warum sieht man das was man sieht?
 
-\subsection{Graphs}
+\subsection{Data Visualization}
 \subsubsection{Single Measurement Graphs (Detailed View):}
 \label{sect:graphs-single}
 These graphs provide a detailed view of a single measurement, allowing us to assess its consistency over time.
@@ -120,25 +120,39 @@ These graphs compare multiple measurements to visualize the influence of a speci
 	\label{fig:graph-4-mtu-throughput}
 \end{figure}
 
+\begin{figure}[tbh]
+	\centering
+	\includegraphics[draft=false,width=0.9\textwidth]{figures/Graphs/graph-6-three-protocols/packet_size.pdf}
+	\caption{Packet size for varying tunnel protocols, 1400 IPv4 payload size, 0.1\% loss}
+	\label{fig:graph-6-three-protocols-size}
+\end{figure}
+
 The x-axis represents the different measurement runs (each varying a parameter of interest), and the y-axis represents the corresponding metric.
-All graphs, except for the latency, use the data from the buckets above to show a distribution of values rather than e.g. only the mean value.
+All graphs, except for the latency and packet sizes, use the data from the buckets above to show a distribution of values rather than e.g., only the mean value.
 An example of this type of graph can be seen in \Cref{fig:graph-4-mtu-throughput}.
 
 \noindent\textbf{Latency:} A violin plot displays the distribution of latency across all measurement runs.
 This visualization combines the features of a box plot (showing median, quartiles, and outliers) with a kernel density estimation (showing the shape of the distribution).
 This helps us compare the overall latency distribution across different parameter values.
 
-\noindent\textbf{Packet Duplicate Ratio:} A violin plot shows the ratio of duplicate packets to the total number of packets sent for each measurement run.
+\noindent\textbf{Packet Duplication Ratio:} A violin plot shows the ratio of duplicate packets to the total number of packets sent for each measurement run.
 This visualization allows us to assess how the duplication rate changes with different parameter values.
 
 \noindent\textbf{Packet Drop Ratio:} A violin plot displays the ratio of dropped packets to the total number of packets sent for each measurement run.
 This helps us understand how packet loss is affected by the varied parameter.
 
+\noindent\textbf{Packet Size:} A violin plot shows the distribution of packet size.
+The value refers to the IP payload size outside of the tunnel.
+This is very useful for observing if fragmentation took place.
+If packets are fragmented, multiple different packet sizes will be common.
+
 \noindent\textbf{Throughput (with and without overhead):} Two violin plots are used to show throughput, one including overhead added by the protocol and the other excluding it.
 This comparison helps visualize the overhead introduced by the protocol and how it affects the effective throughput.
 
-Notably, we observed that latency remained largely constant with varying packet sizes, except for a drastic increase in tail latency, which was an unexpected finding.
+Notably, in \Cref{fig:graph-4-mtu-latencies} we observe that latency remains largely constant with varying packet sizes, except for a drastic increase in tail latency, which was an unexpected finding.
 
+\Cref{fig:graph-4-mtu-latencies} shows that WireGuard adds some overhead to each packet, as expected.
+iodine fragments the packets since our IP packets (1420 bytes) are larger than the MTU of the tunnel interface.
 
 
 \todo[inline]{graphs for every parameter}
@@ -147,7 +161,7 @@ Notably, we observed that latency remained largely constant with varying packet 
 
 Rather than only a handful of combinations of parameters, as described in \Cref{chap:methodology}, we tested many more for experimentation.
 In the beginning we even tested the cartesian product of all parameters.
-This fact combined with several slightly different versions of our test setup, lead us to collect about 5 TB of packet captures, which compress to a little more than half of that using the zstd compression algorithm in Btrfs.
+This fact combined with several slightly different versions of our test setup, lead us to collect about 5 TB of packet captures, which compress to about half the size of that using the zstd compression algorithm in Btrfs.
 
 
 %%% Local Variables:

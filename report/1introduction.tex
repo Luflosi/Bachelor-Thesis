@@ -7,38 +7,30 @@
 Many places in the world encounter internet censorship.
 To try to get around the censorship, numerous different techniques, some very creative, were developed.
 Depending on the threat model, the goal can be to either "just" circumvent the censorship or to also hide the fact that circumvention took place from the censors.
-\textit{Steganography} \cite{wiki:Steganography} \textit{techniques} \cite{wiki:List_of_steganography_techniques} can help with the latter goal.
+Steganography \cite{wiki:Steganography} techniques \cite{wiki:List_of_steganography_techniques} can help with the latter goal.
 Internet censorship doesn't happen equally everywhere.
-It is often employed to restrict access of a population to sensitive information and, as such, is much more likely to be present on types of internet connections used by many people, as opposed to e.g. data centers.
+It is often employed to restrict access of a population to sensitive information and, as such, is much more likely to be present on types of internet connections used by many people, as opposed to e.g., data centers.
 These types of internet connections are optimized for low cost and include access technologies such as cellular networks, DSL, and WLAN.
 People are likely using portable or low-power devices such as laptops and phones, as opposed to servers.
 
 Censored internet connections are also commonly found in public spaces like coffee shops, hotels, and city-wide WiFi networks, where users rely on shared, often unencrypted, and bandwidth-limited connections.
 
 
-The \textit{Open Observatory of Network Interference (OONI)} \cite{OONI} project measures internet censorship.
-Internet censorship in the real world is constantly evolving and can be done in many different ways:
+The Open Observatory of Network Interference (OONI) project measures internet censorship \cite{OONI}.
+Internet censorship in the real world is constantly evolving and can be done in many different ways.
+What follows is a small selection of the most common ways censorship is achieved on a technical level and for a service outside of the jurisdiction or control of the censor:
 \begin{itemize}
 	\item \noindent\textbf{DNS Blocking:} Preventing resolution of specific domain names by returning NXDOMAIN or other error responses.
 	\item \noindent\textbf{DNS Spoofing/Hijacking:} Redirecting requests for specific domains to different IP addresses, often a "block page".
-	\item \noindent\textbf{Static IP Blocking:} Blocking access to specific IP addresses associated with censored content.
-	\item \noindent\textbf{Dynamic IP Blocking:} Blocking IP addresses based on real-time analysis of traffic.
-	\item \noindent\textbf{Keyword Filtering:} Blocking access to URLs containing specific keywords.
-	\item \noindent\textbf{URL Blacklisting:} Maintaining lists of blocked URLs.
-	\item \noindent\textbf{TCP Reset Injection:} Injecting TCP RST packets to terminate connections to blocked servers. This is a common and relatively simple technique.
+	\item \noindent\textbf{IP/Connection Blocking:} Blocking access to specific IP addresses or ports associated with censored content or based on real-time analysis of traffic.
+	\item \noindent\textbf{TCP Reset Injection:} Injecting TCP RST packets to terminate connections to blocked servers.
 	\item \noindent\textbf{Blocking or throttling specific protocols} (e.g., VoIP, peer-to-peer file sharing).
-	\item \noindent\textbf{Connection Blocking/Dropping:} Dropping all packets to or from specific IP addresses or ports.
 	\item \noindent\textbf{Traffic Shaping/Throttling:} Slowing down or prioritizing certain types of traffic to make access to censored content difficult or unusable.
-	\item \noindent\textbf{Packet Injection/Manipulation:} Modifying or injecting packets to disrupt communication.
-	\item \noindent\textbf{Content Replacement:} Replacing censored content with a "block page" or other message.
-	\item \noindent\textbf{HTML Injection:} Injecting malicious code into web pages to redirect users or track their activity.
-	\item \noindent\textbf{Complete Disconnection:} In extreme cases, completely disconnecting internet access in specific regions or during certain events.
 \end{itemize}
 All of these censorship techniques have different tradeoffs in terms of false positive rate, false negative rate, ease of circumvention, and computational cost.
 
 These types of censorship can be circumvented in a variety of ways.
 Fake TCP RST packets sent by unsophisticated firewalls for example can often be differentiated from the real ones and then simply ignored \cite{GoodbyeDPI-passive}.
-Several more of these censorship techniques can be defeated simply by encrypting the connection as they rely on inspecting the content, e.g., are looking for keywords.
 More sophisticated firewalls can be circumvented by tunneling.
 
 Running these protocols on phones or other mobile devices also constrains the available CPU and RAM resources.
@@ -59,21 +51,20 @@ This research question breaks up into the following sub-questions:
 
 We answer these research questions using a simulation environment.
 Accurately simulating real-world conditions is challenging.
-We use \textit{tc-netem} \cite{man8:tc-netem}, Linux's network emulator, as an approximation of the real world.
-We first use the NixOS testing framework to simulate our test setup using VMs for experimentation and then run the setup on real hardware to make sure that our results are not influenced by the virtualisation.
+We use tc-netem \cite{man8:tc-netem}, Linux's network emulator, as an approximation of the real world.
+We first use the NixOS testing framework to simulate our test setup using VMs for experimentation, and then run the setup on real hardware to make sure that our results are not influenced by the virtualisation.
 
-As censorship circumvention protocols usually work like a network tunnel, transporting the actual payload inside of them, we are also looking for pathological behaviour of the protocols such as unreasonable packet loss or latencies inside the tunnel compared to outside under unfavorable network conditions.
+Since censorship circumvention protocols operate as network tunnels, transporting the actual payload within them, we also examine their performance for pathological behavior, specifically excessive packet loss or latency inside the tunnel relative to the outside network, under unfavorable conditions
 
-\section{Structure}
-The remainder of this thesis is structured as follows:
-\begin{itemize}
-  \item In \Cref{chap:background}, we summarize previous research on the topic and introduce background information and terms.
-  \item Subsequently, in \Cref{chap:methodology}, we describe our test setup and how we measure things.
-  \item Next, in \Cref{chap:results}, we show the results of our measurements and compare them to each other.
-  \item In \Cref{chap:discussion}, we answer our research questions and discuss interesting and surprising findings.
-  We also reflect on the limitations of our testing methodology, and on areas where we could have done better.
-  \item Finally, in \Cref{chap:conclusion}, we briefly summarize our research and discuss future work.
-\end{itemize}
+
+\section{Structure of Thesis}
+The remainder of this thesis is structured as follows:\\
+In \Cref{chap:background}, we summarize previous research on the topic and introduce background information and terms.
+Subsequently, in \Cref{chap:methodology}, we describe our test setup and how we measure things.
+Next, in \Cref{chap:results}, we show the results of our measurements and compare them to each other.
+In \Cref{chap:discussion}, we answer our research questions and discuss interesting and surprising findings.
+We also reflect on the limitations of our testing methodology, and on areas where we could have done better.
+Finally, in \Cref{chap:conclusion}, we briefly summarize our research and discuss future work.
 
 
 %%% Local Variables:
