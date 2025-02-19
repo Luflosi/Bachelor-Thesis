@@ -44,16 +44,13 @@ def read_input(input_file):
 
     metadata = {
         'duration': input['duration'],
-        'units': {
-            'latency': input['units']['latency'],
-            'duration': input['units']['duration'],
-            'throughput': input['units']['throughput'],
-        },
+        'units': input['units'],
     }
     data = {
         'time': [],
         'labels': [],
         'latencies': [],
+        'ip_payload_lengths': [],
         'counts': {
             'packets': [],
             'dropped': [],
@@ -70,6 +67,7 @@ def read_input(input_file):
         data['time'].append(relative_time)
         data['labels'].append(f'{relative_time:.0f}')
         data['latencies'].append(data_point['latencies'])
+        data['ip_payload_lengths'].append(data_point['ip_payload_lengths'])
         data['counts']['packets'].append(data_point['counts']['packets'])
         data['counts']['dropped'].append(data_point['counts']['dropped'])
         data['counts']['duplicate'].append(data_point['counts']['duplicate'])
@@ -92,10 +90,12 @@ def read_inputs(inputs):
     duration = None
     unit_latency = None
     unit_duration = None
+    unit_ip_payload_length = None
     unit_throughput = None
     time = None
     labels = None
     latencies = []
+    ip_payload_lengths = []
     dropped_ratio = []
     duplicate_ratio = []
     throughput_over_time_with_overhead = []
@@ -123,6 +123,9 @@ def read_inputs(inputs):
         if unit_duration == None:
             unit_duration = metadata['units']['duration']
         assert unit_duration == metadata['units']['duration'], f'{unit_duration} != {metadata['units']['duration']}'
+        if unit_ip_payload_length == None:
+            unit_ip_payload_length = metadata['units']['ip_payload_length']
+        assert unit_ip_payload_length == metadata['units']['ip_payload_length'], f'{unit_ip_payload_length} != {metadata['units']['ip_payload_length']}'
         if unit_throughput == None:
             unit_throughput = metadata['units']['throughput']
         assert unit_throughput == metadata['units']['throughput'], f'{unit_throughput} != {metadata['units']['throughput']}'
@@ -160,10 +163,17 @@ def read_inputs(inputs):
             case 'multi':
                 # Grouped by measurement runs
                 latencies_from_single_measurement = []
-                for latencies_per_second in data['latencies']:
-                    latencies_from_single_measurement += latencies_per_second
+                for latencies_per_bucket in data['latencies']:
+                    latencies_from_single_measurement += latencies_per_bucket
                 latencies.append(latencies_from_single_measurement)
                 del(latencies_from_single_measurement)
+
+                ip_payload_lengths_from_single_measurement = []
+                for ip_payload_lengths_per_bucket in data['ip_payload_lengths']:
+                    ip_payload_lengths_from_single_measurement += ip_payload_lengths_per_bucket
+                ip_payload_lengths.append(ip_payload_lengths_from_single_measurement)
+                del(ip_payload_lengths_from_single_measurement)
+
                 dropped_ratio_from_single_measurement = []
                 duplicate_ratio_from_single_measurement = []
                 for count, dropped, duplicate in zip(data['counts']['packets'], data['counts']['dropped'], data['counts']['duplicate']):
@@ -267,6 +277,16 @@ def read_inputs(inputs):
             plot['throughput_without']['y'] = throughput_over_time_without_overhead
             if throughput_over_time_with_overhead != throughput_over_time_without_overhead:
                 plot['throughput_with']['y'] = throughput_over_time_with_overhead
+        case _:
+            raise Exception("Invalid mode")
+
+    match mode:
+        case 'single':
+            pass # Not implemented
+        case 'multi':
+            plot['ip_payload_lengths'] = {
+                'y': ip_payload_lengths,
+            }
         case _:
             raise Exception("Invalid mode")
 
@@ -404,5 +424,24 @@ match mode:
             if out != None:
                 plt.savefig(fname=os.path.join(out, 'throughput_with.svg'), transparent=False)
             plt.show()
+    case _:
+        raise Exception("Invalid mode")
+
+
+match mode:
+    case 'single':
+        pass # Not implemented
+    case 'multi':
+        fig, ax = plt.subplots(figsize=figsize)
+        ax.set_ylabel(f'Packet size ({metadata['units']['ip_payload_length']})')
+        ax.set_xlabel(plot['x_label'])
+        ax.violinplot(plot['ip_payload_lengths']['y'], positions=plot['x'],
+                      showextrema = True, showmedians = True, widths=1)
+        ax.set_xticks(plot['x'], labels=plot['x_labels'])
+        ax.set_ylim(bottom=0)
+
+        if out != None:
+            plt.savefig(fname=os.path.join(out, 'packet_size.svg'), transparent=False)
+        plt.show()
     case _:
         raise Exception("Invalid mode")

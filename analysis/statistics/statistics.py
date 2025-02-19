@@ -160,6 +160,7 @@ for time, pre_bucket in pre_buckets.items():
     dropped_packets = 0
     duplicate_packets = 0
     latencies = []
+    ip_payload_lengths = []
     payload_length_sum_with_overhead = 0
     payload_length_sum_without_overhead = 0
     for (pre_hash, pre_frame_number, pre_frame_time_epoch, pre_ip_payload_length) in pre_bucket:
@@ -201,6 +202,7 @@ for time, pre_bucket in pre_buckets.items():
         payload_length_sum_with_overhead += pre_ip_payload_length
         payload_length_sum_without_overhead += pre_ip_payload_length - overhead
         latencies.append(latency)
+        ip_payload_lengths.append(pre_ip_payload_length)
     throughput_with_overhead = bytes_to_bits(bytes_to_megabytes(payload_length_sum_with_overhead)) / BUCKET_DURATION_S
     throughput_without_overhead = bytes_to_bits(bytes_to_megabytes(payload_length_sum_without_overhead)) / BUCKET_DURATION_S
     statistics = {
@@ -210,6 +212,7 @@ for time, pre_bucket in pre_buckets.items():
             'dropped': dropped_packets, # Packets which were sent but not received
             'duplicate': duplicate_packets, # Packets which were received more than once
         },
+        'ip_payload_lengths': ip_payload_lengths,
         'throughput_without_overhead': throughput_without_overhead,
         'latencies': latencies,
     }
@@ -225,6 +228,7 @@ data = {
     'units': {
         'duration': 's',
         'latency': 'ms',
+        'ip_payload_length': 'Bytes',
         'throughput': 'Mbit/s',
     },
     'time_series': time_series,
