@@ -9,18 +9,17 @@ We describe our experimental design, emphasizing the requirements.
 The chapter then outlines the testbed setup, including the transition from a virtualized environment using the NixOS testing framework to a real-world hardware implementation.
 Finally, we discuss the rationale behind our protocol selection, the specific network parameters varied during testing, and the data analysis pipeline used to process the collected packet captures, providing a comprehensive overview of our experimental approach.
 
-\section{Experimental design}
+\section{Experimental Design}
 We want to measure the overhead of encryption and censorship evasion protocols over lossy links.
-Therefore, we need a measurement setup, which allows us to do so.
-It should offer repeatability and consistency.
-It should include a traffic generator which generates the simplest possible traffic pattern, a constant stream of data.
+Therefore, we need a measurement setup, which allows us to do so, with repeatability and consistency.
+It should also include a traffic generator, which generates the simplest possible traffic pattern, a constant stream of data.
 The stream of data should only flow in one direction.
-The traffic generator should not attempt to do congestion control as we don't want our results to be influenced by the particular congestion control algorithm being used.
-The setup should allow simulating different network conditions.
-The data traffic should flow from the traffic generator, be obfuscated and/or encrypted by the censorship evasion protocol, pass through the network emulator and finally be de-obfuscated and/or decrypted by the censorship evasion protocol.
+The traffic generator should not attempt to do congestion control, as we don't want our results to be influenced by the particular congestion control algorithm being used.
+The setup should further allow simulating different network conditions.
+Data traffic should flow from the traffic generator, be obfuscated and/or encrypted by the censorship evasion protocol, pass through the network emulator and finally be de-obfuscated and/or decrypted by the censorship evasion protocol.
 All packets should be recorded in their original form with accurate time stamps.
 If packets are recorded on multiple systems, special care needs to be taken to synchronize their clocks precisely.
-Otherwise calculating accurate time deltas as a packet traverses a path practically impossible.
+Otherwise, calculating accurate time deltas as a packet traverses a path is practically impossible.
 The packets can be analyzed later (post-experiment analysis) and the analysis pipeline can be iterated on without rerunning all experiments.
 It should also be easy to add new protocols and experiment with the setup both for us and for future researchers wishing to tweak the setup or test more protocols.
 
@@ -39,7 +38,7 @@ It should also be easy to add new protocols and experiment with the setup both f
 \end{figure}
 
 As can be seen in \Cref{fig:actual_network_schematic}, our setup consists of four hosts.
-The \textit{Client} runs iperf3 as a traffic generator in UDP mode and also the censorship evasion client software.
+The \textit{Client} runs iperf3 as a traffic generator in UDP mode, and the censorship evasion client software.
 The \textit{Router} routes packets between the Client and the Server and emulates different network conditions, such as packet loss.
 The \textit{Server} runs an iperf3 server instance and the censorship evasion server software.
 The \textit{Logger} records all traffic seen on the link from the Client to the Router and from the Router to the Server.
@@ -70,21 +69,21 @@ For that, we installed NixOS on PCs, which are centrally controlled with a custo
 nixos-anywhere \cite{nixos-anywhere} is used to quickly and reproducibly install the operating system on all machines.
 nixos-anywhere uses disko \cite{disko} to partition and format the disks in a declarative way.
 Our custom measurement harness is designed to be compatible enough with the NixOS testing framework to work with the same test script.
-Nix is not really designed for this use case, because it isolates the build steps in a sandbox with no network access and no access to SSH keys.
-Normally, Nix expects to manage all dependencies by itself to ensure purity but disabling the sandbox allows accessing things outside of the sandbox, which is impure.
+However, Nix is not really designed for this use case, and isolates the build steps in a sandbox with no network access and no access to SSH keys.
+Normally, Nix expects to manage all dependencies by itself to ensure purity, but disabling the sandbox allows accessing things outside of the sandbox, which is impure.
 Having real hardware in the loop and not just a simulation of that hardware is inherently impure and requires disabling the sandbox.
 This allows using SSH to reach all the machines (and read the secret key) from within a nix build (nix derivation).
-However, this action invalidates some of the guarantees that Nix normally provides.
+As a consequence, this action invalidates some of the guarantees that Nix normally provides.
 When running the setup, the operator needs to make sure that the real world matches all assumptions of the test script.
-This includes having an SSH secret key in the right location on the filesystem of the host controlling the tests, that the four machines are booted and allow access using the above key, that the operating systems running on the machines are configured perfectly by running the correct configuration and that the network is configured correctly, including the configuration of the switch.
+This includes having an SSH secret key in the right location on the filesystem of the host controlling the tests, that the four machines are booted and allow access using the above key, that the operating systems running on the machines are configured perfectly by running the correct configuration, and that the network is configured correctly, including the configuration of the switch.
 
 Despite Nix not really being designed for this particular use-case, we can still take advantage of all other Nix features.
-We can use it as a simple templating engine to build the test script with the right parameters embedded inside and then execute it.
+We can use it as a simple templating engine to build the test script with the right parameters and then execute it.
 Modifying any part of the pipeline ensures that only the modified and subsequent stages are rerun.
 This eliminates the need for manually selecting which parts of the pipeline to run, a process that can be both tedious and error-prone, or rerunning the entire pipeline every time, which is time-consuming.
 Furthermore, building our setup in this way allows using the same test script and data analysis pipeline for the VM tests and the hardware tests, which makes experimentation much easier.
 We use Nix to take care of storing all packet captures and the build logs.
-But if Nix were to get in the way after running the measurements, the data can still be easily copied out of the Nix store.
+But if Nix were to get in the way for whatever reason after running the measurements, the data can still be easily copied out of the Nix store.
 This can be done by specifying the measurements which should be exported in \path{test-matrix/parameters.json} and then running \mintinline{shell}{nix build .#measurements}.
 The reason why we want to store the packet captures in the Nix store is for easy processing by the data analysis pipeline.
 However, one potential downside of using Nix for this purpose is that care must be taken not to modify the test script or any other dependencies, as doing so would trigger the tests to run again.
@@ -114,7 +113,7 @@ For userspace programs running in systemd units, the RAM usage can be assessed u
 
 We gather the MTU of each tunnel interface from the output of the \mintinline{shell}{ip link} command.
 
-\subsection{Hardware used}
+\subsection{Hardware Used}
 Detailed hardware information can be found in \Cref{tab:hardware}.
 \begin{table}[tbh]
 	\centering
@@ -243,7 +242,7 @@ To find the start of the test, we find the first packet which is larger than a t
 To find the end of the test, we find the last packet which is larger than the same threshold and also ignore all packets which are sent after the duration of the test is over.
 
 
-\section{Data analysis pipeline}
+\section{Data Analysis Pipeline}
 \label{sect:data-analysis-pipeline}
 First we run our measurement setup with a particular set of parameters.
 All packets before (pre) and after (post) the router are recorded and stored in \path{.pcap} files.

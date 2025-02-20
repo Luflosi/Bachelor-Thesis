@@ -4,19 +4,19 @@
 \chapter{Introduction}
 
 
-Many places in the world encounter internet censorship.
+Many places in the world encounter Internet censorship.
 To try to get around the censorship, numerous different techniques, some very creative, were developed.
 Depending on the threat model, the goal can be to either "just" circumvent the censorship or to also hide the fact that circumvention took place from the censors.
 Steganography \cite{wiki:Steganography} techniques \cite{wiki:List_of_steganography_techniques} can help with the latter goal.
 Internet censorship doesn't happen equally everywhere.
-It is often employed to restrict access of a population to sensitive information and, as such, is much more likely to be present on types of internet connections used by many people, as opposed to e.g., data centers.
-These types of internet connections are optimized for low cost and include access technologies such as cellular networks, DSL, and WLAN.
+It is often employed to restrict access of a population to sensitive information and, as such, is much more likely to be present on types of Internet connections used by many people, as opposed to e.g., data centers.
+These types of Internet connections are optimized for low cost and include access technologies such as cellular networks, DSL, and WLAN.
 People are likely using portable or low-power devices such as laptops and phones, as opposed to servers.
 
-Censored internet connections are also commonly found in public spaces like coffee shops, hotels, and city-wide WiFi networks, where users rely on shared, often unencrypted, and bandwidth-limited connections.
+Censored Internet connections are also commonly found in public spaces like coffee shops, hotels, and city-wide WiFi networks, where users rely on shared, often unencrypted, and bandwidth-limited connections.
 
 
-The Open Observatory of Network Interference (OONI) project measures internet censorship \cite{OONI}.
+The Open Observatory of Network Interference (OONI) project measures Internet censorship \cite{OONI}.
 Internet censorship in the real world is constantly evolving and can be done in many different ways.
 What follows is a small selection of the most common ways censorship is achieved on a technical level and for a service outside of the jurisdiction or control of the censor:
 \begin{itemize}
@@ -32,6 +32,10 @@ All of these censorship techniques have different tradeoffs in terms of false po
 These types of censorship can be circumvented in a variety of ways.
 Fake TCP RST packets sent by unsophisticated firewalls for example can often be differentiated from the real ones and then simply ignored \cite{GoodbyeDPI-passive}.
 More sophisticated firewalls can be circumvented by tunneling.
+
+Tunneling is a method used to evade censorship by encapsulating data within another protocol, making it difficult for firewalls to detect restricted content.
+This technique effectively hides the true nature of the traffic, allowing it to pass through filters undetected.
+Tunneling protocols often employ encryption to maximize their effect.
 
 Running these protocols on phones or other mobile devices also constrains the available CPU and RAM resources.
 However, these censorship circumvention protocols are likely developed in laboratory conditions with ideal networks and plentiful computational resources.

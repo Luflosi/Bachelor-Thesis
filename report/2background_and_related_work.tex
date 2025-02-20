@@ -10,8 +10,8 @@ For that, we first provide an overview of common censorship approaches.
 Subsequently, we discuss various censorship evasion techniques.
 Finally, we discuss related work in terms of censorship measurements and performance evaluation.
 
-\section{Network data transmission and MTU}
-Packet switched networks like the internet have a maximum packet size they can transport, called MTU (Maximum Transmission Unit) \cite{RFC0791}.
+\section{Network Data Transmission and MTU}
+Packet switched networks like the Internet have a maximum packet size they can transport, called MTU (Maximum Transmission Unit) \cite{RFC0791}.
 Every link between two subsequent routers may have a different MTU.
 The maximum size of a packet being transported along the path from one host to another is the minimum of the MTUs along the path.
 
@@ -71,7 +71,7 @@ By examining Host headers in HTTP or Server Name Indication (SNI) in HTTPS, they
 Users counter this with domain fronting \cite{Domain_fronting}, masking their requests behind legitimate domains to avoid detection and with Encrypted Client Hello, where the TLS handshake and thus also SNI is encrypted.
 As with DNS queries, users can also employ proxies, VPNs, Tor, and similar means to circumvent the censorship.
 
-Without net neutrality, many large internet service providers (ISPs) are inclined to treat portions of the traffic in special ways \cite{Net_neutrality}.
+Without net neutrality, many large Internet service providers (ISPs) are inclined to treat portions of the traffic in special ways \cite{Net_neutrality}.
 This situation shares a strong technical resemblance with censorship because both involve inspecting data packets and making decisions based on their content or source, albeit for different purposes.
 
 As we saw, there are many possibilities of evading the censorship:
@@ -109,6 +109,7 @@ Idempotence \cite{Idempotence} in the context of running a computer science expe
 This is a desired and important property.
 Stringent testing protocols and automation can bring a setup closer to idempotence or even reach it.
 One possibility is to reboot all systems after each experiment and roll their state back to a known state, for example using filesystem snapshots.
+
 \subsection{Nix}
 \label{Nix-explanation}
 Nix is a build system and package manager, which is inspired by functional programming principles.
@@ -129,7 +130,7 @@ The Nix language (aka. Nixlang) is the domain-specific language (DSL) used by Ni
 
 \blockquote[\cite{nixlang}]{Nixpkgs [is] the largest, most up-to-date software distribution in the world, and written in the Nix language.}
 
-NixOS is a Linux distribution built on Nix.
+NixOS is a Linux distribution built on Nix and Nixpkgs.
 A single file written in the Nix language can fully declare all software and configuration of the system.
 By using a lock file, the software and configuration can be recreated exactly.
 NixOS uses Nix to build a single directory containing the entire operating system.

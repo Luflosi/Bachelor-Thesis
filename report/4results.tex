@@ -75,9 +75,6 @@ The biggest time difference is in the single digit millisecond range.
 We are not sure what causes this but it indicates that our packet time stamps are slightly noisy with the most extreme outliers being off by several milliseconds.
 
 
-\todo[inline]{show single measurement with throughput being fairly constant over time}
-
-
 \todo[inline]{remove notes:}
 graphen beschreiben (Welche Achsen gibt es, etc.)
 was sieht man?
@@ -99,28 +96,25 @@ This allows us to track packet counts over time and identify any fluctuations or
 
 \noindent\textbf{Throughput:} A line graph shows the throughput achieved in each time bucket.
 This graph helps visualize the consistency of throughput over the duration of the measurement.
-\todo[inline]{also show distribution of packet sizes}
 
 
 \subsubsection{Multi-Measurement Graphs (Parameter Influence):}
 \label{sect:graphs-multi}
 These graphs compare multiple measurements to visualize the influence of a specific parameter.
 
-\begin{figure}[tbh]
+\begin{figure}[t!]
 	\centering
 	\includegraphics[draft=false,width=0.9\textwidth]{figures/Graphs/graph-4-mtu/latencies.pdf}
 	\caption{Latencies for varying payload sizes without any tunnel protocol and all other parameters set to zero}
 	\label{fig:graph-4-mtu-latencies}
 \end{figure}
-
-\begin{figure}[tbh]
+\begin{figure}[t!]
 	\centering
 	\includegraphics[draft=false,width=0.9\textwidth]{figures/Graphs/graph-4-mtu/throughput.pdf}
 	\caption{Throughput for varying payload sizes without any tunnel protocol and all other parameters set to zero}
 	\label{fig:graph-4-mtu-throughput}
 \end{figure}
-
-\begin{figure}[tbh]
+\begin{figure}[t!]
 	\centering
 	\includegraphics[draft=false,width=0.9\textwidth]{figures/Graphs/graph-6-three-protocols/packet_size.pdf}
 	\caption{Packet size for varying tunnel protocols, 1400 IPv4 payload size, 0.1\% loss}
@@ -149,9 +143,12 @@ If packets are fragmented, multiple different packet sizes will be common.
 \noindent\textbf{Throughput (with and without overhead):} Two violin plots are used to show throughput, one including overhead added by the protocol and the other excluding it.
 This comparison helps visualize the overhead introduced by the protocol and how it affects the effective throughput.
 
+
 Notably, in \Cref{fig:graph-4-mtu-latencies} we observe that latency remains largely constant with varying packet sizes, except for a drastic increase in tail latency, which was an unexpected finding.
 
-\Cref{fig:graph-4-mtu-latencies} shows that WireGuard adds some overhead to each packet, as expected.
+In \Cref{fig:graph-4-mtu-throughput} we see that the throughput decreases with lower IP payload size.
+
+\Cref{fig:graph-6-three-protocols-size} shows that WireGuard adds some overhead to each packet, as expected.
 iodine fragments the packets since our IP packets (1420 bytes) are larger than the MTU of the tunnel interface.
 
 

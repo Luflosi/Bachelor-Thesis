@@ -14,8 +14,9 @@ While we are not able to fully evaluate all of the intended protocols, most nota
 The rigorous approach we employ, combining virtualized prototyping with real-world hardware testing, allows for reproducible experiment environments and controlled network impairment simulation.
 This framework can be readily adapted to evaluate a broader range of censorship evasion techniques and explore more complex network scenarios.
 
+As such, this framework is the core contribution of this thesis. The evaluation framework can be found at \href{https://github.com/Luflosi/Bachelor-Thesis}{https://github.com/Luflosi/Bachelor-Thesis} and \href{https://sr.ht/~luflosi/Bachelor-Thesis/}{https://sr.ht/\textasciitilde{}luflosi/Bachelor-Thesis/}.
 
-RAM usage of all the protocols we avaluated was quite low.
+RAM usage of all the protocols we evaluated was quite low.
 It was low enough to comfortably run these protocols on embedded devices or old mobile phones.
 
 
@@ -40,7 +41,7 @@ Future research could explore introducing an artificial bottleneck to simulate l
 \noindent\textbf{Connection Oriented Protocols:}
 Our experiments primarily utilize unidirectional UDP traffic as the foundation for our analysis.
 However, future research could benefit from exploring the impact of connection-oriented protocols such as TCP and QUIC.
-These protocols are widely used in real-world internet applications, which makes their inclusion potentially more relevant for practical insights.
+These protocols are widely used in real-world Internet applications, which makes their inclusion potentially more relevant for practical insights.
 It is important to note that most TCP implementations are sensitive to packet reordering, a factor that could influence performance evaluations.
 Additionally, assessing the role of congestion control mechanisms within these protocols could provide valuable perspectives on how they operate under different network conditions.
 
