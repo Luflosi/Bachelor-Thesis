@@ -40,7 +40,7 @@ From a technical perspective, censorship is not necessarily different than any o
 The core difference is that for censorship, a state level actor determines semantically which network connections need to be prevented, i.e., based on the information or type of service that could be transported over the connection.
 
 The most simple version of censorship interferes with service discovery.
-Here, the cannonical example are DNS blocklists.
+Here, the canonical example are DNS blocklists.
 For DNS blocking, authorities communicate either FQDNs in the DNS, or full zones, which should not be discoverable by clients.
 The DNS operator is then instructed to prevent correct IP lookups of the associated resource records.
 Often, they are also asked to redirect users attempting to access these resources to, for example, an informational page.
@@ -141,7 +141,7 @@ NixOS can boot with just two directories: \path{/boot} and \path{/nix} \cite{Era
 Everything else can be erased during a reboot to eliminate as much state as possible.
 One method of achieving this is using a tmpfs, which stores all data in RAM and thus looses the data when shutting down the machine.
 Another method is using ZFS or btrfs snapshots and rolling back to an empty snapshot while booting.
-Opting in to keepig some state can be done per directory by storing the data on a different filesystem, ZFS dataset or btrfs subvolume.
+Opting in to keeping some state can be done per directory by storing the data on a different filesystem, ZFS dataset or btrfs subvolume.
 
 Using NixOS and erasing the state on each reboot like this can be used to implement idempotent experiments.
 
@@ -153,7 +153,7 @@ The test script is written in Python and can start and stop the VMs and execute 
 Achieving reproducibility for performance measurements is especially tricky.
 Not only the software needs to be reproduced as closely as possible, but also the hardware.
 
-Ideally, the exact same hardware is used, but it may be difficult and expensive to aquire the exact same hardware.
+Ideally, the exact same hardware is used, but it may be difficult and expensive to acquire the exact same hardware.
 As an alternative, employing similar hardware may yield sufficiently accurate measurements.
 
 

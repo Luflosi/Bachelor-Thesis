@@ -267,7 +267,7 @@ For meaningful statistics over time, we group the data into short chunks (bucket
 The latency introduced by the router can be measured by computing the difference between the timestamps of each pre-packet and the first corresponding post-packet.
 For our latency statistic, dropped packets are ignored and for duplicated packets only the first arriving packet is counted.
 Throughput can be measured by summing up the IP payload size in every bucket and dividing it by the time duration of the bucket.
-This meaurement of throughput includes the overhead of the tunnel protocol.
+This measurement of throughput includes the overhead of the tunnel protocol.
 If the overhead is fixed and known for a given tunnel protocol, we can compute the goodput (actually useful throughput inside the tunnel), by simply subtracting the overhead from the packet size before computing the throughput.
 For our throughput statistic, dropped packets don't count and packets which were duplicated count only once.
 The output of this analysis step is a JSON file with the following contents:

@@ -89,7 +89,7 @@ It allows recording the packets also before they enter the tunnel and after they
 
 In particular, this allows us to properly evaluate the overhead of iodine, which depends on the particular DNS record type the program chooses at runtime.
 
-Early on, we evaluated the cartesian product of all parameters, which leads to an explosion of different combinations, which take a long time to measure.
+Early on, we evaluated the Cartesian product of all parameters, which leads to an explosion of different combinations, which take a long time to measure.
 We did this before deciding how to analyze and compare these many different combinations.
 To mitigate this, we focus on isolating variables during testing—keeping all parameters constant except for the one being measured—to create meaningful graphs and reduce the number of required tests drastically.
 
@@ -110,7 +110,7 @@ This is especially relevant for iodine, where we know with certainty that its ba
 The packet queue in the router is not large enough, leading to dropped packets when trying to introduce a delay of 200 ms or longer.
 Increasing the buffer size would resolve this limitation.
 
-The router in our setup is connected to a 100Mbit/s port of the switch using a single ethernet cable and two VLANs.
+The router in our setup is connected to a 100Mbit/s port of the switch using a single Ethernet cable and two VLANs.
 Both the client and the server are theoretically able to send and receive at full speed at the same time (each device 200Mbit/s in total) thanks to full-duplex.
 But the router is effectively limited to half-duplex speeds as it has to send all data it receives back over the same link.
 This presents an unintended bottleneck if data flows in both directions at the client and server at a fast enough rate.
@@ -127,7 +127,7 @@ Some unit tests for our data analysis scripts would have been nice to have and w
 
 Finally, while modifying the NixOS test driver to scale to thousands of tests without running out of memory and with an evaluation time proportional to the number of protocols instead of the number of tests, we copy some parts of the driver from Nixpkgs.
 We did however not copy the code that allows controlling the test interactively, which would have enhanced debuggability by not requiring a full rerun of the test after each change.
-Adressing this limitation should be relatively simple.
+Addressing this limitation should be relatively simple.
 \todo[inline]{try to write a couple more sentences so this sentence is not alone on a page}
 
 
