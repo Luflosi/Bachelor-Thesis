@@ -3,7 +3,6 @@
 
 \chapter{Results}
 \label{chap:results}
-\todo{beschreiben, was man sieht, Messungen irgendwie anordnen, innerhalb Sektion mit anderem vergleichen, z.B. MTU. zuerst nach Protokollen, dann Parameter}
 
 This chapter presents the results obtained from our experiments.
 We analyze the impact of the censorship evasion protocols on key network metrics relevant to their practical deployment and effectiveness.
@@ -59,7 +58,6 @@ In \Cref{fig:graph-2-iodine-dropout-packets} all data transfer stops shortly aft
 
 
 \textbf{Tor Pluggable Transports}, such as obfs4 and Snowflake, are primarily designed for stream-oriented data, typically using TCP.
-\todo[inline]{Verify this claim more thoroughly!}
 Because our tests use UDP packets, we are unable to evaluate the performance of these protocols under their intended operating conditions.
 A different test setup employing a connection-oriented data stream (TCP) would be necessary for a more accurate assessment.
 However, the congestion control algorithm may then influence the results.
@@ -74,11 +72,6 @@ We measure a small percentage (~0.001\%) of packets which seem to have a negativ
 The biggest time difference is in the single digit millisecond range.
 We are not sure what causes this but it indicates that our packet time stamps are slightly noisy with the most extreme outliers being off by several milliseconds.
 
-
-\todo[inline]{remove notes:}
-graphen beschreiben (Welche Achsen gibt es, etc.)
-was sieht man?
-warum sieht man das was man sieht?
 
 \subsection{Data Visualization}
 \subsubsection{Single Measurement Graphs (Detailed View):}
@@ -150,11 +143,6 @@ In \Cref{fig:graph-4-mtu-throughput} we see that the throughput decreases with l
 
 \Cref{fig:graph-6-three-protocols-size} shows that WireGuard adds some overhead to each packet, as expected.
 iodine fragments the packets since our IP packets (1420 bytes) are larger than the MTU of the tunnel interface.
-
-
-\todo[inline]{graphs for every parameter}
-
-
 
 Rather than only a handful of combinations of parameters, as described in \Cref{chap:methodology}, we tested many more for experimentation.
 In the beginning we even tested the Cartesian product of all parameters.
