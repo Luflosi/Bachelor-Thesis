@@ -4,10 +4,6 @@
 # Bachelor Thesis
 ## Measuring the overhead of encryption and censorship evasion protocols over lossy links
 
-> [!IMPORTANT]
-> This project is only in its infancy at the time of writing.
-
-
 ## Dependencies:
 - You need Linux to be able to build the VMs
 - [Install Nix](https://zero-to-nix.com/start/install)
