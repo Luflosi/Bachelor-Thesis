@@ -21,7 +21,7 @@
     forAllSystems = function: lib.genAttrs [
       "aarch64-linux"
       "x86_64-linux"
-    ] (system: function system);
+    ] function;
 
     get-latex-packages = pkgs: with pkgs; [
       (texlive.combine {
