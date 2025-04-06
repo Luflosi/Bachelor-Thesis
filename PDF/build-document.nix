@@ -9,7 +9,7 @@
 , rfc-bib
 
 # Name of the final pdf file
-, name ? "document.pdf"
+, name ? "thesis.pdf"
 
 # Use -shell-escape
 , shellEscape ? false
