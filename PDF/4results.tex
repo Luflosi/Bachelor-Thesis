@@ -68,7 +68,7 @@ Alternatively, using a UDP-over-TCP tunnel might also work.
 For the majority of protocols tested, the observed latency, packet loss, and duplication closely matched the values configured in the network emulator (tc-netem).
 The measured throughput is predictably influenced by the number and size of transmitted and dropped packets.
 
-We measure a small percentage (~0.001\%) of packets which seem to have a negative latency.
+We measure a small percentage (\approx0.001\%) of packets which seem to have a negative latency.
 The biggest time difference is in the single digit millisecond range.
 We are not sure what causes this but it indicates that our packet time stamps are slightly noisy with the most extreme outliers being off by several milliseconds.
 
