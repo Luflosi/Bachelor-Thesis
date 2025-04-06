@@ -12,8 +12,8 @@
 - Execute `nix build github:Luflosi/Bachelor-Thesis` (no need to clone this repo)
 - Look at the graphs in `./result`
 
-## Build the report PDF:
-- Execute `nix build github:Luflosi/Bachelor-Thesis#report` (no need to clone this repo)
+## Build the PDF:
+- Execute `nix build github:Luflosi/Bachelor-Thesis#PDF` (no need to clone this repo)
 - Look at the PDF in `./result`
 
 ## Run measurements on real hardware

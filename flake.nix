@@ -11,7 +11,7 @@
     disko.inputs.nixpkgs.follows = "nixpkgs";
 
     rfc-bib = {
-      url = "git+file:report/rfc.bib";
+      url = "git+file:PDF/rfc.bib";
       flake = false;
     };
   };
@@ -97,7 +97,7 @@
       inherit (defaultPipeline) graphs;
       graphsMulti = pipelines.graphs;
       inherit measurements all-statistics all-parsed;
-      report = import ./report/build-document.nix {
+      PDF = import ./PDF/build-document.nix {
         inherit lib pkgs;
         inherit (inputs) rfc-bib;
         texlive = get-latex-packages pkgs;

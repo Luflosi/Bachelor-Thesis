@@ -53,7 +53,7 @@ let
     extraFlags
     (lib.optional shellEscape "-shell-escape")
   ];
-  report-src = fs.toSource {
+  PDF-src = fs.toSource {
     root = ./.;
     fileset = fs.unions [
       ./.latexmkrc
@@ -72,9 +72,9 @@ assert minted -> shellEscape;
 pkgs.stdenvNoCC.mkDerivation rec {
   inherit name;
   src = pkgs.symlinkJoin {
-    name = "combined-report-src";
+    name = "combined-PDF-src";
     paths = [
-      report-src
+      PDF-src
       rfc-bib-src
     ];
   };

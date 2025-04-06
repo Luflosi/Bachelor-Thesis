@@ -2,5 +2,5 @@
 # SPDX-License-Identifier: CC0-1.0
 
 [submodule "report/rfc.bib"]
-	path = report/rfc.bib
+	path = PDF/rfc.bib
 	url = https://github.com/Luflosi/rfc.bib.git
