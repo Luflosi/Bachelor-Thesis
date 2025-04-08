@@ -107,7 +107,7 @@ with open(args.input, 'rb') as f:
         max_allowed_time = min_allowed_time + 1
         assert time_to_epoch(min_allowed_time) <= delta_epoch < time_to_epoch(max_allowed_time), f'The packet capture does not have the expected length, was {epoch_to_time(delta_epoch)}, not between {min_allowed_time} and {max_allowed_time}'
 
-print(len(packets), 'packets', file=sys.stderr)
+print(f'Processed {len(packets)} packets, skipped the remaining <1s', file=sys.stderr)
 
 if args.write_out_path:
     if args.metadata:
