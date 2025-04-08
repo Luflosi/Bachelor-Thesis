@@ -104,7 +104,7 @@ def read_inputs(inputs):
     for input_file in inputs:
         metadata, data, parameters = read_input(input_file)
 
-        if prev_parameters != None:
+        if prev_parameters is not None:
             assert parameters.keys() == prev_parameters.keys(), f'{parameters.keys()} != {prev_parameters.keys()}'
             for key, value in parameters.items():
                 if key == 'cacheID':
@@ -114,25 +114,25 @@ def read_inputs(inputs):
         prev_parameters = parameters
         parameters_per_input.append(parameters)
 
-        if duration == None:
+        if duration is None:
             duration = metadata['duration']
         assert duration == metadata['duration'], f'{duration} != {metadata['duration']}'
-        if unit_latency == None:
+        if unit_latency is None:
             unit_latency = metadata['units']['latency']
         assert unit_latency == metadata['units']['latency'], f'{unit_latency} != {metadata['units']['latency']}'
-        if unit_duration == None:
+        if unit_duration is None:
             unit_duration = metadata['units']['duration']
         assert unit_duration == metadata['units']['duration'], f'{unit_duration} != {metadata['units']['duration']}'
-        if unit_ip_payload_length == None:
+        if unit_ip_payload_length is None:
             unit_ip_payload_length = metadata['units']['ip_payload_length']
         assert unit_ip_payload_length == metadata['units']['ip_payload_length'], f'{unit_ip_payload_length} != {metadata['units']['ip_payload_length']}'
-        if unit_throughput == None:
+        if unit_throughput is None:
             unit_throughput = metadata['units']['throughput']
         assert unit_throughput == metadata['units']['throughput'], f'{unit_throughput} != {metadata['units']['throughput']}'
-        if time == None:
+        if time is None:
             time = data['time']
         assert time == data['time'], f'{time} != {data['time']}'
-        if labels == None:
+        if labels is None:
             labels = data['labels']
         assert labels == data['labels'], f'{labels} != {data['labels']}'
 
@@ -290,7 +290,7 @@ def read_inputs(inputs):
         case _:
             raise Exception("Invalid mode")
 
-    assert metadata != None
+    assert metadata is not None
     return metadata, plot
 
 
@@ -329,7 +329,7 @@ match mode:
     case _:
         raise Exception("Invalid mode")
 ax.set_ylim(bottom=0)
-if out != None:
+if out is not None:
     plt.savefig(fname=os.path.join(out, 'latencies.svg'), transparent=False)
 plt.show()
 
@@ -348,7 +348,7 @@ match mode:
         ax2.plot(plot['x'], plot['counts']['y2'], color=ax2_color)
         ax2.tick_params(axis='y', labelcolor=ax2_color)
         ax2.set_ylim(bottom=0)
-        if out != None:
+        if out is not None:
             plt.savefig(fname=os.path.join(out, 'packet_counts_all.svg'), transparent=False)
         plt.show()
     case 'multi':
@@ -360,7 +360,7 @@ match mode:
         ax.set_xticks(plot['x'], labels=plot['x_labels'])
         ax.set_ylim(bottom=0)
         ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=1))
-        if out != None:
+        if out is not None:
             plt.savefig(fname=os.path.join(out, 'packet_dropped.svg'), transparent=False)
         plt.show()
 
@@ -372,7 +372,7 @@ match mode:
         ax.set_xticks(plot['x'], labels=plot['x_labels'])
         ax.set_ylim(bottom=0)
         ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1.0, decimals=1))
-        if out != None:
+        if out is not None:
             plt.savefig(fname=os.path.join(out, 'packet_duplicate.svg'), transparent=False)
         plt.show()
     case _:
@@ -389,7 +389,7 @@ match mode:
         ax.plot(plot['x'], plot['throughput']['y_full'])
         ax.set_ylim(bottom=0)
 
-        if out != None:
+        if out is not None:
             plt.savefig(fname=os.path.join(out, 'throughput.svg'), transparent=False)
         plt.show()
     case 'multi':
@@ -404,7 +404,7 @@ match mode:
         ax.set_xticks(plot['x'], labels=plot['x_labels'])
         ax.set_ylim(bottom=0)
 
-        if out != None:
+        if out is not None:
             if plot['throughput_with'] != {}:
                 filename = 'throughput_without.svg'
             else:
@@ -421,7 +421,7 @@ match mode:
             ax.set_xticks(plot['x'], labels=plot['x_labels'])
             ax.set_ylim(bottom=0)
 
-            if out != None:
+            if out is not None:
                 plt.savefig(fname=os.path.join(out, 'throughput_with.svg'), transparent=False)
             plt.show()
     case _:
@@ -440,7 +440,7 @@ match mode:
         ax.set_xticks(plot['x'], labels=plot['x_labels'])
         ax.set_ylim(bottom=0)
 
-        if out != None:
+        if out is not None:
             plt.savefig(fname=os.path.join(out, 'packet_size.svg'), transparent=False)
         plt.show()
     case _:

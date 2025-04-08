@@ -99,8 +99,8 @@ def validate_pre_packets(pre_packets):
         assert len(hash_str) == 64, f'Hash string length is {len(hash_str)}'
         hash = bytes.fromhex(hash_str)
         assert len(hash) == 32, f'Hash length is {len(hash)}'
-        assert previous_frame_number == None or frame_number > previous_frame_number, f'frame_number ({frame_number}) is not greater than the previous one ({previous_frame_number})'
-        assert previous_frame_time_epoch == None or frame_time_epoch >= previous_frame_time_epoch, f'frame_time_epoch ({frame_time_epoch}) is not greater than the previous one ({previous_frame_time_epoch})'
+        assert previous_frame_number is None or frame_number > previous_frame_number, f'frame_number ({frame_number}) is not greater than the previous one ({previous_frame_number})'
+        assert previous_frame_time_epoch is None or frame_time_epoch >= previous_frame_time_epoch, f'frame_time_epoch ({frame_time_epoch}) is not greater than the previous one ({previous_frame_time_epoch})'
         ip_payload_length = packet['ip_payload_length']
         assert ip_payload_length > 0, f'ip_payload_length is not greater than zero ({ip_payload_length})'
         if hash in hash_to_pre_time_epochs_map:
@@ -128,9 +128,9 @@ def split_into_buckets(pre_info):
     for frame in pre_info:
         (_hash, _frame_number, frame_time_epoch, _ip_payload_length) = frame
         frame_time = time_ns_to_s(frame_time_epoch)
-        if bucket_start_time == None:
+        if bucket_start_time is None:
             bucket_start_time = frame_time
-        if bucket_end_time == None:
+        if bucket_end_time is None:
             bucket_end_time = bucket_start_time + BUCKET_DURATION_S
         if frame_time >= bucket_end_time:
             avg_time = (bucket_start_time + bucket_end_time) / 2
@@ -185,7 +185,7 @@ for time, pre_bucket in pre_buckets.items():
         duplicate_packets += number_of_packet_copies - 1
         first_arriving_copy_of_packet = None
         for packet in packets:
-            if first_arriving_copy_of_packet == None:
+            if first_arriving_copy_of_packet is None:
                 first_arriving_copy_of_packet = packet
                 continue
             (_post_frame_number, post_frame_time_epoch, _post_ip_payload_length) = packet
@@ -234,7 +234,7 @@ data = {
     'time_series': time_series,
 }
 
-if out != None:
+if out is not None:
     with open(os.path.join(out, 'parameters.json'), 'w', encoding='utf-8') as f:
         json.dump(obj=metadata, fp=f, allow_nan=False, sort_keys=True, separators=(',', ':'))
     d = open(os.path.join(out, 'statistics.json'), 'w', encoding='utf-8')
