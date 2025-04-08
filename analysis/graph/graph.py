@@ -82,7 +82,6 @@ def read_input(input_file):
 
 
 def read_inputs(inputs):
-    data_list = []
     metadata = None
     prev_parameters = None
     differing_parameters = set()
